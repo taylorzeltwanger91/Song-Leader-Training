@@ -220,6 +220,62 @@ function assignLyrics(notes, melismaPercent=0, syllableLevel=1) {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// HYMN INDEX (from real PDF extraction)
+// ═══════════════════════════════════════════════════════════════
+
+const HYMN_INDEX = [
+  {id:1,number:"1",title:"Praise Ye the Lord",pages:[4,5],images:["page-004.png","page-005.png"]},
+  {id:2,number:"2",title:"A Christian's Joy and Hope",pages:[6,7],images:["page-006.png","page-007.png"]},
+  {id:3,number:"3",title:"The Gospel of Truth",pages:[8,9],images:["page-008.png","page-009.png"]},
+  {id:4,number:"4",title:"Open Wide the Gates",pages:[10,11],images:["page-010.png","page-011.png"]},
+  {id:5,number:"5",title:"The Praise of God",pages:[12],images:["page-012.png"]},
+  {id:6,number:"6",title:"Appeal to the Saviour",pages:[13],images:["page-013.png"]},
+  {id:7,number:"7",title:"Christmas Carol",pages:[14],images:["page-014.png"]},
+  {id:8,number:"8",title:"The Resurrection From Baptism",pages:[15],images:["page-015.png"]},
+  {id:9,number:"9",title:"Glory to God in the Highest",pages:[16,17],images:["page-016.png","page-017.png"]},
+  {id:10,number:"10",title:"Baptism",pages:[18,19],images:["page-018.png","page-019.png"]},
+  {id:11,number:"11",title:"We, Who in God's Name Are Here",pages:[20,21],images:["page-020.png","page-021.png"]},
+  {id:12,number:"12",title:"A Believer's Prayer",pages:[22,23],images:["page-022.png","page-023.png"]},
+  {id:15,number:"15",title:"Awakening",pages:[28,29],images:["page-028.png","page-029.png"]},
+  {id:18,number:"18",title:"Who Is He That Cares and Watches",pages:[34,35],images:["page-034.png","page-035.png"]},
+  {id:21,number:"21",title:"To Those in Conflict",pages:[40],images:["page-040.png"]},
+  {id:25,number:"25",title:"We Worship Thee With Tears",pages:[48,49],images:["page-048.png","page-049.png"]},
+  {id:26,number:"26",title:"Communion Hymn",pages:[50,51],images:["page-050.png","page-051.png"]},
+  {id:32,number:"32",title:"Who Shall Abide?",pages:[60,61],images:["page-060.png","page-061.png"]},
+  {id:37,number:"37",title:"Love",pages:[72,73],images:["page-072.png","page-073.png"]},
+  {id:40,number:"40",title:"When God Did Create the Planets",pages:[78,79],images:["page-078.png","page-079.png"]},
+  {id:42,number:"42",title:"Within That Wondrous Pool",pages:[82,83],images:["page-082.png","page-083.png"]},
+  {id:48,number:"48",title:"Repentance and Rest",pages:[92,93],images:["page-092.png","page-093.png"]},
+  {id:53,number:"53",title:"Passionate Longing",pages:[100,101],images:["page-100.png","page-101.png"]},
+  {id:58,number:"58",title:"The Inner Life of a Christian",pages:[110,111,112,113],images:["page-110.png","page-111.png","page-112.png","page-113.png"]},
+  {id:63,number:"63",title:"Thy Word, O Lord, Draws Us Together",pages:[122,123],images:["page-122.png","page-123.png"]},
+  {id:64,number:"64",title:"With All Our Heart, O Lord, We Praise",pages:[124,125],images:["page-124.png","page-125.png"]},
+  {id:68,number:"68",title:"Walking With God",pages:[132],images:["page-132.png"]},
+  {id:76,number:"76",title:"Wherever, Lord, True Love Is Waning",pages:[144,145],images:["page-144.png","page-145.png"]},
+  {id:79,number:"79",title:"The Union of Hearts",pages:[148,149],images:["page-148.png","page-149.png"]},
+  {id:86,number:"86",title:"Though Troubles Assail",pages:[160,161],images:["page-160.png","page-161.png"]},
+  {id:87,number:"87",title:"Faith's Confidence",pages:[162,163],images:["page-162.png","page-163.png"]},
+  {id:93,number:"93",title:"Trust in God",pages:[172],images:["page-172.png"]},
+  {id:106,number:"106",title:"Two Ways, O Man, Are There for Thee",pages:[196,197],images:["page-196.png","page-197.png"]},
+  {id:121,number:"121",title:"We Welcome Now Our Saviour",pages:[228,229],images:["page-228.png","page-229.png"]},
+  {id:132,number:"132",title:"To Thee, Saviour, We Draw Near",pages:[246,247],images:["page-246.png","page-247.png"]},
+  {id:142,number:"142",title:"Thy Word, O Lord, Forever Is",pages:[262,263],images:["page-262.png","page-263.png"]},
+  {id:151,number:"151",title:"Why Art Thou Grieved?",pages:[276,277],images:["page-276.png","page-277.png"]},
+  {id:156,number:"156",title:"Willingly Endure",pages:[280,281],images:["page-280.png","page-281.png"]},
+  {id:176,number:"176",title:"Word of Life, the Fountain Flowing",pages:[312,313],images:["page-312.png","page-313.png"]},
+  {id:181,number:"181",title:"Unity in Love",pages:[320,321],images:["page-320.png","page-321.png"]},
+  {id:203,number:"203",title:"Thou Hast Words of Life",pages:[366,367],images:["page-366.png","page-367.png"]},
+  {id:204,number:"204",title:"We Thank Thee, Precious Saviour",pages:[368,369],images:["page-368.png","page-369.png"]},
+  {id:214,number:"214",title:"With Your Zion's Harps Now Chiming",pages:[392,393],images:["page-392.png","page-393.png"]},
+  {id:237,number:"237",title:"Unity",pages:[427],images:["page-427.png"]},
+  {id:244,number:"244",title:"The Time of Waiting",pages:[434,435],images:["page-434.png","page-435.png"]},
+  {id:249,number:"249",title:"Who Are They Before God's Throne?",pages:[444,445],images:["page-444.png","page-445.png"]},
+  {id:254,number:"254",title:"Sunday Morning",pages:[456,457],images:["page-456.png","page-457.png"]},
+  {id:255,number:"255",title:"Christian Greetings",pages:[458],images:["page-458.png"]},
+  {id:256,number:"256",title:"My Parting Hour",pages:[459,460],images:["page-459.png","page-460.png"]},
+];
+
+// ═══════════════════════════════════════════════════════════════
 // SIMULATION & SCORING
 // ═══════════════════════════════════════════════════════════════
 
@@ -405,7 +461,6 @@ function SheetViewer({hymn}) {
 const V={HOME:0,HYMNS:1,GEN:2,PRAC:3,RES:4,GEN_PRAC:5,GEN_RES:6};
 
 export default function App() {
-  const [hymnIndex,setHymnIndex]=useState([]);
   const [vw,setVw]=useState(V.HOME);
   const [hymn,setHymn]=useState(null);
   const [mode,setMode]=useState("practice");
@@ -431,14 +486,6 @@ export default function App() {
   const melodyOscs=useRef([]);
 
   const tmr=useRef(null),actx=useRef(null);
-
-  // Load the full hymn index from public/hymn_index.json
-  useEffect(() => {
-    fetch("/hymn_index.json")
-      .then(r => r.json())
-      .then(data => setHymnIndex(data))
-      .catch(() => setHymnIndex([]));
-  }, []);
 
   // Play the full generated melody as audio
   const playMelodyAudio = useCallback(() => {
@@ -685,7 +732,7 @@ export default function App() {
         <div style={mkC} onClick={()=>setVw(V.HYMNS)} onMouseEnter={hov} onMouseLeave={uhov}>
           <div style={{display:"flex",alignItems:"center",gap:14}}>
             <span style={{fontSize:26}}>📖</span>
-            <div><div style={{fontWeight:600,fontSize:14,marginBottom:2}}>Hymn Practice</div><div style={{fontSize:12,color:T.tm}}>Sing from {hymnIndex.length} Zion's Hymns with real sheet music</div></div>
+            <div><div style={{fontWeight:600,fontSize:14,marginBottom:2}}>Hymn Practice</div><div style={{fontSize:12,color:T.tm}}>Sing from {HYMN_INDEX.length} Zion's Hymns with real sheet music</div></div>
             <span style={{marginLeft:"auto",color:T.tl,fontSize:16}}>›</span>
           </div>
         </div>
@@ -707,11 +754,11 @@ export default function App() {
   // ═══════════════════ HYMN SELECT ══════════════════════════
   if (vw===V.HYMNS) {
     const q=search.toLowerCase();
-    const fl=q?hymnIndex.filter(h=>h.title.toLowerCase().includes(q)||h.number.includes(q)):hymnIndex;
+    const fl=q?HYMN_INDEX.filter(h=>h.title.toLowerCase().includes(q)||h.number.includes(q)):HYMN_INDEX;
     return <><style>{css}</style><div style={{minHeight:"100vh",background:T.bg,fontFamily:"var(--sans)",color:T.tx}}><div style={{maxWidth:540,margin:"0 auto",padding:"0 20px 40px"}}>
       <div style={{padding:"20px 0 12px",borderBottom:`1px solid ${T.cb}`,display:"flex",alignItems:"center",gap:10}}>
         <button style={{background:"none",border:"none",cursor:"pointer",fontSize:18,color:T.tm}} onClick={goHome}>←</button>
-        <div><div style={{fontFamily:"var(--serif)",fontSize:18}}>Zion's Hymns</div><div style={{fontSize:10,color:T.tm,letterSpacing:"0.06em",textTransform:"uppercase",fontWeight:500}}>{hymnIndex.length} hymns</div></div>
+        <div><div style={{fontFamily:"var(--serif)",fontSize:18}}>Zion's Hymns</div><div style={{fontSize:10,color:T.tm,letterSpacing:"0.06em",textTransform:"uppercase",fontWeight:500}}>{HYMN_INDEX.length} hymns</div></div>
       </div>
       <div style={{marginTop:14,marginBottom:14}}><input type="text" placeholder="Search by number or title..." value={search} onChange={e=>setSearch(e.target.value)} style={{width:"100%",padding:"10px 14px",borderRadius:10,border:`1.5px solid ${T.cb}`,background:T.card,fontSize:13,fontFamily:"var(--sans)",color:T.tx,outline:"none"}} onFocus={e=>e.target.style.borderColor=T.ac} onBlur={e=>e.target.style.borderColor=T.cb}/></div>
       <div style={{display:"flex",flexDirection:"column",gap:8,animation:"fadeUp .4s"}}>
