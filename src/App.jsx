@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { AudioRecorder, gradePerformance } from "./audio";
 
 // ═══════════════════════════════════════════════════════════════
 // TIME SIGNATURE ENGINE (all required meters)
@@ -430,7 +431,47 @@ export default function App() {
   const melodyTimers=useRef([]);
   const melodyOscs=useRef([]);
 
+  // Audio recording state
+  const [currentPitch, setCurrentPitch] = useState(null);
+  const [audioError, setAudioError] = useState(null);
+  const [micPermission, setMicPermission] = useState('pending'); // 'pending', 'granted', 'denied'
+  const recorderRef = useRef(null);
+
+  // Hymn melody data (when available)
+  const [hymnMelody, setHymnMelody] = useState(null);
+  const [hymnMelodyLoading, setHymnMelodyLoading] = useState(false);
+
   const tmr=useRef(null),actx=useRef(null);
+
+  // Load hymn melody when a hymn is selected
+  useEffect(() => {
+    if (!hymn) {
+      setHymnMelody(null);
+      return;
+    }
+    setHymnMelodyLoading(true);
+    fetch(`/hymn_melodies/${hymn.id}.json`)
+      .then(r => {
+        if (!r.ok) throw new Error('No melody');
+        return r.json();
+      })
+      .then(data => {
+        // Convert melody data to the format expected by grader
+        const notes = data.notes.map(n => ({
+          midi: n.midi,
+          freq: 440 * Math.pow(2, (n.midi - 69) / 12),
+          dur: n.dur,
+          measure: n.measure,
+          lyric: n.lyric
+        }));
+        setHymnMelody({ ...data, notes });
+        setHymnMelodyLoading(false);
+      })
+      .catch(() => {
+        setHymnMelody(null);
+        setHymnMelodyLoading(false);
+      });
+  }, [hymn]);
 
   // Load the full hymn index from public/hymn_index.json
   useEffect(() => {
@@ -519,18 +560,115 @@ export default function App() {
     try{if(!actx.current)actx.current=new(window.AudioContext||window.webkitAudioContext)();const c=actx.current,o=c.createOscillator(),g=c.createGain();o.type="sine";o.frequency.value=freq;g.gain.setValueAtTime(.3,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+2);o.connect(g).connect(c.destination);o.start();o.stop(c.currentTime+2);setPO(true);setTimeout(()=>setPO(false),2000);}catch(e){}
   }, []);
 
-  const startRec = useCallback((ts,tempo) => {
-    const ct=parseTS(ts).n; setCd(ct); let c=ct;
-    const iv=setInterval(()=>{c--;if(c<=0){clearInterval(iv);setCd(null);setRec(true);setEl(0);const st=Date.now();tmr.current=setInterval(()=>setEl(Math.floor((Date.now()-st)/1000)),200);}else setCd(c);},(60/tempo)*1000);
+  const startRec = useCallback(async (ts, tempo, referenceMelody = null) => {
+    setAudioError(null);
+    setCurrentPitch(null);
+
+    // Initialize recorder if not already done
+    if (!recorderRef.current) {
+      recorderRef.current = new AudioRecorder({
+        onPitchDetected: (pitch) => setCurrentPitch(pitch),
+        onError: (err) => setAudioError(err.message || 'Microphone error')
+      });
+    }
+
+    // Request microphone permission and initialize
+    const recorder = recorderRef.current;
+    const success = await recorder.init();
+
+    if (!success) {
+      setMicPermission('denied');
+      setAudioError('Microphone access denied. Please allow microphone access and try again.');
+      return;
+    }
+    setMicPermission('granted');
+
+    // Store reference melody for grading
+    recorderRef.current._referenceMelody = referenceMelody;
+    recorderRef.current._ts = ts;
+    recorderRef.current._tempo = tempo;
+
+    // Count-in
+    const ct = parseTS(ts).n;
+    setCd(ct);
+    let c = ct;
+    const iv = setInterval(() => {
+      c--;
+      if (c <= 0) {
+        clearInterval(iv);
+        setCd(null);
+        setRec(true);
+        setEl(0);
+
+        // Start actual recording
+        recorder.start();
+
+        const st = Date.now();
+        tmr.current = setInterval(() => setEl(Math.floor((Date.now() - st) / 1000)), 200);
+      } else {
+        setCd(c);
+      }
+    }, (60 / tempo) * 1000);
   }, []);
 
-  const stopRec = useCallback((destView, noteCount) => {
-    setRec(false);clearInterval(tmr.current);setRes(simResults(noteCount));setVw(destView);
+  const stopRec = useCallback((destView, referenceMelody = null) => {
+    setRec(false);
+    clearInterval(tmr.current);
+    setCurrentPitch(null);
+
+    if (recorderRef.current) {
+      const pitchHistory = recorderRef.current.stop();
+      const melody = referenceMelody || recorderRef.current._referenceMelody;
+      const ts = recorderRef.current._ts || "4/4";
+      const tempo = recorderRef.current._tempo || 80;
+
+      if (melody && pitchHistory.length > 0) {
+        // Use real grading
+        const gradeResult = gradePerformance(pitchHistory, melody, tempo, ts);
+
+        // Map to the format expected by the UI
+        setRes({
+          ps: gradeResult.pitchScore,
+          rs: gradeResult.rhythmScore,
+          ls: gradeResult.leadershipScore,
+          co: Math.round(gradeResult.stabilityScore * 0.9 + 10), // Count-off approximation
+          ts: gradeResult.stabilityScore,
+          pst: gradeResult.pitchScore,
+          tt: gradeResult.tempoData,
+          pt: gradeResult.pitchData,
+          diag: gradeResult.diagnostics,
+          pm: gradeResult.pitchData.filter(p => p.sh || p.fl).map(p => p.m),
+          // Include raw data for debugging
+          _raw: gradeResult
+        });
+      } else {
+        // Fallback: no melody reference or no pitch data
+        setRes({
+          ps: 0, rs: 0, ls: 0, co: 0, ts: 0, pst: 0,
+          tt: [], pt: [],
+          diag: pitchHistory.length === 0
+            ? ["No pitch detected. Make sure your microphone is working and sing clearly."]
+            : ["No reference melody available for grading."],
+          pm: []
+        });
+      }
+
+      // Clean up recorder
+      recorderRef.current.destroy();
+      recorderRef.current = null;
+    }
+
+    setVw(destView);
   }, []);
 
-  useEffect(()=>()=>{clearInterval(tmr.current);melodyOscs.current.forEach(o=>{try{o.stop();}catch(e){}});melodyTimers.current.forEach(t=>clearTimeout(t));},[]);
-  const goHome=()=>{setVw(V.HOME);setHymn(null);setRes(null);setRec(false);setCd(null);setGenNotes(null);stopMelody();clearInterval(tmr.current);setSearch("");};
-  const goBack=v=>{setVw(v);setRec(false);setCd(null);setRes(null);clearInterval(tmr.current);};
+  useEffect(()=>()=>{
+    clearInterval(tmr.current);
+    melodyOscs.current.forEach(o=>{try{o.stop();}catch(e){}});
+    melodyTimers.current.forEach(t=>clearTimeout(t));
+    if(recorderRef.current){recorderRef.current.destroy();recorderRef.current=null;}
+  },[]);
+  const goHome=()=>{setVw(V.HOME);setHymn(null);setRes(null);setRec(false);setCd(null);setGenNotes(null);stopMelody();clearInterval(tmr.current);setSearch("");setAudioError(null);setCurrentPitch(null);if(recorderRef.current){recorderRef.current.destroy();recorderRef.current=null;}};
+  const goBack=v=>{setVw(v);setRec(false);setCd(null);setRes(null);clearInterval(tmr.current);setAudioError(null);setCurrentPitch(null);if(recorderRef.current){recorderRef.current.destroy();recorderRef.current=null;}};
 
   // ─── HYMN PRACTICE (split layout) ─────────────────────────
   if ((vw===V.PRAC||vw===V.RES) && hymn) {
@@ -539,7 +677,15 @@ export default function App() {
         <div style={{marginBottom:16}}><div style={{fontSize:11,fontWeight:600,color:T.tm,marginBottom:6,letterSpacing:"0.06em",textTransform:"uppercase"}}>Mode</div><div style={{display:"flex",gap:6}}>{["practice","test"].map(m=><button key={m} onClick={()=>setMode(m)} style={{padding:"8px 18px",borderRadius:8,border:`1.5px solid ${mode===m?T.ac:T.cb}`,background:mode===m?"#e8f0e8":T.card,color:mode===m?T.ad:T.tm,fontSize:12,fontWeight:600,cursor:"pointer"}}>{m==="test"?"Leadership Test":"Practice"}</button>)}</div></div>
         <div style={{...mkC,cursor:"default",background:T.wl,borderColor:"#e8dcc4",padding:14}}><div style={{fontSize:12,color:"#7a6c3d",lineHeight:1.5}}>{mode==="practice"?"Count-in → sing a cappella → receive feedback.":"Leadership Test: evaluates count-off, tempo, and pitch stability."}</div></div>
         {/* Action area */}
-        {!rec && cd===null && <div style={{textAlign:"center",marginTop:16}}><button onClick={()=>startRec("4/4",80)} style={{...mkB(true),padding:"14px 40px",fontSize:15,borderRadius:12}}>Begin {mode==="test"?"Test":"Practice"}</button></div>}
+        {!rec && cd===null && <div style={{textAlign:"center",marginTop:16}}>
+          {hymnMelody && <div style={{marginBottom:12,padding:"8px 16px",background:"#e8f0e8",borderRadius:8,display:"inline-block"}}>
+            <span style={{fontSize:11,color:"#3d5640"}}>Melody data available - real grading enabled</span>
+          </div>}
+          {!hymnMelody && !hymnMelodyLoading && <div style={{marginBottom:12,padding:"8px 16px",background:"#fff8e8",borderRadius:8,display:"inline-block"}}>
+            <span style={{fontSize:11,color:"#7a6c3d"}}>No melody data - pitch tracking only</span>
+          </div>}
+          <button onClick={()=>startRec(hymnMelody?.timeSignature||"4/4", hymnMelody?.bpm||80, hymnMelody?.notes)} style={{...mkB(true),padding:"14px 40px",fontSize:15,borderRadius:12}}>Begin {mode==="test"?"Test":"Practice"}</button>
+        </div>}
         {rec && <div style={{marginTop:16,padding:16,background:"#fff",border:"1.5px solid #e8e0d4",borderRadius:10}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
             <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -547,7 +693,7 @@ export default function App() {
               <span style={{fontSize:13,fontWeight:600,color:T.dg}}>Recording</span>
               <span style={{fontFamily:"var(--serif)",fontSize:20,color:T.tx,marginLeft:8}}>{Math.floor(el/60)}:{String(el%60).padStart(2,"0")}</span>
             </div>
-            <button onClick={()=>stopRec(V.RES)} style={{padding:"6px 16px",borderRadius:8,border:"1.5px solid #a33b3b",background:"#fff",color:"#a33b3b",fontSize:12,fontWeight:600,cursor:"pointer"}}>■ Stop</button>
+            <button onClick={()=>stopRec(V.RES, hymnMelody?.notes)} style={{padding:"6px 16px",borderRadius:8,border:"1.5px solid #a33b3b",background:"#fff",color:"#a33b3b",fontSize:12,fontWeight:600,cursor:"pointer"}}>■ Stop</button>
           </div>
           <div style={{fontSize:12,color:T.tm,marginTop:8}}>Sing the soprano line clearly</div>
         </div>}
@@ -609,18 +755,45 @@ export default function App() {
             <div style={{fontSize:13,color:T.tm,marginTop:8}}>{genBPM} BPM</div>
           </div>}
           {/* Recording overlay — lighter, notes still visible */}
-          {rec && <div style={{position:"absolute",top:0,left:0,right:0,background:"rgba(250,246,240,0.7)",borderRadius:"10px 10px 0 0",padding:"10px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",backdropFilter:"blur(1px)"}}>
-            <div style={{display:"flex",alignItems:"center",gap:8}}>
-              <span style={{display:"inline-block",width:10,height:10,borderRadius:"50%",background:"#c0494f",animation:"pulse 1.2s infinite"}}/>
-              <span style={{fontSize:13,fontWeight:600,color:T.dg}}>Recording</span>
-              <span style={{fontFamily:"var(--serif)",fontSize:18,color:T.tx,marginLeft:8}}>{Math.floor(el/60)}:{String(el%60).padStart(2,"0")}</span>
+          {rec && <div style={{position:"absolute",top:0,left:0,right:0,background:"rgba(250,246,240,0.85)",borderRadius:"10px 10px 0 0",padding:"10px 14px",backdropFilter:"blur(1px)"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <div style={{display:"flex",alignItems:"center",gap:8}}>
+                <span style={{display:"inline-block",width:10,height:10,borderRadius:"50%",background:"#c0494f",animation:"pulse 1.2s infinite"}}/>
+                <span style={{fontSize:13,fontWeight:600,color:T.dg}}>Recording</span>
+                <span style={{fontFamily:"var(--serif)",fontSize:18,color:T.tx,marginLeft:8}}>{Math.floor(el/60)}:{String(el%60).padStart(2,"0")}</span>
+              </div>
+              <button onClick={()=>stopRec(V.GEN_RES,genNotes)} style={{padding:"6px 16px",borderRadius:8,border:"1.5px solid #a33b3b",background:"#fff",color:"#a33b3b",fontSize:12,fontWeight:600,cursor:"pointer"}}>■ Stop</button>
             </div>
-            <button onClick={()=>stopRec(V.GEN_RES,genNotes?.length)} style={{padding:"6px 16px",borderRadius:8,border:"1.5px solid #a33b3b",background:"#fff",color:"#a33b3b",fontSize:12,fontWeight:600,cursor:"pointer"}}>■ Stop</button>
+            {/* Real-time pitch display */}
+            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,marginTop:8,padding:"6px 12px",background:"#fff",borderRadius:6,border:"1px solid #e8e0d4"}}>
+              <span style={{fontSize:11,color:T.tm,fontWeight:600}}>Detected:</span>
+              {currentPitch ? (
+                <>
+                  <span style={{fontFamily:"var(--serif)",fontSize:20,fontWeight:700,color:T.ac,minWidth:40}}>{currentPitch.noteName}</span>
+                  <span style={{fontSize:11,color:currentPitch.cents > 10 ? "#b08d3a" : currentPitch.cents < -10 ? "#a33b3b" : "#5c7a5e"}}>
+                    {currentPitch.cents > 0 ? "+" : ""}{currentPitch.cents} cents
+                  </span>
+                  <span style={{fontSize:10,color:T.tm}}>{Math.round(currentPitch.frequency)} Hz</span>
+                </>
+              ) : (
+                <span style={{fontSize:12,color:T.tm,fontStyle:"italic"}}>Listening...</span>
+              )}
+            </div>
           </div>}
         </div>}
 
         {/* Controls — hidden during recording */}
         {!rec && cd===null && <>
+          {/* Microphone error display */}
+          {audioError && <div style={{marginBottom:16,padding:"12px 16px",background:"#fff0f0",border:"1px solid #f0c0c0",borderRadius:8,display:"flex",alignItems:"center",gap:10}}>
+            <span style={{fontSize:18}}>🎤</span>
+            <div>
+              <div style={{fontSize:12,fontWeight:600,color:"#a33b3b"}}>Microphone Error</div>
+              <div style={{fontSize:11,color:"#8a5c5c"}}>{audioError}</div>
+            </div>
+            <button onClick={()=>setAudioError(null)} style={{marginLeft:"auto",background:"none",border:"none",fontSize:16,color:"#a33b3b",cursor:"pointer"}}>×</button>
+          </div>}
+
           {/* Beat pattern */}
           <div style={{marginBottom:16}}><AnimBeat ts={genTS} tempo={genBPM}/></div>
 
@@ -639,7 +812,7 @@ export default function App() {
           </div>
 
           <div style={{display:"flex",gap:8,marginTop:12,justifyContent:"center"}}>
-            <button onClick={()=>startRec(genTS,genBPM)} style={{...mkB(true),padding:"14px 40px",fontSize:15,borderRadius:12}}>Begin Exercise</button>
+            <button onClick={()=>startRec(genTS,genBPM,genNotes)} style={{...mkB(true),padding:"14px 40px",fontSize:15,borderRadius:12}}>Begin Exercise</button>
             <button onClick={()=>{stopMelody();doGenerate();}} style={{...mkB(false),padding:"14px 20px"}}>🔄 Regenerate</button>
           </div>
         </>}
