@@ -437,6 +437,10 @@ export default function App() {
   const [micPermission, setMicPermission] = useState('pending'); // 'pending', 'granted', 'denied'
   const recorderRef = useRef(null);
 
+  // Mic test state
+  const [micTesting, setMicTesting] = useState(false);
+  const micTestRef = useRef(null);
+
   // Hymn melody data (when available)
   const [hymnMelody, setHymnMelody] = useState(null);
   const [hymnMelodyLoading, setHymnMelodyLoading] = useState(false);
@@ -479,6 +483,43 @@ export default function App() {
       .then(r => r.json())
       .then(data => setHymnIndex(data))
       .catch(() => setHymnIndex([]));
+  }, []);
+
+  // Microphone test functions
+  const startMicTest = useCallback(async () => {
+    setAudioError(null);
+    setCurrentPitch(null);
+
+    if (!micTestRef.current) {
+      micTestRef.current = new AudioRecorder({
+        smoothingFactor: 0.9, // Extra smooth for testing
+        onPitchDetected: (pitch) => setCurrentPitch(pitch),
+        onError: (err) => {
+          setAudioError(err.message || 'Microphone error');
+          setMicTesting(false);
+        }
+      });
+    }
+
+    const success = await micTestRef.current.init();
+    if (!success) {
+      setAudioError('Microphone access denied. Please allow microphone access in your browser settings.');
+      setMicTesting(false);
+      return;
+    }
+
+    setMicTesting(true);
+    micTestRef.current.start();
+  }, []);
+
+  const stopMicTest = useCallback(() => {
+    setMicTesting(false);
+    setCurrentPitch(null);
+    if (micTestRef.current) {
+      micTestRef.current.stop();
+      micTestRef.current.destroy();
+      micTestRef.current = null;
+    }
   }, []);
 
   // Play the full generated melody as audio
@@ -561,6 +602,14 @@ export default function App() {
   }, []);
 
   const startRec = useCallback(async (ts, tempo, referenceMelody = null) => {
+    // Stop mic test if running
+    if (micTestRef.current) {
+      micTestRef.current.stop();
+      micTestRef.current.destroy();
+      micTestRef.current = null;
+      setMicTesting(false);
+    }
+
     setAudioError(null);
     setCurrentPitch(null);
 
@@ -666,9 +715,10 @@ export default function App() {
     melodyOscs.current.forEach(o=>{try{o.stop();}catch(e){}});
     melodyTimers.current.forEach(t=>clearTimeout(t));
     if(recorderRef.current){recorderRef.current.destroy();recorderRef.current=null;}
+    if(micTestRef.current){micTestRef.current.destroy();micTestRef.current=null;}
   },[]);
-  const goHome=()=>{setVw(V.HOME);setHymn(null);setRes(null);setRec(false);setCd(null);setGenNotes(null);stopMelody();clearInterval(tmr.current);setSearch("");setAudioError(null);setCurrentPitch(null);if(recorderRef.current){recorderRef.current.destroy();recorderRef.current=null;}};
-  const goBack=v=>{setVw(v);setRec(false);setCd(null);setRes(null);clearInterval(tmr.current);setAudioError(null);setCurrentPitch(null);if(recorderRef.current){recorderRef.current.destroy();recorderRef.current=null;}};
+  const goHome=()=>{setVw(V.HOME);setHymn(null);setRes(null);setRec(false);setCd(null);setGenNotes(null);stopMelody();clearInterval(tmr.current);setSearch("");setAudioError(null);setCurrentPitch(null);setMicTesting(false);if(recorderRef.current){recorderRef.current.destroy();recorderRef.current=null;}if(micTestRef.current){micTestRef.current.destroy();micTestRef.current=null;}};
+  const goBack=v=>{setVw(v);setRec(false);setCd(null);setRes(null);clearInterval(tmr.current);setAudioError(null);setCurrentPitch(null);setMicTesting(false);if(recorderRef.current){recorderRef.current.destroy();recorderRef.current=null;}if(micTestRef.current){micTestRef.current.destroy();micTestRef.current=null;}};
 
   // ─── HYMN PRACTICE (split layout) ─────────────────────────
   if ((vw===V.PRAC||vw===V.RES) && hymn) {
@@ -809,6 +859,79 @@ export default function App() {
               <div><div style={{fontWeight:600,fontSize:12}}>Play Melody</div><div style={{fontSize:10,color:T.tm}}>{melodyPlaying?"Playing...":"Hear the full exercise"}</div></div>
               <button onClick={()=>{if(melodyPlaying){stopMelody();return;}playMelodyAudio();}} style={{width:34,height:34,borderRadius:"50%",border:`1px solid ${melodyPlaying?"#a33b3b":"#d4cfc5"}`,background:"#fff",fontSize:15,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:melodyPlaying?"#a33b3b":"inherit"}}>{melodyPlaying?"■":"▶"}</button>
             </div>
+          </div>
+
+          {/* Microphone Test Panel */}
+          <div style={{marginBottom:16,...mkC,cursor:"default",padding:14,background:micTesting?"#f0f8f0":T.card,border:micTesting?"1.5px solid #5c7a5e":"1px solid #e8e0d4",transition:"all .3s"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:micTesting?12:0}}>
+              <div>
+                <div style={{fontWeight:600,fontSize:12,display:"flex",alignItems:"center",gap:6}}>
+                  🎤 Test Microphone
+                  {micTesting && <span style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:"#5c7a5e",animation:"pulse 1.2s infinite"}}/>}
+                </div>
+                <div style={{fontSize:10,color:T.tm}}>{micTesting?"Sing or hum a note...":"Verify your mic is working"}</div>
+              </div>
+              <button onClick={()=>{if(micTesting){stopMicTest();}else{startMicTest();}}} style={{padding:"8px 16px",borderRadius:8,border:`1.5px solid ${micTesting?"#a33b3b":"#5c7a5e"}`,background:"#fff",color:micTesting?"#a33b3b":"#5c7a5e",fontSize:12,fontWeight:600,cursor:"pointer"}}>{micTesting?"■ Stop":"▶ Start"}</button>
+            </div>
+            {/* Pitch display when testing */}
+            {micTesting && (
+              <div style={{background:"#fff",borderRadius:10,padding:16,border:"1px solid #e8e0d4"}}>
+                {currentPitch ? (
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:20}}>
+                    {/* Large note display */}
+                    <div style={{textAlign:"center"}}>
+                      <div style={{fontFamily:"var(--serif)",fontSize:56,fontWeight:700,color:currentPitch.stable?"#2d6a4f":"#5c7a5e",lineHeight:1,transition:"color .2s"}}>{currentPitch.noteName}</div>
+                      <div style={{fontSize:11,color:T.tm,marginTop:4}}>{Math.round(currentPitch.frequency)} Hz</div>
+                    </div>
+                    {/* Tuning indicator */}
+                    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                      <div style={{fontSize:10,color:T.tm,fontWeight:600}}>TUNING</div>
+                      <div style={{width:120,height:24,background:"#f0ece4",borderRadius:12,position:"relative",overflow:"hidden"}}>
+                        {/* Center line */}
+                        <div style={{position:"absolute",left:"50%",top:0,bottom:0,width:2,background:"#5c7a5e",transform:"translateX(-50%)"}}/>
+                        {/* Indicator dot */}
+                        <div style={{
+                          position:"absolute",
+                          top:"50%",
+                          left:`${50 + Math.max(-45, Math.min(45, currentPitch.cents))}%`,
+                          width:16,
+                          height:16,
+                          borderRadius:"50%",
+                          background:Math.abs(currentPitch.cents) < 10 ? "#2d6a4f" : Math.abs(currentPitch.cents) < 25 ? "#b08d3a" : "#a33b3b",
+                          transform:"translate(-50%, -50%)",
+                          transition:"left .15s, background .15s"
+                        }}/>
+                      </div>
+                      <div style={{fontSize:12,fontWeight:600,color:Math.abs(currentPitch.cents) < 10 ? "#2d6a4f" : Math.abs(currentPitch.cents) < 25 ? "#b08d3a" : "#a33b3b"}}>
+                        {currentPitch.cents > 0 ? "+" : ""}{currentPitch.cents} cents
+                        {Math.abs(currentPitch.cents) < 10 && " ✓"}
+                      </div>
+                    </div>
+                    {/* Level meter */}
+                    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                      <div style={{fontSize:10,color:T.tm,fontWeight:600}}>LEVEL</div>
+                      <div style={{width:12,height:60,background:"#f0ece4",borderRadius:6,position:"relative",overflow:"hidden"}}>
+                        <div style={{
+                          position:"absolute",
+                          bottom:0,
+                          left:0,
+                          right:0,
+                          height:`${Math.min(100, currentPitch.level * 500)}%`,
+                          background:currentPitch.level > 0.05 ? "#5c7a5e" : "#b08d3a",
+                          borderRadius:6,
+                          transition:"height .1s"
+                        }}/>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{textAlign:"center",padding:20}}>
+                    <div style={{fontSize:14,color:T.tm,marginBottom:8}}>Listening for pitch...</div>
+                    <div style={{fontSize:11,color:"#b5a998"}}>Sing or hum a clear, steady note</div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div style={{display:"flex",gap:8,marginTop:12,justifyContent:"center"}}>

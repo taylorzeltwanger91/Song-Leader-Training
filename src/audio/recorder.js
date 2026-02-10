@@ -9,6 +9,7 @@ export class AudioRecorder {
     this.bufferSize = options.bufferSize || 2048;
     this.onPitchDetected = options.onPitchDetected || (() => {});
     this.onError = options.onError || console.error;
+    this.smoothingFactor = options.smoothingFactor || 0.85; // Higher = smoother (0-1)
 
     this.audioContext = null;
     this.analyser = null;
@@ -18,6 +19,12 @@ export class AudioRecorder {
     this.isRecording = false;
     this.pitchHistory = [];
     this.startTime = null;
+
+    // Smoothing state
+    this._smoothedMidi = null;
+    this._smoothedFreq = null;
+    this._stableNoteCount = 0;
+    this._lastNoteName = null;
   }
 
   /**
@@ -70,6 +77,12 @@ export class AudioRecorder {
     this.isRecording = true;
     this.pitchHistory = [];
     this.startTime = performance.now();
+
+    // Reset smoothing state
+    this._smoothedMidi = null;
+    this._smoothedFreq = null;
+    this._stableNoteCount = 0;
+    this._lastNoteName = null;
 
     // Resume audio context if suspended
     if (this.audioContext.state === 'suspended') {
@@ -143,21 +156,57 @@ export class AudioRecorder {
 
       if (frequency > 0) {
         const midi = this._freqToMidi(frequency);
-        const noteName = this._midiToNoteName(midi);
-        const cents = Math.round((midi - Math.round(midi)) * 100);
+
+        // Apply exponential smoothing
+        if (this._smoothedMidi === null) {
+          this._smoothedMidi = midi;
+          this._smoothedFreq = frequency;
+        } else {
+          // Only smooth if the new pitch is within 2 semitones of current
+          // Otherwise, jump to the new pitch (user changed notes)
+          const midiDiff = Math.abs(midi - this._smoothedMidi);
+          if (midiDiff < 2) {
+            this._smoothedMidi = this.smoothingFactor * this._smoothedMidi + (1 - this.smoothingFactor) * midi;
+            this._smoothedFreq = this.smoothingFactor * this._smoothedFreq + (1 - this.smoothingFactor) * frequency;
+          } else {
+            // Big jump - reset smoothing
+            this._smoothedMidi = midi;
+            this._smoothedFreq = frequency;
+          }
+        }
+
+        const smoothedNoteName = this._midiToNoteName(this._smoothedMidi);
+        const smoothedCents = Math.round((this._smoothedMidi - Math.round(this._smoothedMidi)) * 100);
+
+        // Track note stability (how long on same note)
+        if (smoothedNoteName === this._lastNoteName) {
+          this._stableNoteCount++;
+        } else {
+          this._stableNoteCount = 1;
+          this._lastNoteName = smoothedNoteName;
+        }
 
         const pitchData = {
           timestamp,
-          frequency,
-          midi,
-          midiRounded: Math.round(midi),
-          noteName,
-          cents,
-          level: rms
+          frequency: this._smoothedFreq,
+          midi: this._smoothedMidi,
+          midiRounded: Math.round(this._smoothedMidi),
+          noteName: smoothedNoteName,
+          cents: smoothedCents,
+          level: rms,
+          stable: this._stableNoteCount > 5, // Considered stable after ~150ms
+          // Also include raw values for recording
+          rawFrequency: frequency,
+          rawMidi: midi
         };
 
         this.pitchHistory.push(pitchData);
         this.onPitchDetected(pitchData);
+      }
+    } else {
+      // Signal too quiet - gradually fade smoothing
+      if (this._smoothedMidi !== null) {
+        this._stableNoteCount = 0;
       }
     }
 
