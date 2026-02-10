@@ -993,7 +993,92 @@ export default function App() {
           </div>
         </div>
       </div>
-      <div style={{marginTop:20,padding:16,background:T.wl,borderRadius:12,border:`1px solid ${T.cb}`}}>
+
+      {/* Microphone Test Panel */}
+      <div style={{marginTop:16,padding:16,background:micTesting?"#f0f8f0":T.card,borderRadius:12,border:micTesting?"1.5px solid #5c7a5e":`1px solid ${T.cb}`,transition:"all .3s"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <div style={{display:"flex",alignItems:"center",gap:12}}>
+            <span style={{fontSize:22}}>🎤</span>
+            <div>
+              <div style={{fontWeight:600,fontSize:14,display:"flex",alignItems:"center",gap:6}}>
+                Test Microphone
+                {micTesting && <span style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:"#5c7a5e",animation:"pulse 1.2s infinite"}}/>}
+              </div>
+              <div style={{fontSize:11,color:T.tm}}>{micTesting?"Sing or hum a note...":"Check your mic before practicing"}</div>
+            </div>
+          </div>
+          <button onClick={()=>{if(micTesting){stopMicTest();}else{startMicTest();}}} style={{padding:"10px 20px",borderRadius:10,border:`1.5px solid ${micTesting?"#a33b3b":"#5c7a5e"}`,background:"#fff",color:micTesting?"#a33b3b":"#5c7a5e",fontSize:13,fontWeight:600,cursor:"pointer"}}>{micTesting?"■ Stop":"▶ Start"}</button>
+        </div>
+
+        {/* Expanded pitch display when testing */}
+        {micTesting && (
+          <div style={{marginTop:16,background:"#fff",borderRadius:10,padding:20,border:"1px solid #e8e0d4"}}>
+            {currentPitch ? (
+              <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:24}}>
+                {/* Large note display */}
+                <div style={{textAlign:"center"}}>
+                  <div style={{fontFamily:"var(--serif)",fontSize:64,fontWeight:700,color:currentPitch.stable?"#2d6a4f":"#5c7a5e",lineHeight:1,transition:"color .2s"}}>{currentPitch.noteName}</div>
+                  <div style={{fontSize:12,color:T.tm,marginTop:6}}>{Math.round(currentPitch.frequency)} Hz</div>
+                </div>
+                {/* Tuning indicator */}
+                <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
+                  <div style={{fontSize:10,color:T.tm,fontWeight:600,letterSpacing:"0.05em"}}>TUNING</div>
+                  <div style={{width:140,height:28,background:"#f0ece4",borderRadius:14,position:"relative",overflow:"hidden"}}>
+                    <div style={{position:"absolute",left:"50%",top:0,bottom:0,width:2,background:"#5c7a5e",transform:"translateX(-50%)"}}/>
+                    <div style={{
+                      position:"absolute",
+                      top:"50%",
+                      left:`${50 + Math.max(-45, Math.min(45, currentPitch.cents))}%`,
+                      width:18,
+                      height:18,
+                      borderRadius:"50%",
+                      background:Math.abs(currentPitch.cents) < 10 ? "#2d6a4f" : Math.abs(currentPitch.cents) < 25 ? "#b08d3a" : "#a33b3b",
+                      transform:"translate(-50%, -50%)",
+                      transition:"left .15s, background .15s"
+                    }}/>
+                  </div>
+                  <div style={{fontSize:13,fontWeight:600,color:Math.abs(currentPitch.cents) < 10 ? "#2d6a4f" : Math.abs(currentPitch.cents) < 25 ? "#b08d3a" : "#a33b3b"}}>
+                    {currentPitch.cents > 0 ? "+" : ""}{currentPitch.cents} cents
+                    {Math.abs(currentPitch.cents) < 10 && " ✓"}
+                  </div>
+                </div>
+                {/* Level meter */}
+                <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
+                  <div style={{fontSize:10,color:T.tm,fontWeight:600,letterSpacing:"0.05em"}}>LEVEL</div>
+                  <div style={{width:14,height:70,background:"#f0ece4",borderRadius:7,position:"relative",overflow:"hidden"}}>
+                    <div style={{
+                      position:"absolute",
+                      bottom:0,
+                      left:0,
+                      right:0,
+                      height:`${Math.min(100, currentPitch.level * 500)}%`,
+                      background:currentPitch.level > 0.05 ? "#5c7a5e" : "#b08d3a",
+                      borderRadius:7,
+                      transition:"height .1s"
+                    }}/>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div style={{textAlign:"center",padding:16}}>
+                <div style={{fontSize:15,color:T.tm,marginBottom:6}}>Listening for pitch...</div>
+                <div style={{fontSize:12,color:"#b5a998"}}>Sing or hum a clear, steady note</div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Microphone error */}
+        {audioError && !micTesting && (
+          <div style={{marginTop:12,padding:"10px 14px",background:"#fff0f0",borderRadius:8,display:"flex",alignItems:"center",gap:8}}>
+            <span style={{color:"#a33b3b"}}>⚠</span>
+            <div style={{fontSize:11,color:"#8a5c5c",flex:1}}>{audioError}</div>
+            <button onClick={()=>setAudioError(null)} style={{background:"none",border:"none",color:"#a33b3b",cursor:"pointer",fontSize:14}}>×</button>
+          </div>
+        )}
+      </div>
+
+      <div style={{marginTop:16,padding:16,background:T.wl,borderRadius:12,border:`1px solid ${T.cb}`}}>
         <div style={{fontWeight:600,fontSize:12,marginBottom:4,color:T.wm}}>📘 Zion's Hymns (2021 Edition)</div>
         <div style={{fontSize:12,color:T.tm,lineHeight:1.6}}>250 hymns from zions-hymns-pages.pdf. Generated exercises follow hymn-style rules with pitch and rhythm grading.</div>
       </div>
