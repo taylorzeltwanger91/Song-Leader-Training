@@ -669,60 +669,84 @@ export default function App() {
   }, []);
 
   const stopRec = useCallback((destView, referenceMelody = null) => {
+    console.log('=== STOP RECORDING ===');
+    console.log('destView:', destView);
+    console.log('recorderRef.current:', recorderRef.current ? 'exists' : 'null');
+
     setRec(false);
     clearInterval(tmr.current);
     setCurrentPitch(null);
 
+    let pitchHistory = [];
+    let melody = referenceMelody;
+    let ts = "4/4";
+    let tempo = 80;
+
     if (recorderRef.current) {
-      const pitchHistory = recorderRef.current.stop();
-      const melody = referenceMelody || recorderRef.current._referenceMelody;
-      const ts = recorderRef.current._ts || "4/4";
-      const tempo = recorderRef.current._tempo || 80;
+      try {
+        pitchHistory = recorderRef.current.stop() || [];
+        melody = referenceMelody || recorderRef.current._referenceMelody;
+        ts = recorderRef.current._ts || "4/4";
+        tempo = recorderRef.current._tempo || 80;
 
-      if (melody && pitchHistory.length > 0) {
-        // Use real grading
-        console.log('=== GRADING DEBUG ===');
-        console.log('Pitch history samples:', pitchHistory.length);
-        console.log('First 5 pitches:', pitchHistory.slice(0, 5));
-        console.log('Melody notes:', melody.length);
-        console.log('Melody:', melody);
-        console.log('Tempo:', tempo, 'Time sig:', ts);
-
-        const gradeResult = gradePerformance(pitchHistory, melody, tempo, ts);
-        console.log('Grade result:', gradeResult);
-
-        // Map to the format expected by the UI
-        setRes({
-          ps: gradeResult.pitchScore,
-          rs: gradeResult.rhythmScore,
-          ls: gradeResult.leadershipScore,
-          co: Math.round(gradeResult.stabilityScore * 0.9 + 10), // Count-off approximation
-          ts: gradeResult.stabilityScore,
-          pst: gradeResult.pitchScore,
-          tt: gradeResult.tempoData,
-          pt: gradeResult.pitchData,
-          diag: gradeResult.diagnostics,
-          pm: gradeResult.pitchData.filter(p => p.sh || p.fl).map(p => p.m),
-          // Include raw data for debugging
-          _raw: gradeResult
-        });
-      } else {
-        // Fallback: no melody reference or no pitch data
-        setRes({
-          ps: 0, rs: 0, ls: 0, co: 0, ts: 0, pst: 0,
-          tt: [], pt: [],
-          diag: pitchHistory.length === 0
-            ? ["No pitch detected. Make sure your microphone is working and sing clearly."]
-            : ["No reference melody available for grading."],
-          pm: []
-        });
+        console.log('Pitch history from stop():', pitchHistory.length, 'samples');
+      } catch (e) {
+        console.error('Error stopping recorder:', e);
       }
 
       // Clean up recorder
-      recorderRef.current.destroy();
+      try {
+        recorderRef.current.destroy();
+      } catch (e) {
+        console.error('Error destroying recorder:', e);
+      }
       recorderRef.current = null;
+    } else {
+      console.warn('No recorder reference - cannot get pitch history');
     }
 
+    // Always try to show results, even with empty data
+    if (melody && pitchHistory.length > 0) {
+      console.log('=== GRADING DEBUG ===');
+      console.log('Pitch history samples:', pitchHistory.length);
+      console.log('First 5 pitches:', pitchHistory.slice(0, 5));
+      console.log('Melody notes:', melody.length);
+      console.log('Tempo:', tempo, 'Time sig:', ts);
+
+      const gradeResult = gradePerformance(pitchHistory, melody, tempo, ts);
+      console.log('Grade result:', gradeResult);
+
+      setRes({
+        ps: gradeResult.pitchScore,
+        rs: gradeResult.rhythmScore,
+        ls: gradeResult.leadershipScore,
+        co: Math.round(gradeResult.stabilityScore * 0.9 + 10),
+        ts: gradeResult.stabilityScore,
+        pst: gradeResult.pitchScore,
+        tt: gradeResult.tempoData,
+        pt: gradeResult.pitchData,
+        diag: gradeResult.diagnostics,
+        pm: gradeResult.pitchData.filter(p => p.sh || p.fl).map(p => p.m),
+        _raw: gradeResult
+      });
+    } else {
+      console.log('No melody or pitch data - showing fallback');
+      console.log('melody:', melody ? melody.length + ' notes' : 'null');
+      console.log('pitchHistory:', pitchHistory.length, 'samples');
+
+      setRes({
+        ps: 0, rs: 0, ls: 0, co: 0, ts: 0, pst: 0,
+        tt: [], pt: [],
+        diag: pitchHistory.length === 0
+          ? ["No pitch detected. Make sure your microphone is working and sing clearly."]
+          : ["No reference melody available for grading."],
+        pm: [],
+        _raw: { summary: { totalNotes: melody?.length || 0, matchedNotes: 0 }, noteByNote: [] }
+      });
+    }
+
+    // Always navigate to results
+    console.log('Navigating to:', destView);
     setVw(destView);
   }, []);
 
@@ -821,14 +845,17 @@ export default function App() {
             <div style={{fontSize:13,color:T.tm,marginTop:8}}>{genBPM} BPM</div>
           </div>}
           {/* Recording overlay — lighter, notes still visible */}
-          {rec && <div style={{position:"absolute",top:0,left:0,right:0,background:"rgba(250,246,240,0.85)",borderRadius:"10px 10px 0 0",padding:"10px 14px",backdropFilter:"blur(1px)"}}>
+          {rec && <div style={{position:"absolute",top:0,left:0,right:0,background:"rgba(250,246,240,0.95)",borderRadius:"10px 10px 0 0",padding:"12px 14px",backdropFilter:"blur(2px)",zIndex:10}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
               <div style={{display:"flex",alignItems:"center",gap:8}}>
                 <span style={{display:"inline-block",width:10,height:10,borderRadius:"50%",background:"#c0494f",animation:"pulse 1.2s infinite"}}/>
                 <span style={{fontSize:13,fontWeight:600,color:T.dg}}>Recording</span>
                 <span style={{fontFamily:"var(--serif)",fontSize:18,color:T.tx,marginLeft:8}}>{Math.floor(el/60)}:{String(el%60).padStart(2,"0")}</span>
               </div>
-              <button onClick={()=>stopRec(V.GEN_RES,genNotes)} style={{padding:"6px 16px",borderRadius:8,border:"1.5px solid #a33b3b",background:"#fff",color:"#a33b3b",fontSize:12,fontWeight:600,cursor:"pointer"}}>■ Stop</button>
+              <button
+                onClick={(e)=>{e.stopPropagation();console.log('Stop button clicked');stopRec(V.GEN_RES,genNotes);}}
+                style={{padding:"10px 24px",borderRadius:10,border:"2px solid #a33b3b",background:"#a33b3b",color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",zIndex:20,boxShadow:"0 2px 8px rgba(163,59,59,0.3)"}}
+              >■ Stop Recording</button>
             </div>
             {/* Real-time pitch display */}
             <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,marginTop:8,padding:"6px 12px",background:"#fff",borderRadius:6,border:"1px solid #e8e0d4"}}>
