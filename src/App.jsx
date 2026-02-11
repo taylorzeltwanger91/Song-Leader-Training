@@ -880,26 +880,29 @@ export default function App() {
                   <div style={{display:"flex",alignItems:"stretch",justifyContent:"center",gap:16}}>
                     {/* Pitch scale - C3 to G4 (1.5 octaves) */}
                     {(() => {
-                      const scaleNotes = ['G4','F#4','F4','E4','D#4','D4','C#4','C4','B3','A#3','A3','G#3','G3','F#3','F3','E3','D#3','D3','C#3','C3'];
-                      const midiBase = 48; // C3
-                      const midiTop = 67; // G4
+                      const midiBase = 36; // C2
+                      const midiTop = 67; // G4 (2.5 octaves for male range)
                       const currentMidi = currentPitch.midi;
                       const position = Math.max(0, Math.min(100, ((currentMidi - midiBase) / (midiTop - midiBase)) * 100));
+                      // Natural notes only for labels: C2-G4
+                      const labelNotes = ['G4','F4','E4','D4','C4','B3','A3','G3','F3','E3','D3','C3','B2','A2','G2','F2','E2','D2','C2'];
+                      // MIDI values for grid lines (natural notes)
+                      const gridMidi = [67,65,64,62,60,59,57,55,53,52,50,48,47,45,43,41,40,38,36];
                       return (
                         <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
                           <div style={{fontSize:10,color:T.tm,fontWeight:600}}>PITCH</div>
                           <div style={{position:"relative",display:"flex",gap:4}}>
                             {/* Note labels */}
-                            <div style={{display:"flex",flexDirection:"column",justifyContent:"space-between",height:160,fontSize:9,color:T.tm,textAlign:"right",paddingRight:4}}>
-                              {['G4','F4','E4','D4','C4','B3','A3','G3','F3','E3','D3','C3'].map(n => (
-                                <div key={n} style={{lineHeight:1,opacity:currentPitch.noteName===n?1:0.5,fontWeight:currentPitch.noteName===n?700:400,color:currentPitch.noteName===n?"#5c7a5e":T.tm}}>{n.replace(/\d/,'')}</div>
+                            <div style={{display:"flex",flexDirection:"column",justifyContent:"space-between",height:200,fontSize:8,color:T.tm,textAlign:"right",paddingRight:4}}>
+                              {labelNotes.map(n => (
+                                <div key={n} style={{lineHeight:1,opacity:currentPitch.noteName===n?1:0.4,fontWeight:currentPitch.noteName===n?700:400,color:currentPitch.noteName===n?"#5c7a5e":T.tm}}>{n}</div>
                               ))}
                             </div>
                             {/* Scale bar */}
-                            <div style={{width:24,height:160,background:"linear-gradient(to bottom, #e8f5e9, #f5f5dc, #fff3e0)",borderRadius:12,position:"relative",overflow:"visible",border:"1px solid #e0d8cc"}}>
+                            <div style={{width:24,height:200,background:"linear-gradient(to bottom, #e8f5e9, #f5f5dc, #fff3e0)",borderRadius:12,position:"relative",overflow:"visible",border:"1px solid #e0d8cc"}}>
                               {/* Grid lines for natural notes */}
-                              {[67,65,64,62,60,59,57,55,53,52,50,48].map((midi,i) => (
-                                <div key={midi} style={{position:"absolute",left:0,right:0,bottom:`${((midi-midiBase)/(midiTop-midiBase))*100}%`,height:1,background:midi===60?"#5c7a5e":"#e0d8cc",opacity:midi===60?0.8:0.5}}/>
+                              {gridMidi.map((midi) => (
+                                <div key={midi} style={{position:"absolute",left:0,right:0,bottom:`${((midi-midiBase)/(midiTop-midiBase))*100}%`,height:1,background:midi===60||midi===48?"#5c7a5e":"#e0d8cc",opacity:midi===60||midi===48?0.8:0.4}}/>
                               ))}
                               {/* Current pitch indicator */}
                               <div style={{
@@ -1054,27 +1057,29 @@ export default function App() {
           <div style={{marginTop:16,background:"#fff",borderRadius:10,padding:20,border:"1px solid #e8e0d4"}}>
             {currentPitch ? (
               <div style={{display:"flex",alignItems:"stretch",justifyContent:"center",gap:20}}>
-                {/* Pitch scale - C3 to G4 (1.5 octaves) */}
+                {/* Pitch scale - C2 to G4 (2.5 octaves for male range) */}
                 {(() => {
-                  const midiBase = 48; // C3
+                  const midiBase = 36; // C2
                   const midiTop = 67; // G4
                   const currentMidi = currentPitch.midi;
                   const position = Math.max(0, Math.min(100, ((currentMidi - midiBase) / (midiTop - midiBase)) * 100));
+                  const labelNotes = ['G4','F4','E4','D4','C4','B3','A3','G3','F3','E3','D3','C3','B2','A2','G2','F2','E2','D2','C2'];
+                  const gridMidi = [67,65,64,62,60,59,57,55,53,52,50,48,47,45,43,41,40,38,36];
                   return (
                     <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
                       <div style={{fontSize:10,color:T.tm,fontWeight:600,letterSpacing:"0.05em"}}>PITCH</div>
                       <div style={{position:"relative",display:"flex",gap:6}}>
                         {/* Note labels */}
-                        <div style={{display:"flex",flexDirection:"column",justifyContent:"space-between",height:180,fontSize:10,color:T.tm,textAlign:"right",paddingRight:4}}>
-                          {['G4','F4','E4','D4','C4','B3','A3','G3','F3','E3','D3','C3'].map(n => (
-                            <div key={n} style={{lineHeight:1,opacity:currentPitch.noteName===n?1:0.5,fontWeight:currentPitch.noteName===n?700:400,color:currentPitch.noteName===n?"#5c7a5e":T.tm}}>{n.replace(/\d/,'')}</div>
+                        <div style={{display:"flex",flexDirection:"column",justifyContent:"space-between",height:220,fontSize:9,color:T.tm,textAlign:"right",paddingRight:4}}>
+                          {labelNotes.map(n => (
+                            <div key={n} style={{lineHeight:1,opacity:currentPitch.noteName===n?1:0.4,fontWeight:currentPitch.noteName===n?700:400,color:currentPitch.noteName===n?"#5c7a5e":T.tm}}>{n}</div>
                           ))}
                         </div>
                         {/* Scale bar */}
-                        <div style={{width:28,height:180,background:"linear-gradient(to bottom, #e8f5e9, #f5f5dc, #fff3e0)",borderRadius:14,position:"relative",overflow:"visible",border:"1px solid #e0d8cc"}}>
+                        <div style={{width:28,height:220,background:"linear-gradient(to bottom, #e8f5e9, #f5f5dc, #fff3e0)",borderRadius:14,position:"relative",overflow:"visible",border:"1px solid #e0d8cc"}}>
                           {/* Grid lines for natural notes */}
-                          {[67,65,64,62,60,59,57,55,53,52,50,48].map((midi) => (
-                            <div key={midi} style={{position:"absolute",left:0,right:0,bottom:`${((midi-midiBase)/(midiTop-midiBase))*100}%`,height:1,background:midi===60?"#5c7a5e":"#e0d8cc",opacity:midi===60?0.8:0.5}}/>
+                          {gridMidi.map((midi) => (
+                            <div key={midi} style={{position:"absolute",left:0,right:0,bottom:`${((midi-midiBase)/(midiTop-midiBase))*100}%`,height:1,background:midi===60||midi===48?"#5c7a5e":"#e0d8cc",opacity:midi===60||midi===48?0.8:0.4}}/>
                           ))}
                           {/* Current pitch indicator */}
                           <div style={{
