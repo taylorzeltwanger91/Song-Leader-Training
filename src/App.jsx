@@ -932,8 +932,8 @@ export default function App() {
                   pitchData={currentPitch}
                   width={300}
                   height={240}
-                  midiMin={36}
-                  midiMax={67}
+                  midiMin={30}
+                  midiMax={73}
                 />
               </div>
             )}

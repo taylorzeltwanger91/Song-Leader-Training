@@ -34,8 +34,8 @@ export function PitchVisualizer({
   pitchData,        // Current pitch data from PitchEngine
   width = 320,
   height = 280,
-  midiMin = 36,     // C2
-  midiMax = 67,     // G4
+  midiMin = 30,     // F#1 (extended half octave lower)
+  midiMax = 73,     // C#5 (extended half octave higher)
   showLabels = true,
   style = {}
 }) {
