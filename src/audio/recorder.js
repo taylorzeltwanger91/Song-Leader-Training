@@ -6,10 +6,13 @@
 export class AudioRecorder {
   constructor(options = {}) {
     this.sampleRate = options.sampleRate || 44100;
-    this.bufferSize = options.bufferSize || 2048;
+    this.bufferSize = options.bufferSize || 4096; // Larger buffer for better low-freq detection
     this.onPitchDetected = options.onPitchDetected || (() => {});
     this.onError = options.onError || console.error;
-    this.smoothingFactor = options.smoothingFactor || 0.85; // Higher = smoother (0-1)
+    this.smoothingFactor = options.smoothingFactor || 0.92; // Higher = smoother (0-1)
+    this.noiseThreshold = options.noiseThreshold || 0.005; // Lower = more sensitive
+    this.minConfidence = options.minConfidence || 0.75; // Autocorrelation confidence threshold
+    this.minReadings = options.minReadings || 3; // Require consecutive readings before reporting
 
     this.audioContext = null;
     this.analyser = null;
@@ -25,6 +28,8 @@ export class AudioRecorder {
     this._smoothedFreq = null;
     this._stableNoteCount = 0;
     this._lastNoteName = null;
+    this._consecutiveReadings = 0;
+    this._lastRawMidi = null;
   }
 
   /**
@@ -182,60 +187,74 @@ export class AudioRecorder {
     const timestamp = performance.now() - this.startTime;
 
     // Only detect pitch if signal is above noise threshold
-    if (rms > 0.01) {
-      const frequency = this._autocorrelate(buffer, this.audioContext.sampleRate);
+    if (rms > this.noiseThreshold) {
+      const result = this._autocorrelate(buffer, this.audioContext.sampleRate);
 
-      if (frequency > 0) {
+      if (result.frequency > 0 && result.confidence >= this.minConfidence) {
+        const frequency = result.frequency;
         const midi = this._freqToMidi(frequency);
 
-        // Apply exponential smoothing
-        if (this._smoothedMidi === null) {
-          this._smoothedMidi = midi;
-          this._smoothedFreq = frequency;
+        // Check if this reading is consistent with recent readings
+        if (this._lastRawMidi !== null && Math.abs(midi - this._lastRawMidi) < 1.5) {
+          this._consecutiveReadings++;
         } else {
-          // Only smooth if the new pitch is within 2 semitones of current
-          // Otherwise, jump to the new pitch (user changed notes)
-          const midiDiff = Math.abs(midi - this._smoothedMidi);
-          if (midiDiff < 2) {
-            this._smoothedMidi = this.smoothingFactor * this._smoothedMidi + (1 - this.smoothingFactor) * midi;
-            this._smoothedFreq = this.smoothingFactor * this._smoothedFreq + (1 - this.smoothingFactor) * frequency;
-          } else {
-            // Big jump - reset smoothing
+          this._consecutiveReadings = 1;
+        }
+        this._lastRawMidi = midi;
+
+        // Only process if we have enough consecutive similar readings (reduces jumpiness)
+        if (this._consecutiveReadings >= this.minReadings) {
+          // Apply exponential smoothing
+          if (this._smoothedMidi === null) {
             this._smoothedMidi = midi;
             this._smoothedFreq = frequency;
+          } else {
+            // Only smooth if the new pitch is within 2 semitones of current
+            // Otherwise, jump to the new pitch (user changed notes)
+            const midiDiff = Math.abs(midi - this._smoothedMidi);
+            if (midiDiff < 2) {
+              this._smoothedMidi = this.smoothingFactor * this._smoothedMidi + (1 - this.smoothingFactor) * midi;
+              this._smoothedFreq = this.smoothingFactor * this._smoothedFreq + (1 - this.smoothingFactor) * frequency;
+            } else {
+              // Big jump - reset smoothing but require consecutive readings again
+              this._smoothedMidi = midi;
+              this._smoothedFreq = frequency;
+            }
           }
+
+          const smoothedNoteName = this._midiToNoteName(this._smoothedMidi);
+          const smoothedCents = Math.round((this._smoothedMidi - Math.round(this._smoothedMidi)) * 100);
+
+          // Track note stability (how long on same note)
+          if (smoothedNoteName === this._lastNoteName) {
+            this._stableNoteCount++;
+          } else {
+            this._stableNoteCount = 1;
+            this._lastNoteName = smoothedNoteName;
+          }
+
+          const pitchData = {
+            timestamp,
+            frequency: this._smoothedFreq,
+            midi: this._smoothedMidi,
+            midiRounded: Math.round(this._smoothedMidi),
+            noteName: smoothedNoteName,
+            cents: smoothedCents,
+            level: rms,
+            confidence: result.confidence,
+            stable: this._stableNoteCount > 8, // Considered stable after ~250ms
+            // Also include raw values for recording
+            rawFrequency: frequency,
+            rawMidi: midi
+          };
+
+          this.pitchHistory.push(pitchData);
+          this.onPitchDetected(pitchData);
         }
-
-        const smoothedNoteName = this._midiToNoteName(this._smoothedMidi);
-        const smoothedCents = Math.round((this._smoothedMidi - Math.round(this._smoothedMidi)) * 100);
-
-        // Track note stability (how long on same note)
-        if (smoothedNoteName === this._lastNoteName) {
-          this._stableNoteCount++;
-        } else {
-          this._stableNoteCount = 1;
-          this._lastNoteName = smoothedNoteName;
-        }
-
-        const pitchData = {
-          timestamp,
-          frequency: this._smoothedFreq,
-          midi: this._smoothedMidi,
-          midiRounded: Math.round(this._smoothedMidi),
-          noteName: smoothedNoteName,
-          cents: smoothedCents,
-          level: rms,
-          stable: this._stableNoteCount > 5, // Considered stable after ~150ms
-          // Also include raw values for recording
-          rawFrequency: frequency,
-          rawMidi: midi
-        };
-
-        this.pitchHistory.push(pitchData);
-        this.onPitchDetected(pitchData);
       }
     } else {
-      // Signal too quiet - gradually fade smoothing
+      // Signal too quiet - reset consecutive readings
+      this._consecutiveReadings = 0;
       if (this._smoothedMidi !== null) {
         this._stableNoteCount = 0;
       }
@@ -247,7 +266,7 @@ export class AudioRecorder {
 
   /**
    * Autocorrelation pitch detection (YIN-inspired)
-   * Returns detected frequency in Hz, or -1 if no pitch found
+   * Returns { frequency, confidence } or { frequency: -1, confidence: 0 } if no pitch found
    */
   _autocorrelate(buffer, sampleRate) {
     const SIZE = buffer.length;
@@ -259,7 +278,11 @@ export class AudioRecorder {
     let bestOffset = -1;
     let bestCorrelation = 0;
 
-    for (let offset = 0; offset < MAX_SAMPLES; offset++) {
+    // Start from a minimum offset to avoid detecting very high frequencies (noise)
+    const minOffset = Math.floor(sampleRate / 1200); // ~1200 Hz max
+    const maxOffset = Math.floor(sampleRate / 60);   // ~60 Hz min
+
+    for (let offset = minOffset; offset < Math.min(MAX_SAMPLES, maxOffset); offset++) {
       let correlation = 0;
       let totalSamples = 0;
 
@@ -272,30 +295,31 @@ export class AudioRecorder {
       correlations[offset] = correlation;
 
       // Look for the first peak after initial dip
-      if (correlation > 0.9 && offset > 10) {
+      if (correlation > 0.85 && offset > minOffset + 5) {
         foundGoodCorrelation = true;
         if (correlation > bestCorrelation) {
           bestCorrelation = correlation;
           bestOffset = offset;
         }
-      } else if (foundGoodCorrelation && correlation < bestCorrelation - 0.1) {
+      } else if (foundGoodCorrelation && correlation < bestCorrelation - 0.08) {
         // We've passed the peak
         break;
       }
     }
 
-    if (bestOffset === -1 || bestCorrelation < 0.8) {
-      return -1;
+    if (bestOffset === -1 || bestCorrelation < 0.7) {
+      return { frequency: -1, confidence: 0 };
     }
 
     // Parabolic interpolation for sub-sample accuracy
     let shift = 0;
-    if (bestOffset > 0 && bestOffset < MAX_SAMPLES - 1) {
+    if (bestOffset > minOffset && bestOffset < MAX_SAMPLES - 1) {
       const y0 = correlations[bestOffset - 1];
       const y1 = correlations[bestOffset];
       const y2 = correlations[bestOffset + 1];
       shift = (y2 - y0) / (2 * (2 * y1 - y0 - y2));
       if (isNaN(shift)) shift = 0;
+      shift = Math.max(-1, Math.min(1, shift)); // Clamp shift
     }
 
     const period = bestOffset + shift;
@@ -303,10 +327,10 @@ export class AudioRecorder {
 
     // Sanity check: human voice range is ~80-1000 Hz
     if (frequency < 60 || frequency > 1200) {
-      return -1;
+      return { frequency: -1, confidence: 0 };
     }
 
-    return frequency;
+    return { frequency, confidence: bestCorrelation };
   }
 
   /**
