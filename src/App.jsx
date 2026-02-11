@@ -860,11 +860,15 @@ export default function App() {
                 <span style={{fontFamily:"var(--serif)",fontSize:18,color:T.tx,marginLeft:8}}>{Math.floor(el/60)}:{String(el%60).padStart(2,"0")}</span>
               </div>
               <button
-                onClick={(e)=>{e.preventDefault();e.stopPropagation();console.log('Stop button onClick, genNotesRef:', genNotesRef.current?.length);stopRec(V.GEN_RES,genNotesRef.current);}}
-                onTouchEnd={(e)=>{e.preventDefault();e.stopPropagation();console.log('Stop button onTouchEnd');stopRec(V.GEN_RES,genNotesRef.current);}}
-                onMouseDown={(e)=>{console.log('Stop button mouseDown');}}
-                style={{padding:"12px 28px",borderRadius:10,border:"none",background:"#a33b3b",color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer",zIndex:100,boxShadow:"0 4px 12px rgba(163,59,59,0.4)",touchAction:"manipulation",WebkitTapHighlightColor:"transparent",userSelect:"none",position:"relative"}}
-              >■ Stop</button>
+                id="stop-recording-btn"
+                type="button"
+                onClick={()=>{console.log('=== STOP CLICK ===');stopRec(V.GEN_RES,genNotesRef.current);}}
+                onMouseUp={()=>{console.log('Stop mouseUp');}}
+                onMouseDown={()=>{console.log('Stop mouseDown');}}
+                onPointerDown={()=>{console.log('Stop pointerDown');}}
+                onPointerUp={()=>{console.log('Stop pointerUp');stopRec(V.GEN_RES,genNotesRef.current);}}
+                style={{padding:"14px 32px",borderRadius:10,border:"3px solid #fff",background:"#a33b3b",color:"#fff",fontSize:16,fontWeight:700,cursor:"pointer",zIndex:9999,boxShadow:"0 4px 16px rgba(163,59,59,0.5)",position:"relative"}}
+              >■ STOP</button>
             </div>
             {/* Real-time pitch display */}
             <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,marginTop:8,padding:"6px 12px",background:"#fff",borderRadius:6,border:"1px solid #e8e0d4"}}>
