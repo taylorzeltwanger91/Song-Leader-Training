@@ -681,7 +681,15 @@ export default function App() {
 
       if (melody && pitchHistory.length > 0) {
         // Use real grading
+        console.log('=== GRADING DEBUG ===');
+        console.log('Pitch history samples:', pitchHistory.length);
+        console.log('First 5 pitches:', pitchHistory.slice(0, 5));
+        console.log('Melody notes:', melody.length);
+        console.log('Melody:', melody);
+        console.log('Tempo:', tempo, 'Time sig:', ts);
+
         const gradeResult = gradePerformance(pitchHistory, melody, tempo, ts);
+        console.log('Grade result:', gradeResult);
 
         // Map to the format expected by the UI
         setRes({
@@ -904,12 +912,53 @@ export default function App() {
     };
     const Res = () => {
       if(!res)return null;
+      const raw = res._raw;
       return <div style={{padding:20}}>
         <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap"}}><span style={mkTag("blue")}>{genTS}</span><span style={mkTag("amber")}>♩ = {genBPM}</span><span style={mkTag("green")}>Key of {genActualKey}</span></div>
         <div style={{...mkC,cursor:"default",display:"flex",justifyContent:"space-around",padding:20}}><Ring s={res.ps} label="Pitch"/><Ring s={res.rs} label="Rhythm"/></div>
         {genNotes&&<div style={{...mkC,cursor:"default",padding:14}}><NoteDisplay notes={genNotes} lyrics={genLyrics}/></div>}
         <div style={{...mkC,cursor:"default",padding:14}}><TempLine data={res.tt}/></div>
         <div style={{...mkC,cursor:"default",padding:14}}><div style={{fontFamily:"var(--serif)",fontSize:15,marginBottom:10}}>Feedback</div>{res.diag.map((d,i)=><div key={i} style={{display:"flex",gap:8,marginBottom:6,padding:"6px 10px",background:T.wl,borderRadius:6}}><span>💡</span><span style={{fontSize:12,color:"#6b5c36",lineHeight:1.5}}>{d}</span></div>)}</div>
+
+        {/* Debug Panel */}
+        {raw && (
+          <div style={{...mkC,cursor:"default",padding:14,marginTop:10,background:"#f8f4f0",border:"1px dashed #ccc"}}>
+            <div style={{fontFamily:"var(--serif)",fontSize:15,marginBottom:10,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <span>Debug Info</span>
+              <span style={{fontSize:10,color:T.tm,fontFamily:"monospace"}}>v2.0</span>
+            </div>
+            <div style={{fontSize:11,fontFamily:"monospace",lineHeight:1.8,color:"#555"}}>
+              <div><strong>Summary:</strong></div>
+              <div>• Total notes in melody: {raw.summary?.totalNotes || 0}</div>
+              <div>• Notes matched: {raw.summary?.matchedNotes || 0}</div>
+              <div>• Match rate: {raw.summary?.totalNotes ? Math.round((raw.summary.matchedNotes / raw.summary.totalNotes) * 100) : 0}%</div>
+              <div>• Avg cents off: {raw.summary?.avgCentsOff || 0}</div>
+              <div>• Avg timing off: {raw.summary?.avgTimingOff || 0}ms</div>
+              <div style={{marginTop:8}}><strong>Note-by-Note:</strong></div>
+              <div style={{maxHeight:200,overflow:"auto",background:"#fff",padding:8,borderRadius:4,marginTop:4}}>
+                {raw.noteByNote?.map((n, i) => (
+                  <div key={i} style={{
+                    padding:"4px 6px",
+                    marginBottom:2,
+                    borderRadius:4,
+                    background: n.matched ? "#e8f5e9" : "#ffebee",
+                    display:"flex",
+                    justifyContent:"space-between",
+                    gap:8
+                  }}>
+                    <span>#{i+1} {n.expected?.lyric || '?'}</span>
+                    <span>
+                      Expected: {n.expected?.midi} |
+                      Got: {n.detectedMidi ?? 'none'} |
+                      {n.matched ? `✓ ${n.centsOff > 0 ? '+' : ''}${n.centsOff}¢` : '✗ missed'}
+                    </span>
+                  </div>
+                )) || <div>No note data</div>}
+              </div>
+            </div>
+          </div>
+        )}
+
         <div style={{display:"flex",gap:10,marginTop:16,justifyContent:"center",flexWrap:"wrap"}}>
           <button onClick={()=>{setRes(null);setVw(V.GEN_PRAC);}} style={mkB(true)}>Retry</button>
           <button onClick={()=>{setRes(null);doGenerate();setVw(V.GEN_PRAC);}} style={mkB(false)}>Regenerate</button>
