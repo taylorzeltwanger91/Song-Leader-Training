@@ -877,40 +877,79 @@ export default function App() {
             {micTesting && (
               <div style={{background:"#fff",borderRadius:10,padding:16,border:"1px solid #e8e0d4"}}>
                 {currentPitch ? (
-                  <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:20}}>
+                  <div style={{display:"flex",alignItems:"stretch",justifyContent:"center",gap:16}}>
+                    {/* Pitch scale - C3 to G4 (1.5 octaves) */}
+                    {(() => {
+                      const scaleNotes = ['G4','F#4','F4','E4','D#4','D4','C#4','C4','B3','A#3','A3','G#3','G3','F#3','F3','E3','D#3','D3','C#3','C3'];
+                      const midiBase = 48; // C3
+                      const midiTop = 67; // G4
+                      const currentMidi = currentPitch.midi;
+                      const position = Math.max(0, Math.min(100, ((currentMidi - midiBase) / (midiTop - midiBase)) * 100));
+                      return (
+                        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                          <div style={{fontSize:10,color:T.tm,fontWeight:600}}>PITCH</div>
+                          <div style={{position:"relative",display:"flex",gap:4}}>
+                            {/* Note labels */}
+                            <div style={{display:"flex",flexDirection:"column",justifyContent:"space-between",height:160,fontSize:9,color:T.tm,textAlign:"right",paddingRight:4}}>
+                              {['G4','F4','E4','D4','C4','B3','A3','G3','F3','E3','D3','C3'].map(n => (
+                                <div key={n} style={{lineHeight:1,opacity:currentPitch.noteName===n?1:0.5,fontWeight:currentPitch.noteName===n?700:400,color:currentPitch.noteName===n?"#5c7a5e":T.tm}}>{n.replace(/\d/,'')}</div>
+                              ))}
+                            </div>
+                            {/* Scale bar */}
+                            <div style={{width:24,height:160,background:"linear-gradient(to bottom, #e8f5e9, #f5f5dc, #fff3e0)",borderRadius:12,position:"relative",overflow:"visible",border:"1px solid #e0d8cc"}}>
+                              {/* Grid lines for natural notes */}
+                              {[67,65,64,62,60,59,57,55,53,52,50,48].map((midi,i) => (
+                                <div key={midi} style={{position:"absolute",left:0,right:0,bottom:`${((midi-midiBase)/(midiTop-midiBase))*100}%`,height:1,background:midi===60?"#5c7a5e":"#e0d8cc",opacity:midi===60?0.8:0.5}}/>
+                              ))}
+                              {/* Current pitch indicator */}
+                              <div style={{
+                                position:"absolute",
+                                left:"50%",
+                                bottom:`${position}%`,
+                                width:32,
+                                height:8,
+                                borderRadius:4,
+                                background:Math.abs(currentPitch.cents) < 10 ? "#2d6a4f" : Math.abs(currentPitch.cents) < 25 ? "#b08d3a" : "#5c7a5e",
+                                transform:"translate(-50%, 50%)",
+                                transition:"bottom .12s ease-out",
+                                boxShadow:"0 2px 4px rgba(0,0,0,0.2)"
+                              }}/>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
                     {/* Large note display */}
-                    <div style={{textAlign:"center"}}>
-                      <div style={{fontFamily:"var(--serif)",fontSize:56,fontWeight:700,color:currentPitch.stable?"#2d6a4f":"#5c7a5e",lineHeight:1,transition:"color .2s"}}>{currentPitch.noteName}</div>
+                    <div style={{textAlign:"center",display:"flex",flexDirection:"column",justifyContent:"center"}}>
+                      <div style={{fontFamily:"var(--serif)",fontSize:48,fontWeight:700,color:currentPitch.stable?"#2d6a4f":"#5c7a5e",lineHeight:1,transition:"color .2s"}}>{currentPitch.noteName}</div>
                       <div style={{fontSize:11,color:T.tm,marginTop:4}}>{Math.round(currentPitch.frequency)} Hz</div>
                     </div>
                     {/* Tuning indicator */}
-                    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,justifyContent:"center"}}>
                       <div style={{fontSize:10,color:T.tm,fontWeight:600}}>TUNING</div>
-                      <div style={{width:120,height:24,background:"#f0ece4",borderRadius:12,position:"relative",overflow:"hidden"}}>
-                        {/* Center line */}
+                      <div style={{width:100,height:20,background:"#f0ece4",borderRadius:10,position:"relative",overflow:"hidden"}}>
                         <div style={{position:"absolute",left:"50%",top:0,bottom:0,width:2,background:"#5c7a5e",transform:"translateX(-50%)"}}/>
-                        {/* Indicator dot */}
                         <div style={{
                           position:"absolute",
                           top:"50%",
                           left:`${50 + Math.max(-45, Math.min(45, currentPitch.cents))}%`,
-                          width:16,
-                          height:16,
+                          width:14,
+                          height:14,
                           borderRadius:"50%",
                           background:Math.abs(currentPitch.cents) < 10 ? "#2d6a4f" : Math.abs(currentPitch.cents) < 25 ? "#b08d3a" : "#a33b3b",
                           transform:"translate(-50%, -50%)",
                           transition:"left .15s, background .15s"
                         }}/>
                       </div>
-                      <div style={{fontSize:12,fontWeight:600,color:Math.abs(currentPitch.cents) < 10 ? "#2d6a4f" : Math.abs(currentPitch.cents) < 25 ? "#b08d3a" : "#a33b3b"}}>
-                        {currentPitch.cents > 0 ? "+" : ""}{currentPitch.cents} cents
+                      <div style={{fontSize:11,fontWeight:600,color:Math.abs(currentPitch.cents) < 10 ? "#2d6a4f" : Math.abs(currentPitch.cents) < 25 ? "#b08d3a" : "#a33b3b"}}>
+                        {currentPitch.cents > 0 ? "+" : ""}{currentPitch.cents}¢
                         {Math.abs(currentPitch.cents) < 10 && " ✓"}
                       </div>
                     </div>
                     {/* Level meter */}
                     <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
                       <div style={{fontSize:10,color:T.tm,fontWeight:600}}>LEVEL</div>
-                      <div style={{width:12,height:60,background:"#f0ece4",borderRadius:6,position:"relative",overflow:"hidden"}}>
+                      <div style={{width:10,height:80,background:"#f0ece4",borderRadius:5,position:"relative",overflow:"hidden"}}>
                         <div style={{
                           position:"absolute",
                           bottom:0,
@@ -918,7 +957,7 @@ export default function App() {
                           right:0,
                           height:`${Math.min(100, currentPitch.level * 500)}%`,
                           background:currentPitch.level > 0.05 ? "#5c7a5e" : "#b08d3a",
-                          borderRadius:6,
+                          borderRadius:5,
                           transition:"height .1s"
                         }}/>
                       </div>
@@ -1014,38 +1053,78 @@ export default function App() {
         {micTesting && (
           <div style={{marginTop:16,background:"#fff",borderRadius:10,padding:20,border:"1px solid #e8e0d4"}}>
             {currentPitch ? (
-              <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:24}}>
+              <div style={{display:"flex",alignItems:"stretch",justifyContent:"center",gap:20}}>
+                {/* Pitch scale - C3 to G4 (1.5 octaves) */}
+                {(() => {
+                  const midiBase = 48; // C3
+                  const midiTop = 67; // G4
+                  const currentMidi = currentPitch.midi;
+                  const position = Math.max(0, Math.min(100, ((currentMidi - midiBase) / (midiTop - midiBase)) * 100));
+                  return (
+                    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
+                      <div style={{fontSize:10,color:T.tm,fontWeight:600,letterSpacing:"0.05em"}}>PITCH</div>
+                      <div style={{position:"relative",display:"flex",gap:6}}>
+                        {/* Note labels */}
+                        <div style={{display:"flex",flexDirection:"column",justifyContent:"space-between",height:180,fontSize:10,color:T.tm,textAlign:"right",paddingRight:4}}>
+                          {['G4','F4','E4','D4','C4','B3','A3','G3','F3','E3','D3','C3'].map(n => (
+                            <div key={n} style={{lineHeight:1,opacity:currentPitch.noteName===n?1:0.5,fontWeight:currentPitch.noteName===n?700:400,color:currentPitch.noteName===n?"#5c7a5e":T.tm}}>{n.replace(/\d/,'')}</div>
+                          ))}
+                        </div>
+                        {/* Scale bar */}
+                        <div style={{width:28,height:180,background:"linear-gradient(to bottom, #e8f5e9, #f5f5dc, #fff3e0)",borderRadius:14,position:"relative",overflow:"visible",border:"1px solid #e0d8cc"}}>
+                          {/* Grid lines for natural notes */}
+                          {[67,65,64,62,60,59,57,55,53,52,50,48].map((midi) => (
+                            <div key={midi} style={{position:"absolute",left:0,right:0,bottom:`${((midi-midiBase)/(midiTop-midiBase))*100}%`,height:1,background:midi===60?"#5c7a5e":"#e0d8cc",opacity:midi===60?0.8:0.5}}/>
+                          ))}
+                          {/* Current pitch indicator */}
+                          <div style={{
+                            position:"absolute",
+                            left:"50%",
+                            bottom:`${position}%`,
+                            width:36,
+                            height:10,
+                            borderRadius:5,
+                            background:Math.abs(currentPitch.cents) < 10 ? "#2d6a4f" : Math.abs(currentPitch.cents) < 25 ? "#b08d3a" : "#5c7a5e",
+                            transform:"translate(-50%, 50%)",
+                            transition:"bottom .12s ease-out",
+                            boxShadow:"0 2px 4px rgba(0,0,0,0.2)"
+                          }}/>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
                 {/* Large note display */}
-                <div style={{textAlign:"center"}}>
-                  <div style={{fontFamily:"var(--serif)",fontSize:64,fontWeight:700,color:currentPitch.stable?"#2d6a4f":"#5c7a5e",lineHeight:1,transition:"color .2s"}}>{currentPitch.noteName}</div>
+                <div style={{textAlign:"center",display:"flex",flexDirection:"column",justifyContent:"center"}}>
+                  <div style={{fontFamily:"var(--serif)",fontSize:56,fontWeight:700,color:currentPitch.stable?"#2d6a4f":"#5c7a5e",lineHeight:1,transition:"color .2s"}}>{currentPitch.noteName}</div>
                   <div style={{fontSize:12,color:T.tm,marginTop:6}}>{Math.round(currentPitch.frequency)} Hz</div>
                 </div>
                 {/* Tuning indicator */}
-                <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
+                <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6,justifyContent:"center"}}>
                   <div style={{fontSize:10,color:T.tm,fontWeight:600,letterSpacing:"0.05em"}}>TUNING</div>
-                  <div style={{width:140,height:28,background:"#f0ece4",borderRadius:14,position:"relative",overflow:"hidden"}}>
+                  <div style={{width:120,height:24,background:"#f0ece4",borderRadius:12,position:"relative",overflow:"hidden"}}>
                     <div style={{position:"absolute",left:"50%",top:0,bottom:0,width:2,background:"#5c7a5e",transform:"translateX(-50%)"}}/>
                     <div style={{
                       position:"absolute",
                       top:"50%",
                       left:`${50 + Math.max(-45, Math.min(45, currentPitch.cents))}%`,
-                      width:18,
-                      height:18,
+                      width:16,
+                      height:16,
                       borderRadius:"50%",
                       background:Math.abs(currentPitch.cents) < 10 ? "#2d6a4f" : Math.abs(currentPitch.cents) < 25 ? "#b08d3a" : "#a33b3b",
                       transform:"translate(-50%, -50%)",
                       transition:"left .15s, background .15s"
                     }}/>
                   </div>
-                  <div style={{fontSize:13,fontWeight:600,color:Math.abs(currentPitch.cents) < 10 ? "#2d6a4f" : Math.abs(currentPitch.cents) < 25 ? "#b08d3a" : "#a33b3b"}}>
-                    {currentPitch.cents > 0 ? "+" : ""}{currentPitch.cents} cents
+                  <div style={{fontSize:12,fontWeight:600,color:Math.abs(currentPitch.cents) < 10 ? "#2d6a4f" : Math.abs(currentPitch.cents) < 25 ? "#b08d3a" : "#a33b3b"}}>
+                    {currentPitch.cents > 0 ? "+" : ""}{currentPitch.cents}¢
                     {Math.abs(currentPitch.cents) < 10 && " ✓"}
                   </div>
                 </div>
                 {/* Level meter */}
                 <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
                   <div style={{fontSize:10,color:T.tm,fontWeight:600,letterSpacing:"0.05em"}}>LEVEL</div>
-                  <div style={{width:14,height:70,background:"#f0ece4",borderRadius:7,position:"relative",overflow:"hidden"}}>
+                  <div style={{width:12,height:100,background:"#f0ece4",borderRadius:6,position:"relative",overflow:"hidden"}}>
                     <div style={{
                       position:"absolute",
                       bottom:0,
@@ -1053,7 +1132,7 @@ export default function App() {
                       right:0,
                       height:`${Math.min(100, currentPitch.level * 500)}%`,
                       background:currentPitch.level > 0.05 ? "#5c7a5e" : "#b08d3a",
-                      borderRadius:7,
+                      borderRadius:6,
                       transition:"height .1s"
                     }}/>
                   </div>
