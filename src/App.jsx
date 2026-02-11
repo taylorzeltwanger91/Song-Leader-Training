@@ -431,6 +431,7 @@ export default function App() {
   const [melodyPlaying,setMelodyPlaying]=useState(false);
   const melodyTimers=useRef([]);
   const melodyOscs=useRef([]);
+  const genNotesRef=useRef(null); // Ref to avoid closure issues with stop button
 
   // Audio recording state
   const [currentPitch, setCurrentPitch] = useState(null);
@@ -485,6 +486,12 @@ export default function App() {
       .then(data => setHymnIndex(data))
       .catch(() => setHymnIndex([]));
   }, []);
+
+  // Keep genNotesRef in sync with genNotes state
+  useEffect(() => {
+    genNotesRef.current = genNotes;
+  }, [genNotes]);
+
 
   // Microphone test functions - using new PitchEngine
   const startMicTest = useCallback(async () => {
@@ -845,7 +852,7 @@ export default function App() {
             <div style={{fontSize:13,color:T.tm,marginTop:8}}>{genBPM} BPM</div>
           </div>}
           {/* Recording overlay — lighter, notes still visible */}
-          {rec && <div style={{position:"absolute",top:0,left:0,right:0,background:"rgba(250,246,240,0.95)",borderRadius:"10px 10px 0 0",padding:"12px 14px",backdropFilter:"blur(2px)",zIndex:10}}>
+          {rec && <div style={{position:"absolute",top:0,left:0,right:0,background:"rgba(250,246,240,0.95)",borderRadius:"10px 10px 0 0",padding:"12px 14px",backdropFilter:"blur(2px)",zIndex:10,pointerEvents:"auto"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
               <div style={{display:"flex",alignItems:"center",gap:8}}>
                 <span style={{display:"inline-block",width:10,height:10,borderRadius:"50%",background:"#c0494f",animation:"pulse 1.2s infinite"}}/>
@@ -853,9 +860,11 @@ export default function App() {
                 <span style={{fontFamily:"var(--serif)",fontSize:18,color:T.tx,marginLeft:8}}>{Math.floor(el/60)}:{String(el%60).padStart(2,"0")}</span>
               </div>
               <button
-                onClick={(e)=>{e.stopPropagation();console.log('Stop button clicked');stopRec(V.GEN_RES,genNotes);}}
-                style={{padding:"10px 24px",borderRadius:10,border:"2px solid #a33b3b",background:"#a33b3b",color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",zIndex:20,boxShadow:"0 2px 8px rgba(163,59,59,0.3)"}}
-              >■ Stop Recording</button>
+                onClick={(e)=>{e.preventDefault();e.stopPropagation();console.log('Stop button onClick, genNotesRef:', genNotesRef.current?.length);stopRec(V.GEN_RES,genNotesRef.current);}}
+                onTouchEnd={(e)=>{e.preventDefault();e.stopPropagation();console.log('Stop button onTouchEnd');stopRec(V.GEN_RES,genNotesRef.current);}}
+                onMouseDown={(e)=>{console.log('Stop button mouseDown');}}
+                style={{padding:"12px 28px",borderRadius:10,border:"none",background:"#a33b3b",color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer",zIndex:100,boxShadow:"0 4px 12px rgba(163,59,59,0.4)",touchAction:"manipulation",WebkitTapHighlightColor:"transparent",userSelect:"none",position:"relative"}}
+              >■ Stop</button>
             </div>
             {/* Real-time pitch display */}
             <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,marginTop:8,padding:"6px 12px",background:"#fff",borderRadius:6,border:"1px solid #e8e0d4"}}>
