@@ -290,11 +290,20 @@ export function PitchVisualizer({
     ctx.fill();
 
     if (pitch && pitch.level !== undefined) {
-      // Level bar
-      const levelPercent = Math.min(1, pitch.level * 5); // Scale for visibility
+      // Convert to dB scale for better visualization
+      // Range: -60 dB (silence) to 0 dB (max)
+      const minDb = -50;
+      const maxDb = -6;
+      const levelDb = 20 * Math.log10(Math.max(pitch.level, 0.000001));
+      const levelPercent = Math.max(0, Math.min(1, (levelDb - minDb) / (maxDb - minDb)));
       const barHeight = levelPercent * levelHeight;
 
-      ctx.fillStyle = pitch.level > 0.1 ? COLORS.accent : COLORS.warning;
+      // Color based on level: green for good, yellow for quiet, red for too loud
+      let levelColor = COLORS.accent;
+      if (levelDb < -35) levelColor = COLORS.warning; // Too quiet
+      else if (levelDb > -10) levelColor = COLORS.error; // Too loud/clipping
+
+      ctx.fillStyle = levelColor;
       ctx.beginPath();
       ctx.roundRect(levelX, levelY + levelHeight - barHeight, levelWidth, barHeight, 6);
       ctx.fill();
