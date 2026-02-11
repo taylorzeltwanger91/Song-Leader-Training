@@ -32,20 +32,36 @@ export class AudioRecorder {
    */
   async init() {
     try {
-      // Request microphone access
+      // Check if getUserMedia is supported
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Microphone access not supported in this browser');
+      }
+
+      // Request microphone access - use simple constraints for iOS compatibility
+      // iOS doesn't support all constraint options
       this.mediaStream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: false,
           noiseSuppression: false,
-          autoGainControl: false,
-          sampleRate: this.sampleRate
+          autoGainControl: false
+          // Note: Don't specify sampleRate - iOS doesn't support it
         }
       });
 
-      // Create audio context
-      this.audioContext = new (window.AudioContext || window.webkitAudioContext)({
-        sampleRate: this.sampleRate
-      });
+      // Create audio context - don't specify sampleRate for iOS compatibility
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) {
+        throw new Error('Web Audio API not supported in this browser');
+      }
+      this.audioContext = new AudioContextClass();
+
+      // iOS Safari requires explicit resume after user interaction
+      if (this.audioContext.state === 'suspended') {
+        await this.audioContext.resume();
+      }
+
+      // Update our sample rate to match what the device actually uses
+      this.sampleRate = this.audioContext.sampleRate;
 
       // Create source from microphone
       this.sourceNode = this.audioContext.createMediaStreamSource(this.mediaStream);
@@ -60,7 +76,18 @@ export class AudioRecorder {
 
       return true;
     } catch (error) {
-      this.onError(error);
+      // Provide more helpful error messages
+      let message = error.message || 'Microphone error';
+      if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+        message = 'Microphone permission denied. Please allow microphone access in your browser settings.';
+      } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+        message = 'No microphone found. Please connect a microphone and try again.';
+      } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+        message = 'Microphone is in use by another app. Please close other apps using the mic.';
+      } else if (error.name === 'SecurityError') {
+        message = 'Microphone access requires HTTPS. Please use a secure connection.';
+      }
+      this.onError(new Error(message));
       return false;
     }
   }
@@ -68,7 +95,7 @@ export class AudioRecorder {
   /**
    * Start recording and pitch detection
    */
-  start() {
+  async start() {
     if (!this.audioContext || !this.analyser) {
       this.onError(new Error('AudioRecorder not initialized. Call init() first.'));
       return;
@@ -84,9 +111,13 @@ export class AudioRecorder {
     this._stableNoteCount = 0;
     this._lastNoteName = null;
 
-    // Resume audio context if suspended
+    // Resume audio context if suspended (required for iOS Safari)
     if (this.audioContext.state === 'suspended') {
-      this.audioContext.resume();
+      try {
+        await this.audioContext.resume();
+      } catch (e) {
+        console.warn('Could not resume audio context:', e);
+      }
     }
 
     // Start pitch detection loop
