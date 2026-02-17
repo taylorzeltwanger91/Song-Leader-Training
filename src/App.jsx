@@ -507,9 +507,7 @@ export default function App() {
           setAudioError(err.message || 'Microphone error');
           setMicTesting(false);
         },
-        onCalibration: (data) => {
-          console.log('Pitch engine calibrated:', data);
-        }
+        onCalibration: () => {}
       });
     }
 
@@ -632,7 +630,7 @@ export default function App() {
         vocalRange: 'auto',
         onPitch: (pitch) => setCurrentPitch(pitch),
         onError: (err) => setAudioError(err.message || 'Microphone error'),
-        onCalibration: (data) => console.log('Recording calibrated:', data)
+        onCalibration: () => {}
       });
     }
 
@@ -676,10 +674,6 @@ export default function App() {
   }, []);
 
   const stopRec = useCallback((destView, referenceMelody = null) => {
-    console.log('=== STOP RECORDING ===');
-    console.log('destView:', destView);
-    console.log('recorderRef.current:', recorderRef.current ? 'exists' : 'null');
-
     setRec(false);
     clearInterval(tmr.current);
     setCurrentPitch(null);
@@ -695,33 +689,20 @@ export default function App() {
         melody = referenceMelody || recorderRef.current._referenceMelody;
         ts = recorderRef.current._ts || "4/4";
         tempo = recorderRef.current._tempo || 80;
-
-        console.log('Pitch history from stop():', pitchHistory.length, 'samples');
       } catch (e) {
-        console.error('Error stopping recorder:', e);
+        // Error stopping recorder - continue with empty history
       }
 
-      // Clean up recorder
       try {
         recorderRef.current.destroy();
       } catch (e) {
-        console.error('Error destroying recorder:', e);
+        // Error destroying recorder - continue cleanup
       }
       recorderRef.current = null;
-    } else {
-      console.warn('No recorder reference - cannot get pitch history');
     }
 
-    // Always try to show results, even with empty data
     if (melody && pitchHistory.length > 0) {
-      console.log('=== GRADING DEBUG ===');
-      console.log('Pitch history samples:', pitchHistory.length);
-      console.log('First 5 pitches:', pitchHistory.slice(0, 5));
-      console.log('Melody notes:', melody.length);
-      console.log('Tempo:', tempo, 'Time sig:', ts);
-
       const gradeResult = gradePerformance(pitchHistory, melody, tempo, ts);
-      console.log('Grade result:', gradeResult);
 
       setRes({
         ps: gradeResult.pitchScore,
@@ -737,10 +718,6 @@ export default function App() {
         _raw: gradeResult
       });
     } else {
-      console.log('No melody or pitch data - showing fallback');
-      console.log('melody:', melody ? melody.length + ' notes' : 'null');
-      console.log('pitchHistory:', pitchHistory.length, 'samples');
-
       setRes({
         ps: 0, rs: 0, ls: 0, co: 0, ts: 0, pst: 0,
         tt: [], pt: [],
@@ -752,8 +729,6 @@ export default function App() {
       });
     }
 
-    // Always navigate to results
-    console.log('Navigating to:', destView);
     setVw(destView);
   }, []);
 
@@ -860,13 +835,7 @@ export default function App() {
                 <span style={{fontFamily:"var(--serif)",fontSize:18,color:T.tx,marginLeft:8}}>{Math.floor(el/60)}:{String(el%60).padStart(2,"0")}</span>
               </div>
               <button
-                id="stop-recording-btn"
-                type="button"
-                onClick={()=>{console.log('=== STOP CLICK ===');stopRec(V.GEN_RES,genNotesRef.current);}}
-                onMouseUp={()=>{console.log('Stop mouseUp');}}
-                onMouseDown={()=>{console.log('Stop mouseDown');}}
-                onPointerDown={()=>{console.log('Stop pointerDown');}}
-                onPointerUp={()=>{console.log('Stop pointerUp');stopRec(V.GEN_RES,genNotesRef.current);}}
+                onClick={()=>stopRec(V.GEN_RES,genNotesRef.current)}
                 style={{padding:"14px 32px",borderRadius:10,border:"3px solid #fff",background:"#a33b3b",color:"#fff",fontSize:16,fontWeight:700,cursor:"pointer",zIndex:9999,boxShadow:"0 4px 16px rgba(163,59,59,0.5)",position:"relative"}}
               >■ STOP</button>
             </div>
