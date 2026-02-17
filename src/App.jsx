@@ -447,6 +447,12 @@ export default function App() {
   const [hymnMelody, setHymnMelody] = useState(null);
   const [hymnMelodyLoading, setHymnMelodyLoading] = useState(false);
 
+  // Lead-in / drop point settings
+  // dropMode: "off" = no lead-in, "measure" = drop after N measures, "note" = drop after N notes, "full" = play entire melody
+  const [dropMode, setDropMode] = useState("measure");
+  const [dropPoint, setDropPoint] = useState(4); // Default: drop after 4 measures
+  const [leadInPlaying, setLeadInPlaying] = useState(false);
+
   const tmr=useRef(null),actx=useRef(null);
 
   // Load hymn melody when a hymn is selected
@@ -611,7 +617,94 @@ export default function App() {
     try{if(!actx.current)actx.current=new(window.AudioContext||window.webkitAudioContext)();const c=actx.current,o=c.createOscillator(),g=c.createGain();o.type="sine";o.frequency.value=freq;g.gain.setValueAtTime(.3,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+2);o.connect(g).connect(c.destination);o.start();o.stop(c.currentTime+2);setPO(true);setTimeout(()=>setPO(false),2000);}catch(e){}
   }, []);
 
-  const startRec = useCallback(async (ts, tempo, referenceMelody = null) => {
+  // Calculate which note index the drop point corresponds to
+  const getDropNoteIndex = useCallback((notes, mode, point) => {
+    if (!notes?.length || mode === "off") return 0;
+    if (mode === "full") return notes.length; // Play entire melody
+    if (mode === "note") return Math.min(point, notes.length);
+    if (mode === "measure") {
+      // Find the first note that's in measure >= point
+      const idx = notes.findIndex(n => n.measure >= point);
+      return idx === -1 ? notes.length : idx;
+    }
+    return 0;
+  }, []);
+
+  // Play lead-in portion of melody, then trigger callback when done
+  const playLeadIn = useCallback((notes, ts, tempo, dropNoteIndex, onDropPoint) => {
+    if (!notes?.length || dropNoteIndex <= 0) {
+      onDropPoint();
+      return;
+    }
+
+    try {
+      if (!actx.current) actx.current = new (window.AudioContext || window.webkitAudioContext)();
+      const ctx = actx.current;
+      setLeadInPlaying(true);
+
+      // Clear any previous playback
+      melodyOscs.current.forEach(o => { try { o.stop(); } catch (e) {} });
+      melodyTimers.current.forEach(t => clearTimeout(t));
+      melodyOscs.current = [];
+      melodyTimers.current = [];
+
+      // Calculate timing
+      const comp = isCompound(ts);
+      const { d } = parseTS(ts);
+      let secPerUnit;
+      if (comp) {
+        secPerUnit = 60 / (tempo * 3); // Eighth notes in compound time
+      } else if (d === 2) {
+        secPerUnit = 60 / tempo; // Half notes
+      } else {
+        secPerUnit = 60 / tempo; // Quarter notes
+      }
+
+      let time = ctx.currentTime + 0.1;
+      const leadInNotes = notes.slice(0, dropNoteIndex);
+      let dropTime = 0;
+
+      leadInNotes.forEach((note, i) => {
+        const dur = note.dur * secPerUnit;
+        const noteTime = time;
+        const freq = note.freq || (440 * Math.pow(2, (note.midi - 69) / 12));
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = freq;
+
+        // Gentle envelope
+        gain.gain.setValueAtTime(0, noteTime);
+        gain.gain.linearRampToValueAtTime(0.25, noteTime + 0.03);
+        gain.gain.setValueAtTime(0.25, noteTime + dur - 0.06);
+        gain.gain.linearRampToValueAtTime(0, noteTime + dur);
+
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(noteTime);
+        osc.stop(noteTime + dur);
+        melodyOscs.current.push(osc);
+
+        time += dur;
+        if (i === leadInNotes.length - 1) {
+          dropTime = (noteTime + dur - ctx.currentTime) * 1000;
+        }
+      });
+
+      // Trigger callback when lead-in ends (seamlessly continue to recording)
+      const dropTimer = setTimeout(() => {
+        setLeadInPlaying(false);
+        onDropPoint();
+      }, dropTime);
+      melodyTimers.current.push(dropTimer);
+
+    } catch (e) {
+      setLeadInPlaying(false);
+      onDropPoint();
+    }
+  }, []);
+
+  const startRec = useCallback(async (ts, tempo, referenceMelody = null, useLeadIn = false, leadInDropMode = "off", leadInDropPoint = 0) => {
     // Stop mic test if running
     if (micTestRef.current) {
       micTestRef.current.stop();
@@ -645,33 +738,52 @@ export default function App() {
     }
     setMicPermission('granted');
 
-    // Store reference melody for grading
-    recorderRef.current._referenceMelody = referenceMelody;
+    // Calculate drop note index for grading
+    const dropNoteIndex = useLeadIn && leadInDropMode !== "off"
+      ? getDropNoteIndex(referenceMelody, leadInDropMode, leadInDropPoint)
+      : 0;
+
+    // Store reference melody for grading (only notes after drop point)
+    const gradingMelody = dropNoteIndex > 0 && referenceMelody
+      ? referenceMelody.slice(dropNoteIndex)
+      : referenceMelody;
+
+    recorderRef.current._referenceMelody = gradingMelody;
+    recorderRef.current._fullMelody = referenceMelody; // Keep full melody for reference
+    recorderRef.current._dropNoteIndex = dropNoteIndex;
     recorderRef.current._ts = ts;
     recorderRef.current._tempo = tempo;
 
-    // Count-in
-    const ct = parseTS(ts).n;
-    setCd(ct);
-    let c = ct;
-    const iv = setInterval(() => {
-      c--;
-      if (c <= 0) {
-        clearInterval(iv);
-        setCd(null);
-        setRec(true);
-        setEl(0);
+    // Function to start recording (called after lead-in or count-in)
+    const beginRecording = () => {
+      setRec(true);
+      setEl(0);
+      engine.start();
+      const st = Date.now();
+      tmr.current = setInterval(() => setEl(Math.floor((Date.now() - st) / 1000)), 200);
+    };
 
-        // Start actual recording
-        engine.start();
-
-        const st = Date.now();
-        tmr.current = setInterval(() => setEl(Math.floor((Date.now() - st) / 1000)), 200);
-      } else {
-        setCd(c);
-      }
-    }, (60 / tempo) * 1000);
-  }, []);
+    // Use lead-in playback if configured, otherwise count-in
+    if (useLeadIn && leadInDropMode !== "off" && referenceMelody?.length && dropNoteIndex > 0) {
+      // Play lead-in, then seamlessly start recording
+      playLeadIn(referenceMelody, ts, tempo, dropNoteIndex, beginRecording);
+    } else {
+      // Traditional count-in
+      const ct = parseTS(ts).n;
+      setCd(ct);
+      let c = ct;
+      const iv = setInterval(() => {
+        c--;
+        if (c <= 0) {
+          clearInterval(iv);
+          setCd(null);
+          beginRecording();
+        } else {
+          setCd(c);
+        }
+      }, (60 / tempo) * 1000);
+    }
+  }, [getDropNoteIndex, playLeadIn]);
 
   const stopRec = useCallback((destView, referenceMelody = null) => {
     setRec(false);
@@ -739,25 +851,98 @@ export default function App() {
     if(recorderRef.current){recorderRef.current.destroy();recorderRef.current=null;}
     if(micTestRef.current){micTestRef.current.destroy();micTestRef.current=null;}
   },[]);
-  const goHome=()=>{setVw(V.HOME);setHymn(null);setRes(null);setRec(false);setCd(null);setGenNotes(null);stopMelody();clearInterval(tmr.current);setSearch("");setAudioError(null);setCurrentPitch(null);setMicTesting(false);if(recorderRef.current){recorderRef.current.destroy();recorderRef.current=null;}if(micTestRef.current){micTestRef.current.destroy();micTestRef.current=null;}};
-  const goBack=v=>{setVw(v);setRec(false);setCd(null);setRes(null);clearInterval(tmr.current);setAudioError(null);setCurrentPitch(null);setMicTesting(false);if(recorderRef.current){recorderRef.current.destroy();recorderRef.current=null;}if(micTestRef.current){micTestRef.current.destroy();micTestRef.current=null;}};
+  const goHome=()=>{setVw(V.HOME);setHymn(null);setRes(null);setRec(false);setCd(null);setGenNotes(null);stopMelody();clearInterval(tmr.current);setSearch("");setAudioError(null);setCurrentPitch(null);setMicTesting(false);setLeadInPlaying(false);if(recorderRef.current){recorderRef.current.destroy();recorderRef.current=null;}if(micTestRef.current){micTestRef.current.destroy();micTestRef.current=null;}};
+  const goBack=v=>{setVw(v);setRec(false);setCd(null);setRes(null);clearInterval(tmr.current);setAudioError(null);setCurrentPitch(null);setMicTesting(false);setLeadInPlaying(false);if(recorderRef.current){recorderRef.current.destroy();recorderRef.current=null;}if(micTestRef.current){micTestRef.current.destroy();micTestRef.current=null;}};
 
   // ─── HYMN PRACTICE (split layout) ─────────────────────────
   if ((vw===V.PRAC||vw===V.RES) && hymn) {
+    // Calculate info about the melody for display
+    const totalNotes = hymnMelody?.notes?.length || 0;
+    const totalMeasures = hymnMelody?.notes?.length ? Math.max(...hymnMelody.notes.map(n => n.measure)) + 1 : 0;
+    const dropNoteIdx = hymnMelody?.notes ? getDropNoteIndex(hymnMelody.notes, dropMode, dropPoint) : 0;
+    const notesAfterDrop = totalNotes - dropNoteIdx;
+
     const Ctrl = () => {
       return <div style={{padding:20,position:"relative"}}>
         <div style={{marginBottom:16}}><div style={{fontSize:11,fontWeight:600,color:T.tm,marginBottom:6,letterSpacing:"0.06em",textTransform:"uppercase"}}>Mode</div><div style={{display:"flex",gap:6}}>{["practice","test"].map(m=><button key={m} onClick={()=>setMode(m)} style={{padding:"8px 18px",borderRadius:8,border:`1.5px solid ${mode===m?T.ac:T.cb}`,background:mode===m?"#e8f0e8":T.card,color:mode===m?T.ad:T.tm,fontSize:12,fontWeight:600,cursor:"pointer"}}>{m==="test"?"Leadership Test":"Practice"}</button>)}</div></div>
-        <div style={{...mkC,cursor:"default",background:T.wl,borderColor:"#e8dcc4",padding:14}}><div style={{fontSize:12,color:"#7a6c3d",lineHeight:1.5}}>{mode==="practice"?"Count-in → sing a cappella → receive feedback.":"Leadership Test: evaluates count-off, tempo, and pitch stability."}</div></div>
+        <div style={{...mkC,cursor:"default",background:T.wl,borderColor:"#e8dcc4",padding:14}}><div style={{fontSize:12,color:"#7a6c3d",lineHeight:1.5}}>{mode==="practice"?"Lead-in plays → MIDI drops off → you continue singing → graded on your portion.":"Leadership Test: evaluates count-off, tempo, and pitch stability."}</div></div>
+
+        {/* Lead-in configuration - only show when melody data is available */}
+        {hymnMelody && !rec && !cd && !leadInPlaying && <div style={{...mkC,cursor:"default",padding:14,marginTop:8}}>
+          <div style={{fontSize:11,fontWeight:600,color:T.tm,marginBottom:10,letterSpacing:"0.06em",textTransform:"uppercase"}}>Lead-in Settings</div>
+
+          {/* Drop mode selector */}
+          <div style={{display:"flex",gap:6,marginBottom:12,flexWrap:"wrap"}}>
+            {[
+              {mode:"off",label:"No Lead-in",desc:"Count-in only"},
+              {mode:"measure",label:"By Measure",desc:`Drop after measure`},
+              {mode:"note",label:"By Note",desc:`Drop after note`},
+              {mode:"full",label:"Full Melody",desc:"Sing along"}
+            ].map(opt=>(
+              <button key={opt.mode} onClick={()=>setDropMode(opt.mode)} style={{
+                padding:"6px 12px",borderRadius:6,
+                border:`1.5px solid ${dropMode===opt.mode?T.ac:T.cb}`,
+                background:dropMode===opt.mode?"#e8f0e8":T.card,
+                color:dropMode===opt.mode?T.ad:T.tm,
+                fontSize:11,fontWeight:600,cursor:"pointer"
+              }}>{opt.label}</button>
+            ))}
+          </div>
+
+          {/* Drop point slider - only show for measure or note mode */}
+          {(dropMode==="measure"||dropMode==="note") && <div style={{marginBottom:8}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+              <span style={{fontSize:12,color:T.tm}}>
+                {dropMode==="measure"?"Drop after measure:":"Drop after note:"}
+              </span>
+              <span style={{fontFamily:"var(--serif)",fontSize:18,color:T.ac,fontWeight:700}}>
+                {dropPoint} <span style={{fontSize:11,color:T.tm,fontWeight:400}}>/ {dropMode==="measure"?totalMeasures:totalNotes}</span>
+              </span>
+            </div>
+            <input
+              type="range"
+              min="1"
+              max={dropMode==="measure"?totalMeasures:totalNotes}
+              value={dropPoint}
+              onChange={e=>setDropPoint(+e.target.value)}
+              style={{width:"100%",appearance:"none",height:4,borderRadius:2,background:"#e8e0d4",outline:"none"}}
+            />
+            <div style={{fontSize:10,color:T.tl,marginTop:4}}>
+              MIDI plays {dropNoteIdx} notes → You sing {notesAfterDrop} notes (graded)
+            </div>
+          </div>}
+
+          {dropMode==="full" && <div style={{fontSize:11,color:T.tm,padding:"8px 12px",background:"#f0f8f0",borderRadius:6}}>
+            Full melody plays while you sing along. All {totalNotes} notes graded.
+          </div>}
+
+          {dropMode==="off" && <div style={{fontSize:11,color:T.tm,padding:"8px 12px",background:"#faf6f0",borderRadius:6}}>
+            Traditional count-in, then sing a cappella. All {totalNotes} notes graded.
+          </div>}
+        </div>}
+
         {/* Action area */}
-        {!rec && cd===null && <div style={{textAlign:"center",marginTop:16}}>
+        {!rec && cd===null && !leadInPlaying && <div style={{textAlign:"center",marginTop:16}}>
           {hymnMelody && <div style={{marginBottom:12,padding:"8px 16px",background:"#e8f0e8",borderRadius:8,display:"inline-block"}}>
-            <span style={{fontSize:11,color:"#3d5640"}}>Melody data available - real grading enabled</span>
+            <span style={{fontSize:11,color:"#3d5640"}}>
+              {hymnMelody.title} · {hymnMelody.timeSignature} · {hymnMelody.bpm} BPM · {totalNotes} notes
+            </span>
           </div>}
           {!hymnMelody && !hymnMelodyLoading && <div style={{marginBottom:12,padding:"8px 16px",background:"#fff8e8",borderRadius:8,display:"inline-block"}}>
             <span style={{fontSize:11,color:"#7a6c3d"}}>No melody data - pitch tracking only</span>
           </div>}
-          <button onClick={()=>startRec(hymnMelody?.timeSignature||"4/4", hymnMelody?.bpm||80, hymnMelody?.notes)} style={{...mkB(true),padding:"14px 40px",fontSize:15,borderRadius:12}}>Begin {mode==="test"?"Test":"Practice"}</button>
+          <button onClick={()=>startRec(
+            hymnMelody?.timeSignature||"4/4",
+            hymnMelody?.bpm||80,
+            hymnMelody?.notes,
+            dropMode!=="off" && hymnMelody?.notes?.length>0,
+            dropMode,
+            dropPoint
+          )} style={{...mkB(true),padding:"14px 40px",fontSize:15,borderRadius:12}}>
+            {dropMode==="off"?"Begin "+( mode==="test"?"Test":"Practice"):dropMode==="full"?"Play & Sing Along":"Play Lead-in & Sing"}
+          </button>
         </div>}
+
         {rec && <div style={{marginTop:16,padding:16,background:"#fff",border:"1.5px solid #e8e0d4",borderRadius:10}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
             <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -765,10 +950,23 @@ export default function App() {
               <span style={{fontSize:13,fontWeight:600,color:T.dg}}>Recording</span>
               <span style={{fontFamily:"var(--serif)",fontSize:20,color:T.tx,marginLeft:8}}>{Math.floor(el/60)}:{String(el%60).padStart(2,"0")}</span>
             </div>
-            <button onClick={()=>stopRec(V.RES, hymnMelody?.notes)} style={{padding:"6px 16px",borderRadius:8,border:"1.5px solid #a33b3b",background:"#fff",color:"#a33b3b",fontSize:12,fontWeight:600,cursor:"pointer"}}>■ Stop</button>
+            <button onClick={()=>stopRec(V.RES)} style={{padding:"6px 16px",borderRadius:8,border:"1.5px solid #a33b3b",background:"#fff",color:"#a33b3b",fontSize:12,fontWeight:600,cursor:"pointer"}}>■ Stop</button>
           </div>
-          <div style={{fontSize:12,color:T.tm,marginTop:8}}>Sing the soprano line clearly</div>
+          <div style={{fontSize:12,color:T.tm,marginTop:8}}>
+            {dropMode!=="off" && dropNoteIdx>0
+              ? `Sing from note ${dropNoteIdx+1} onward (${notesAfterDrop} notes graded)`
+              : "Sing the soprano line clearly"}
+          </div>
         </div>}
+
+        {/* Lead-in playing overlay */}
+        {leadInPlaying && <div style={{position:"absolute",inset:0,background:"rgba(232,240,232,0.95)",borderRadius:10,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",backdropFilter:"blur(2px)",zIndex:10}}>
+          <div style={{fontSize:11,color:T.ad,marginBottom:8,fontWeight:600,letterSpacing:"0.1em",textTransform:"uppercase"}}>Playing Lead-in</div>
+          <div style={{fontFamily:"var(--serif)",fontSize:32,color:T.ac,lineHeight:1,marginBottom:8}}>🎵</div>
+          <div style={{fontSize:13,color:T.tm}}>Listen and prepare to sing...</div>
+          <div style={{fontSize:11,color:T.tl,marginTop:8}}>MIDI drops after note {dropNoteIdx}</div>
+        </div>}
+
         {/* Count-in overlay */}
         {cd!==null && <div style={{position:"absolute",inset:0,background:"rgba(250,246,240,0.9)",borderRadius:10,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",backdropFilter:"blur(2px)",zIndex:10}}>
           <div style={{fontSize:11,color:T.tm,marginBottom:8,fontWeight:600,letterSpacing:"0.1em",textTransform:"uppercase"}}>Count-in</div>
@@ -788,7 +986,8 @@ export default function App() {
         <div style={{display:"flex",gap:10,marginTop:16,justifyContent:"center"}}><button onClick={()=>{setRes(null);setVw(V.PRAC);}} style={mkB(true)}>Retry</button><button onClick={goHome} style={mkB(false)}>Home</button></div>
       </div>;
     };
-    return <><style>{css}</style><div style={{display:"flex",minHeight:"100vh",background:T.bg,fontFamily:"var(--sans)",color:T.tx}}>
+    const sliderCss = `input[type=range]::-webkit-slider-thumb{appearance:none;width:20px;height:20px;border-radius:50%;background:#5c7a5e;cursor:pointer;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.2)}input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#5c7a5e;cursor:pointer;border:2px solid #fff}`;
+    return <><style>{css}{sliderCss}</style><div style={{display:"flex",minHeight:"100vh",background:T.bg,fontFamily:"var(--sans)",color:T.tx}}>
       {sheet&&<div style={{width:"50%",minWidth:280,maxWidth:540,borderRight:"1px solid #d4cfc5",display:"flex",flexDirection:"column",background:"#f5f1ea",height:"100vh",position:"sticky",top:0}}>
         <div style={{padding:"10px 12px",borderBottom:"1px solid #d4cfc5",display:"flex",alignItems:"center",justifyContent:"space-between"}}><span style={{fontFamily:"var(--serif)",fontSize:14}}>p.{hymn.pages[0]}</span><button onClick={()=>setSheet(false)} style={{...tbS,fontSize:12}}>✕</button></div>
         <SheetViewer hymn={hymn}/>
