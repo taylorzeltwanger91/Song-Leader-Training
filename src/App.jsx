@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { AudioRecorder, gradePerformance, PitchEngine } from "./audio";
 import { PitchVisualizer } from "./components/PitchVisualizer";
+import Soundfont from "soundfont-player";
 
 // ═══════════════════════════════════════════════════════════════
 // TIME SIGNATURE ENGINE (all required meters)
@@ -454,6 +455,31 @@ export default function App() {
   const [leadInPlaying, setLeadInPlaying] = useState(false);
 
   const tmr=useRef(null),actx=useRef(null);
+  const instrumentRef = useRef(null);
+  const [instrumentLoading, setInstrumentLoading] = useState(false);
+
+  // Load soundfont instrument (church organ for hymns)
+  const loadInstrument = useCallback(async () => {
+    if (instrumentRef.current) return instrumentRef.current;
+    if (instrumentLoading) return null;
+
+    setInstrumentLoading(true);
+    try {
+      if (!actx.current) {
+        actx.current = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      // Use church organ for authentic hymn sound
+      const instrument = await Soundfont.instrument(actx.current, 'church_organ', {
+        soundfont: 'MusyngKite'
+      });
+      instrumentRef.current = instrument;
+      setInstrumentLoading(false);
+      return instrument;
+    } catch (e) {
+      setInstrumentLoading(false);
+      return null;
+    }
+  }, [instrumentLoading]);
 
   // Load hymn melody when a hymn is selected
   useEffect(() => {
@@ -538,69 +564,63 @@ export default function App() {
     }
   }, []);
 
-  // Play the full generated melody as audio
-  const playMelodyAudio = useCallback(() => {
+  // Play the full generated melody as audio using soundfont
+  const playMelodyAudio = useCallback(async () => {
     if (!genNotes?.length) return;
     try {
-      if (!actx.current) actx.current = new (window.AudioContext||window.webkitAudioContext)();
+      const instrument = await loadInstrument();
+      if (!instrument) {
+        setMelodyPlaying(false);
+        return;
+      }
+
       const ctx = actx.current;
       setMelodyPlaying(true);
+
       // Clear any previous playback
-      melodyOscs.current.forEach(o => { try{o.stop();}catch(e){} });
       melodyTimers.current.forEach(t => clearTimeout(t));
-      melodyOscs.current = [];
       melodyTimers.current = [];
 
       const comp = isCompound(genTS);
-      // For compound meters: each dur unit = one eighth note, BPM = dotted quarter = 3 eighths
-      // So eighth note duration = 60 / (BPM * 3) for compound
-      // For simple meters: dur unit = quarter note (or half note for 4/2)
       const {d} = parseTS(genTS);
       let secPerUnit;
       if (comp) {
-        // dur units are eighth notes, BPM is dotted quarter (3 eighths)
         secPerUnit = 60 / (genBPM * 3);
       } else if (d === 2) {
-        // dur units are half notes, BPM is half note
         secPerUnit = 60 / genBPM;
       } else {
-        // dur units are quarter notes, BPM is quarter note
         secPerUnit = 60 / genBPM;
       }
 
-      let time = ctx.currentTime + 0.1; // small delay
-      genNotes.forEach((note, i) => {
+      let time = ctx.currentTime + 0.1;
+      let totalDuration = 0;
+
+      genNotes.forEach((note) => {
         const dur = note.dur * secPerUnit;
-        const noteTime = time;
-        // Schedule oscillator
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = "sine";
-        osc.frequency.value = note.freq;
-        // Gentle envelope: attack 30ms, sustain, release 60ms
-        gain.gain.setValueAtTime(0, noteTime);
-        gain.gain.linearRampToValueAtTime(0.25, noteTime + 0.03);
-        gain.gain.setValueAtTime(0.25, noteTime + dur - 0.06);
-        gain.gain.linearRampToValueAtTime(0, noteTime + dur);
-        osc.connect(gain).connect(ctx.destination);
-        osc.start(noteTime);
-        osc.stop(noteTime + dur);
-        melodyOscs.current.push(osc);
+        instrument.play(note.midi, time, { duration: dur, gain: 0.7 });
+        totalDuration = (time - ctx.currentTime) + dur;
         time += dur;
       });
+
       // Set timeout to mark playback as done
-      const totalDur = (time - ctx.currentTime) * 1000;
-      const endTimer = setTimeout(() => setMelodyPlaying(false), totalDur);
+      const endTimer = setTimeout(() => setMelodyPlaying(false), totalDuration * 1000);
       melodyTimers.current.push(endTimer);
     } catch(e) { setMelodyPlaying(false); }
-  }, [genNotes, genTS, genBPM]);
+  }, [genNotes, genTS, genBPM, loadInstrument]);
 
   const stopMelody = useCallback(() => {
+    // Stop any oscillators (legacy)
     melodyOscs.current.forEach(o => { try{o.stop();}catch(e){} });
-    melodyTimers.current.forEach(t => clearTimeout(t));
     melodyOscs.current = [];
+    // Clear timers
+    melodyTimers.current.forEach(t => clearTimeout(t));
     melodyTimers.current = [];
+    // Stop soundfont instrument
+    if (instrumentRef.current) {
+      try { instrumentRef.current.stop(); } catch(e) {}
+    }
     setMelodyPlaying(false);
+    setLeadInPlaying(false);
   }, []);
 
   const doGenerate = useCallback(() => {
@@ -630,22 +650,27 @@ export default function App() {
     return 0;
   }, []);
 
-  // Play lead-in portion of melody, then trigger callback when done
-  const playLeadIn = useCallback((notes, ts, tempo, dropNoteIndex, onDropPoint) => {
+  // Play lead-in portion of melody using soundfont, then trigger callback when done
+  const playLeadIn = useCallback(async (notes, ts, tempo, dropNoteIndex, onDropPoint) => {
     if (!notes?.length || dropNoteIndex <= 0) {
       onDropPoint();
       return;
     }
 
     try {
-      if (!actx.current) actx.current = new (window.AudioContext || window.webkitAudioContext)();
+      // Load instrument if not already loaded
+      const instrument = await loadInstrument();
+      if (!instrument) {
+        // Fallback: just start recording without lead-in
+        onDropPoint();
+        return;
+      }
+
       const ctx = actx.current;
       setLeadInPlaying(true);
 
       // Clear any previous playback
-      melodyOscs.current.forEach(o => { try { o.stop(); } catch (e) {} });
       melodyTimers.current.forEach(t => clearTimeout(t));
-      melodyOscs.current = [];
       melodyTimers.current = [];
 
       // Calculate timing
@@ -662,47 +687,28 @@ export default function App() {
 
       let time = ctx.currentTime + 0.1;
       const leadInNotes = notes.slice(0, dropNoteIndex);
-      let dropTime = 0;
+      let totalDuration = 0;
 
-      leadInNotes.forEach((note, i) => {
+      // Schedule all notes using soundfont
+      leadInNotes.forEach((note) => {
         const dur = note.dur * secPerUnit;
-        const noteTime = time;
-        const freq = note.freq || (440 * Math.pow(2, (note.midi - 69) / 12));
-
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = "sine";
-        osc.frequency.value = freq;
-
-        // Gentle envelope
-        gain.gain.setValueAtTime(0, noteTime);
-        gain.gain.linearRampToValueAtTime(0.25, noteTime + 0.03);
-        gain.gain.setValueAtTime(0.25, noteTime + dur - 0.06);
-        gain.gain.linearRampToValueAtTime(0, noteTime + dur);
-
-        osc.connect(gain).connect(ctx.destination);
-        osc.start(noteTime);
-        osc.stop(noteTime + dur);
-        melodyOscs.current.push(osc);
-
+        instrument.play(note.midi, time, { duration: dur, gain: 0.7 });
+        totalDuration = (time - ctx.currentTime) + dur;
         time += dur;
-        if (i === leadInNotes.length - 1) {
-          dropTime = (noteTime + dur - ctx.currentTime) * 1000;
-        }
       });
 
       // Trigger callback when lead-in ends (seamlessly continue to recording)
       const dropTimer = setTimeout(() => {
         setLeadInPlaying(false);
         onDropPoint();
-      }, dropTime);
+      }, totalDuration * 1000);
       melodyTimers.current.push(dropTimer);
 
     } catch (e) {
       setLeadInPlaying(false);
       onDropPoint();
     }
-  }, []);
+  }, [loadInstrument]);
 
   const startRec = useCallback(async (ts, tempo, referenceMelody = null, useLeadIn = false, leadInDropMode = "off", leadInDropPoint = 0) => {
     // Stop mic test if running
