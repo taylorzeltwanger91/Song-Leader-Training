@@ -157,7 +157,8 @@ export function NotationDisplay({
     const container = containerRef.current;
     if (!container || !measureGroups.length) return;
 
-    try {    // Clear previous render
+    try {
+    // Clear previous render
     container.innerHTML = '';
 
     const containerWidth = container.clientWidth || 500;

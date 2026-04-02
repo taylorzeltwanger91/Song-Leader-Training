@@ -36,16 +36,17 @@ export class PitchEngine {
     // Smoothing state
     this._smoothingAlpha = this._getAlphaForMode(this.sensitivityMode);
 
-    // Outlier rejection buffer (7 frames)
+    // Outlier rejection buffer (9 frames for better noise rejection)
     this._outlierBuffer = [];
-    this._outlierBufferSize = 7;
-    this._outlierCentThreshold = 200;
+    this._outlierBufferSize = 9;
+    this._outlierCentThreshold = 150; // tighter: 150 cents instead of 200
+
     this._suspectFrames = 0;
     this._suspectPitch = null;
 
-    // Median filter buffer (5 frames)
+    // Median filter buffer (3 frames for faster response)
     this._medianBuffer = [];
-    this._medianBufferSize = 5;
+    this._medianBufferSize = 3;
 
     // EMA state
     this._smoothedFreq = null;
@@ -75,10 +76,10 @@ export class PitchEngine {
    */
   _getAlphaForMode(mode) {
     switch (mode) {
-      case 'beginner': return 0.15;  // Very smooth, forgiving
-      case 'standard': return 0.25;  // Balanced
-      case 'advanced': return 0.40;  // More responsive
-      default: return 0.25;
+      case 'beginner': return 0.20;  // Smooth but not sluggish
+      case 'standard': return 0.35;  // More responsive than before
+      case 'advanced': return 0.50;  // Very responsive
+      default: return 0.35;
     }
   }
 
@@ -254,8 +255,8 @@ export class PitchEngine {
       const rms = Math.sqrt(sum / this._fallbackBuffer.length);
       const rmsDb = 20 * Math.log10(Math.max(rms, 1e-10));
 
-      // Simple gate (fixed threshold for fallback)
-      const gateOpen = rmsDb > -40;
+      // Simple gate (more sensitive for fallback)
+      const gateOpen = rmsDb > -45;
 
       let frequency = -1;
       let confidence = 0;
@@ -288,7 +289,7 @@ export class PitchEngine {
     const halfSize = Math.floor(buffer.length / 2);
     const yinBuffer = this._fallbackYinBuffer;
     const sampleRate = this.audioContext.sampleRate;
-    const threshold = 0.12;
+    const threshold = 0.10; // Match worklet threshold
     const range = this._getFrequencyRange();
 
     // Difference function
@@ -418,8 +419,8 @@ export class PitchEngine {
     // Detect note transitions and reset smoother
     let isOnset = false;
 
-    // Energy onset: significant RMS increase
-    if (rmsDb - this._lastRmsDb > 6) {
+    // Energy onset: significant RMS increase (4dB for faster response)
+    if (rmsDb - this._lastRmsDb > 4) {
       isOnset = true;
     }
 
@@ -452,11 +453,13 @@ export class PitchEngine {
     const sortedMedian = [...this._medianBuffer].sort((a, b) => a - b);
     const medianMidi = sortedMedian[Math.floor(sortedMedian.length / 2)];
 
-    // === EMA SMOOTHING ===
+    // === EMA SMOOTHING (confidence-weighted) ===
+    // Higher confidence → more responsive (trust the reading more)
+    const adaptiveAlpha = Math.min(0.7, this._smoothingAlpha + (confidence > 0.85 ? 0.15 : 0));
     if (this._smoothedMidi === null) {
       this._smoothedMidi = medianMidi;
     } else {
-      this._smoothedMidi = this._smoothingAlpha * medianMidi + (1 - this._smoothingAlpha) * this._smoothedMidi;
+      this._smoothedMidi = adaptiveAlpha * medianMidi + (1 - adaptiveAlpha) * this._smoothedMidi;
     }
 
     // Convert smoothed MIDI back to frequency

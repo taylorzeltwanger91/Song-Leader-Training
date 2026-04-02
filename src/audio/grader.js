@@ -107,8 +107,8 @@ function matchPitchesToNotes(detectedPitches, expectedNotes) {
 
   // For each expected note, find the best matching detected pitch
   for (const expected of expectedNotes) {
-    const windowStart = expected.expectedStart - 200; // 200ms early tolerance
-    const windowEnd = expected.expectedStart + expected.expectedDuration + 200; // 200ms late tolerance
+    const windowStart = expected.expectedStart - 150; // 150ms early tolerance (tightened)
+    const windowEnd = expected.expectedStart + expected.expectedDuration + 150; // 150ms late tolerance
 
     // Find all detected pitches in the time window
     const candidates = detectedPitches.filter(
@@ -138,8 +138,8 @@ function matchPitchesToNotes(detectedPitches, expectedNotes) {
       }
     }
 
-    // Consider it a match if within 2 semitones
-    const matched = bestDistance < 2;
+    // Consider it a match if within 1 semitone (tightened from 2)
+    const matched = bestDistance < 1;
     const centsOff = matched ? Math.round((bestMatch.midi - expected.midi) * 100) : 0;
     const timingOffMs = matched ? Math.round(bestMatch.timestamp - expected.expectedStart) : 0;
 
@@ -150,10 +150,11 @@ function matchPitchesToNotes(detectedPitches, expectedNotes) {
       timingOffMs,
       detectedMidi: bestMatch ? bestMatch.midiRounded : null,
       detectedFreq: bestMatch ? bestMatch.frequency : null,
-      isSharp: centsOff > 20,
-      isFlat: centsOff < -20,
-      isEarly: timingOffMs < -100,
-      isLate: timingOffMs > 100
+      confidence: bestMatch ? bestMatch.confidence : 0,
+      isSharp: centsOff > 15,    // tightened from 20
+      isFlat: centsOff < -15,    // tightened from 20
+      isEarly: timingOffMs < -80, // tightened from -100
+      isLate: timingOffMs > 80    // tightened from 100
     });
   }
 
@@ -170,16 +171,21 @@ function calculatePitchScore(matchResults) {
   if (matched.length === 0) return 0;
 
   // Score based on:
-  // 1. Percentage of notes hit (50% weight)
-  // 2. Average cents deviation for hit notes (50% weight)
+  // 1. Percentage of notes hit (40% weight)
+  // 2. Average cents deviation for hit notes (40% weight)
+  // 3. Confidence-weighted accuracy (20% weight)
 
   const hitRate = matched.length / matchResults.length;
 
   const avgCentsOff = matched.reduce((sum, r) => sum + Math.abs(r.centsOff), 0) / matched.length;
-  // 0 cents = 100%, 50 cents (half semitone) = 50%, 100 cents (full semitone) = 0%
-  const intonationScore = Math.max(0, 100 - avgCentsOff);
+  // 0 cents = 100%, 25 cents = 75%, 50 cents = 50%, 100 cents = 0%
+  const intonationScore = Math.max(0, 100 - avgCentsOff * 1.2);
 
-  return hitRate * 50 + (intonationScore / 100) * 50;
+  // Confidence-weighted: reward high-confidence matches
+  const avgConfidence = matched.reduce((sum, r) => sum + (r.confidence || 0.5), 0) / matched.length;
+  const confidenceScore = avgConfidence * 100;
+
+  return hitRate * 40 + (intonationScore / 100) * 40 + (confidenceScore / 100) * 20;
 }
 
 /**
@@ -192,16 +198,22 @@ function calculateRhythmScore(matchResults) {
   if (matched.length === 0) return 0;
 
   // Score based on:
-  // 1. Percentage of notes hit (40% weight)
-  // 2. Average timing deviation for hit notes (60% weight)
+  // 1. Percentage of notes hit (35% weight)
+  // 2. Average timing deviation (45% weight) — proportional, not absolute
+  // 3. Timing consistency / low variance (20% weight)
 
   const hitRate = matched.length / matchResults.length;
 
   const avgTimingOff = matched.reduce((sum, r) => sum + Math.abs(r.timingOffMs), 0) / matched.length;
-  // 0ms = 100%, 100ms = 70%, 200ms = 40%, 300ms+ = 0%
-  const timingScore = Math.max(0, 100 - avgTimingOff / 3);
+  // 0ms = 100%, 80ms = 60%, 150ms = 25%, 250ms+ = 0%
+  const timingScore = Math.max(0, 100 - avgTimingOff * 0.5);
 
-  return hitRate * 40 + (timingScore / 100) * 60;
+  // Timing consistency: penalize high variance (inconsistent rhythm)
+  const timingValues = matched.map(r => r.timingOffMs);
+  const timingVariance = calculateVariance(timingValues);
+  const consistencyScore = Math.max(0, 100 - timingVariance / 30);
+
+  return hitRate * 35 + (timingScore / 100) * 45 + (consistencyScore / 100) * 20;
 }
 
 /**

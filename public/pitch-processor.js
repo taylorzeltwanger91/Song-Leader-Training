@@ -28,8 +28,8 @@ class PitchProcessor extends AudioWorkletProcessor {
     // YIN buffer (half frame size)
     this.yinBuffer = new Float32Array(this.frameSize / 2);
 
-    // YIN threshold - lower = stricter
-    this.yinThreshold = 0.12;
+    // YIN threshold - lower = stricter pitch detection
+    this.yinThreshold = 0.10;
 
     // Frequency range (C2 to C#6)
     this.minFreq = 65;
@@ -63,8 +63,8 @@ class PitchProcessor extends AudioWorkletProcessor {
     this.framesBelowThreshold = 0;
 
     // Thresholds (will be set after noise measurement)
-    this.silenceThreshold = -50;  // dB
-    this.voiceThreshold = -40;    // dB
+    this.silenceThreshold = -55;  // dB — more sensitive for quieter voices
+    this.voiceThreshold = -45;    // dB
 
     // Handle messages from main thread
     this.port.onmessage = (event) => {
@@ -217,9 +217,9 @@ class PitchProcessor extends AudioWorkletProcessor {
         const idx = Math.floor(sorted.length * 0.2);
         this.noiseFloor = sorted[idx];
 
-        // Set thresholds relative to noise floor
-        this.silenceThreshold = this.noiseFloor + 6;
-        this.voiceThreshold = this.noiseFloor + 12;
+        // Set thresholds relative to noise floor (tighter gaps)
+        this.silenceThreshold = this.noiseFloor + 4;
+        this.voiceThreshold = this.noiseFloor + 9;
 
         this.noiseMeasurementComplete = true;
 
