@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { AudioRecorder, gradePerformance, PitchEngine } from "./audio";
 import { PitchVisualizer } from "./components/PitchVisualizer";
 import { NotationDisplay } from "./components/NotationDisplay";
+import { loadMidiFromUrl } from "./audio/midi-parser";
 import Soundfont from "soundfont-player";
 
 // ═══════════════════════════════════════════════════════════════
@@ -489,26 +490,45 @@ export default function App() {
       return;
     }
     setHymnMelodyLoading(true);
-    fetch(`/hymn_melodies/${hymn.id}.json`)
-      .then(r => {
-        if (!r.ok) throw new Error('No melody');
-        return r.json();
-      })
-      .then(data => {
-        // Convert melody data to the format expected by grader
-        const notes = data.notes.map(n => ({
-          midi: n.midi,
-          freq: 440 * Math.pow(2, (n.midi - 69) / 12),
-          dur: n.dur,
-          measure: n.measure,
-          lyric: n.lyric
-        }));
-        setHymnMelody({ ...data, notes });
+
+    // Try MIDI file first, then fall back to JSON melody data
+    loadMidiFromUrl(`/hymn_midi/${hymn.id}.mid`)
+      .then(midiData => {
+        if (midiData.notes.length === 0) throw new Error('No notes in MIDI');
+        setHymnMelody({
+          title: midiData.title || hymn.title,
+          timeSignature: midiData.timeSignature,
+          bpm: midiData.tempo,
+          keySignature: midiData.keySignature,
+          notes: midiData.notes,
+          tracks: midiData.tracks,
+          selectedTrack: midiData.selectedTrack,
+          source: 'midi',
+        });
         setHymnMelodyLoading(false);
       })
       .catch(() => {
-        setHymnMelody(null);
-        setHymnMelodyLoading(false);
+        // MIDI not available — try JSON melody
+        fetch(`/hymn_melodies/${hymn.id}.json`)
+          .then(r => {
+            if (!r.ok) throw new Error('No melody');
+            return r.json();
+          })
+          .then(data => {
+            const notes = data.notes.map(n => ({
+              midi: n.midi,
+              freq: 440 * Math.pow(2, (n.midi - 69) / 12),
+              dur: n.dur,
+              measure: n.measure,
+              lyric: n.lyric
+            }));
+            setHymnMelody({ ...data, notes, source: 'json' });
+            setHymnMelodyLoading(false);
+          })
+          .catch(() => {
+            setHymnMelody(null);
+            setHymnMelodyLoading(false);
+          });
       });
   }, [hymn]);
 
@@ -933,7 +953,17 @@ export default function App() {
           {hymnMelody && <div style={{marginBottom:12,padding:"8px 16px",background:"#e8f0e8",borderRadius:8,display:"inline-block"}}>
             <span style={{fontSize:11,color:"#3d5640"}}>
               {hymnMelody.title} · {hymnMelody.timeSignature} · {hymnMelody.bpm} BPM · {totalNotes} notes
+              {hymnMelody.source === 'midi' && ' · from MIDI'}
             </span>
+          </div>}
+          {/* Notation display for hymns with melody data */}
+          {hymnMelody?.notes?.length > 0 && <div style={{marginBottom:16,textAlign:"left"}}>
+            <NotationDisplay
+              notes={hymnMelody.notes}
+              timeSignature={hymnMelody.timeSignature || '4/4'}
+              keySignature={hymnMelody.keySignature || 'C'}
+              currentNote={-1}
+            />
           </div>}
           {!hymnMelody && !hymnMelodyLoading && <div style={{marginBottom:12,padding:"8px 16px",background:"#fff8e8",borderRadius:8,display:"inline-block"}}>
             <span style={{fontSize:11,color:"#7a6c3d"}}>No melody data - pitch tracking only</span>
