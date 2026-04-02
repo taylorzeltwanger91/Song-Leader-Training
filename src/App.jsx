@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { AudioRecorder, gradePerformance, PitchEngine } from "./audio";
 import { PitchVisualizer } from "./components/PitchVisualizer";
+import { NotationDisplay } from "./components/NotationDisplay";
 import Soundfont from "soundfont-player";
 
 // ═══════════════════════════════════════════════════════════════
@@ -1024,7 +1025,12 @@ export default function App() {
 
         {/* Note display — always visible */}
         {genNotes && <div style={{position:"relative",marginBottom:16}}>
-          <NoteDisplay notes={genNotes} lyrics={genLyrics}/>
+          <NotationDisplay
+            notes={genNotes}
+            timeSignature={genTS}
+            keySignature={genActualKey}
+            currentNote={-1}
+          />
           {/* Count-in overlay */}
           {cd!==null && <div style={{position:"absolute",inset:0,background:"rgba(250,246,240,0.88)",borderRadius:10,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",backdropFilter:"blur(2px)"}}>
             <div style={{fontSize:11,color:T.tm,marginBottom:8,fontWeight:600,letterSpacing:"0.1em",textTransform:"uppercase"}}>Count-in ({genTS})</div>
@@ -1130,7 +1136,7 @@ export default function App() {
       return <div style={{padding:20}}>
         <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap"}}><span style={mkTag("blue")}>{genTS}</span><span style={mkTag("amber")}>♩ = {genBPM}</span><span style={mkTag("green")}>Key of {genActualKey}</span></div>
         <div style={{...mkC,cursor:"default",display:"flex",justifyContent:"space-around",padding:20}}><Ring s={res.ps} label="Pitch"/><Ring s={res.rs} label="Rhythm"/></div>
-        {genNotes&&<div style={{...mkC,cursor:"default",padding:14}}><NoteDisplay notes={genNotes} lyrics={genLyrics}/></div>}
+        {genNotes&&<div style={{...mkC,cursor:"default",padding:14}}><NotationDisplay notes={genNotes} timeSignature={genTS} keySignature={genActualKey} currentNote={-1}/></div>}
         <div style={{...mkC,cursor:"default",padding:14}}><TempLine data={res.tt}/></div>
         <div style={{...mkC,cursor:"default",padding:14}}><div style={{fontFamily:"var(--serif)",fontSize:15,marginBottom:10}}>Feedback</div>{res.diag.map((d,i)=><div key={i} style={{display:"flex",gap:8,marginBottom:6,padding:"6px 10px",background:T.wl,borderRadius:6}}><span>💡</span><span style={{fontSize:12,color:"#6b5c36",lineHeight:1.5}}>{d}</span></div>)}</div>
 
