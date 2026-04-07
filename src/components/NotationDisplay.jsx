@@ -117,22 +117,37 @@ const KEY_TO_VEX = {
 // ─── Component ──────────────────────────────────────────────
 
 /**
- * Pick a clef automatically from the median MIDI value of the supplied notes.
+ * Pick a clef automatically by minimizing total ledger-line distance.
  *
- * Threshold is the bottom of the treble staff (E4 = MIDI 64) minus a half-
- * octave cushion, landing at MIDI 60 (C4). Median < 60 → bass, otherwise
- * treble. Using the median (not the mean) keeps a melody with a single
- * octave-jump outlier on the right clef.
+ * Treble staff comfortable range: E4 (64) – F5 (77). Bass staff comfortable
+ * range: G2 (43) – A3 (57). For each candidate clef, sum the semitone
+ * distance of each note outside its comfortable range and pick the clef
+ * with the smaller total. Ties go to treble (historical default).
+ *
+ * This picks correctly for octave 2–3 exercises (bass wins) and octave 4–5
+ * exercises (treble wins), and handles straddle cases intuitively by
+ * putting the melody on the clef that needs fewer ledger lines overall.
  */
 function pickClefFromNotes(notes) {
   if (!notes?.length) return 'treble';
   const midis = notes
     .map(n => n.midi)
-    .filter(m => typeof m === 'number' && !isNaN(m))
-    .sort((a, b) => a - b);
+    .filter(m => typeof m === 'number' && !isNaN(m));
   if (!midis.length) return 'treble';
-  const median = midis[Math.floor(midis.length / 2)];
-  return median < 60 ? 'bass' : 'treble';
+
+  const trebleLo = 64, trebleHi = 77; // E4 – F5
+  const bassLo = 43, bassHi = 57;     // G2 – A3
+
+  let trebleCost = 0;
+  let bassCost = 0;
+  for (const midi of midis) {
+    if (midi < trebleLo) trebleCost += trebleLo - midi;
+    else if (midi > trebleHi) trebleCost += midi - trebleHi;
+    if (midi < bassLo) bassCost += bassLo - midi;
+    else if (midi > bassHi) bassCost += midi - bassHi;
+  }
+
+  return bassCost < trebleCost ? 'bass' : 'treble';
 }
 
 /**
