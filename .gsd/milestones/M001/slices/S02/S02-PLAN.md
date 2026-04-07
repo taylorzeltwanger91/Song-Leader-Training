@@ -1,0 +1,18 @@
+# S02: Octave-tolerant grading + pitch-engine range hint
+
+**Goal:** Make the grader match detected pitches to expected notes regardless of octave displacement, and narrow the pitch-engine frequency range based on the selected octave so detection is tuned to the user's register.
+**Demo:** After this: User generates an octave-3 exercise, sings it in their natural octave (2 or 4), and gets a grade > 0 with sensible note matches.
+
+## Tasks
+- [x] **T01: Grader now matches detected pitches by pitch class (modulo octave) and reports octaveShift on each note.** — In matchPitchesToNotes, compute the nearest octave-equivalent MIDI distance when picking the best candidate. The cheapest way: for each candidate, compute `raw = candidate.midi - expected.midi`, then `mod = ((raw % 12) + 12) % 12`, then `octEquiv = mod > 6 ? mod - 12 : mod` (so distance is in [-6, 6] regardless of octave). Track the octave displacement separately. Use absolute octEquiv to pick the best match. Accept the match when |octEquiv| < 1 (same 1-semitone threshold as before). When reporting centsOff, use octEquiv * 100 so the intonation score reflects the singer's pitch relative to the correct pitch class, not the literal MIDI distance. Add an `octaveShift` field to the match result so the UI or diagnostics can show 'sung an octave down'.
+  - Estimate: 30m
+  - Files: src/audio/grader.js
+  - Verify: node -e 'grader smoke test: reference [60,64,67,72], detected at [48,52,55,60] (one octave down) should produce matched=true for all four notes with octaveShift=-1 and centsOff near 0. Also test same-octave and half-octave off cases.' && npm run build 2>&1 | tail -5
+- [x] **T02: Pitch engine detection band now follows the selected exercise octave; hymn practice stays on auto.** — Add a helper (in src/audio/melody-generator.js or a new helper file) `octaveToFrequencyRange(octave)` that maps the selected octave to a pitch-engine frequency band with ±1 octave of headroom so singers can sing up or down. Rough mapping: octave 2 → {min: 55, max: 260} (A1 to C4), octave 3 → {min: 82, max: 520} (E2 to C5), octave 4 → {min: 130, max: 880} (C3 to A5), octave 5 → {min: 220, max: 1200} (A3 to D6). In App.jsx startRec flow (around line 649), after the PitchEngine is created and before init(), call `engine.setVocalRange('custom', octaveBand)` — but PitchEngine.setVocalRange currently only accepts preset strings. Either extend setVocalRange to accept a {min,max} object, or add a new setFrequencyRange method that takes the band directly and use it. Pick whichever is cleaner. Also: when the recording is for a generated exercise, pass genOctave through; when it's for a hymn, leave the range on 'auto'.
+  - Estimate: 25m
+  - Files: src/audio/pitch-engine.js, src/audio/melody-generator.js, src/App.jsx
+  - Verify: npm run build 2>&1 | tail -5 && grep -n 'setFrequencyRange\|octaveToFrequencyRange' src/audio/pitch-engine.js src/audio/melody-generator.js src/App.jsx
+- [x] **T03: Integration smoke proves octave-tolerant grading works end-to-end against a generated octave-3 melody.** — Write a short node smoke test (inline or in a scratch file, no new deps) that: 1) generates a melody with generateMelody('4/4', 80, 4, 'C', 3), 2) fabricates a detected pitch stream one octave down (midi - 12) that matches the reference timing, 3) calls gradePerformance and asserts pitchScore > 50 and all notes matched with octaveShift = -1. Also fabricate a one-octave-up stream and assert the same. Also fabricate a same-octave stream and assert pitchScore > 90. This is the slice-level integration proof.
+  - Estimate: 20m
+  - Files: scratch/octave-grading-smoke.mjs
+  - Verify: node scratch/octave-grading-smoke.mjs && npm run build 2>&1 | tail -5
