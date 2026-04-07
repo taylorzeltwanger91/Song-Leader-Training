@@ -550,11 +550,11 @@ export default function App() {
   const doGenerate = useCallback(() => {
     const key = genKey==="auto" ? KEYS[Math.floor(Math.random()*KEYS.length)] : genKey;
     setGenActualKey(key);
-    const notes = generateMelody(genTS, genBPM, genMeasures, key);
+    const notes = generateMelody(genTS, genBPM, genMeasures, key, genOctave);
     const lyrics = assignLyrics(notes, genMelisma, genSyllables);
     setGenNotes(notes);
     setGenLyrics(lyrics);
-  }, [genTS, genBPM, genMeasures, genKey, genSyllables, genMelisma]);
+  }, [genTS, genBPM, genMeasures, genKey, genOctave, genSyllables, genMelisma]);
 
   const playPitch = useCallback((key) => {
     const freq={C:261.63,Db:277.18,D:293.66,Eb:311.13,E:329.63,F:349.23,"F#":369.99,G:392,Ab:415.3,A:440,Bb:466.16,B:493.88}[key]||261.63;
@@ -1266,6 +1266,22 @@ export default function App() {
           <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
             <button onClick={()=>setGenKey("auto")} style={{padding:"8px 16px",borderRadius:8,border:`1.5px solid ${genKey==="auto"?T.wm:T.cb}`,background:genKey==="auto"?T.wl:T.card,color:genKey==="auto"?"#8a6d1f":T.tm,fontSize:12,fontWeight:600,cursor:"pointer"}}>🎲 Auto</button>
             {KEYS.map(k=><button key={k} onClick={()=>setGenKey(k)} style={{padding:"6px 12px",borderRadius:8,border:`1.5px solid ${genKey===k?T.ac:T.cb}`,background:genKey===k?"#e8f0e8":T.card,color:genKey===k?T.ad:T.tm,fontSize:12,fontWeight:600,cursor:"pointer",minWidth:36}}>{k}</button>)}
+          </div>
+        </div>
+
+        {/* Octave */}
+        <div style={{marginBottom:20}}>
+          <div style={{fontSize:12,fontWeight:600,color:T.tx,marginBottom:8}}>Octave</div>
+          <div style={{display:"flex",gap:8}}>
+            {[2,3,4,5].map(o=>(
+              <button key={o} onClick={()=>setGenOctave(o)} style={{flex:1,padding:"10px 8px",borderRadius:8,border:`1.5px solid ${genOctave===o?T.ac:T.cb}`,background:genOctave===o?"#e8f0e8":T.card,color:genOctave===o?T.ad:T.tm,cursor:"pointer",textAlign:"center"}}>
+                <div style={{fontSize:14,fontWeight:700,fontFamily:"var(--serif)"}}>{o}</div>
+                <div style={{fontSize:9,color:genOctave===o?T.ad:T.tl,marginTop:2}}>{OCTAVE_RANGE_LABELS[o]}</div>
+              </button>
+            ))}
+          </div>
+          <div style={{fontSize:11,color:T.tm,marginTop:6}}>
+            Tonic octave for the generated melody. Lower octaves render on bass clef.
           </div>
         </div>
 
