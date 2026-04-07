@@ -21,6 +21,38 @@ export const OCTAVE_RANGE_LABELS = {
   5: "Soprano",
 };
 
+/**
+ * Map an exercise octave to a pitch-detection frequency band.
+ *
+ * The reference melody for octave N sits in the MIDI band [12*(N+1), 12*(N+3))
+ * (one tonic octave plus the scale-degree-8 octave-up note). We expand that
+ * band to let the singer transpose up or down an octave into their natural
+ * register — the grader is octave-tolerant, but the pitch detector still has
+ * to report a pitch for grading to work.
+ *
+ * We clamp the low end at MIDI 36 (C2 ≈ 65 Hz) because nothing below that is
+ * realistically singable, and we cap the high end at ~1400 Hz because real
+ * singing rarely exceeds that and letting YIN chase higher harmonics produces
+ * noise.
+ *
+ *   octave 2 → C2 (~65 Hz) to B3  (~247 Hz)
+ *   octave 3 → C2 (~65 Hz) to B4  (~494 Hz)
+ *   octave 4 → C3 (~131 Hz) to B5 (~988 Hz)
+ *   octave 5 → C4 (~262 Hz) to B6 (~1976 Hz, capped at 1400)
+ */
+export function octaveToFrequencyRange(octave) {
+  // Low: one octave below the exercise tonic, clamped to C2.
+  const lowMidi = Math.max(36, 12 * octave);
+  // High: one octave above the top of the exercise band (octave+2) minus 1 semitone,
+  // so the band stops on a B rather than overlapping into the next tonic.
+  const highMidi = 12 * (octave + 3) - 1;
+  const midiToHz = (m) => 440 * Math.pow(2, (m - 69) / 12);
+  const lowHz = midiToHz(lowMidi);
+  let highHz = midiToHz(highMidi);
+  if (highHz > 1400) highHz = 1400;
+  return { min: Math.round(lowHz), max: Math.round(highHz) };
+}
+
 // ─── MIDI helpers ───────────────────────────────────────────
 
 export function midiToFreq(midi) {

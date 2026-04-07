@@ -9,6 +9,7 @@ import {
   KEYS,
   NOTE_NAMES,
   OCTAVE_RANGE_LABELS,
+  octaveToFrequencyRange,
 } from "./audio";
 import { PitchVisualizer } from "./components/PitchVisualizer";
 import { NotationDisplay } from "./components/NotationDisplay";
@@ -634,7 +635,7 @@ export default function App() {
     }
   }, [loadInstrument]);
 
-  const startRec = useCallback(async (ts, tempo, referenceMelody = null, useLeadIn = false, leadInDropMode = "off", leadInDropPoint = 0) => {
+  const startRec = useCallback(async (ts, tempo, referenceMelody = null, useLeadIn = false, leadInDropMode = "off", leadInDropPoint = 0, exerciseOctave = null) => {
     // Stop mic test if running
     if (micTestRef.current) {
       micTestRef.current.stop();
@@ -655,6 +656,16 @@ export default function App() {
         onError: (err) => setAudioError(err.message || 'Microphone error'),
         onCalibration: () => {}
       });
+    }
+
+    // Narrow the detector frequency range to the exercise octave when one is
+    // supplied. Hymn practice (no octave) stays on the full-range 'auto'
+    // setting because hymn melodies can span multiple octaves.
+    if (exerciseOctave != null) {
+      const band = octaveToFrequencyRange(exerciseOctave);
+      recorderRef.current.setVocalRange(band);
+    } else {
+      recorderRef.current.setVocalRange('auto');
     }
 
     // Request microphone permission and initialize
@@ -1057,7 +1068,7 @@ export default function App() {
           </div>
 
           <div style={{display:"flex",gap:8,marginTop:12,justifyContent:"center"}}>
-            <button onClick={()=>startRec(genTS,genBPM,genNotes)} style={{...mkB(true),padding:"14px 40px",fontSize:15,borderRadius:12}}>Begin Exercise</button>
+            <button onClick={()=>startRec(genTS,genBPM,genNotes,false,"off",0,genOctave)} style={{...mkB(true),padding:"14px 40px",fontSize:15,borderRadius:12}}>Begin Exercise</button>
             <button onClick={()=>{stopMelody();doGenerate();}} style={{...mkB(false),padding:"14px 20px"}}>🔄 Regenerate</button>
           </div>
         </>}

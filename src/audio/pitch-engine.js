@@ -84,9 +84,20 @@ export class PitchEngine {
   }
 
   /**
-   * Get frequency range based on vocal range setting
+   * Get frequency range based on vocal range setting.
+   *
+   * vocalRange can be:
+   *   - 'bass' | 'tenor' | 'alto' | 'soprano' — named presets
+   *   - 'auto' — full vocal range
+   *   - { min, max } — explicit frequency band (used by the octave selector
+   *     so grading is tuned to the exercise's actual register, with enough
+   *     headroom above and below to let the singer transpose into their
+   *     natural octave).
    */
   _getFrequencyRange() {
+    if (this.vocalRange && typeof this.vocalRange === 'object') {
+      return { min: this.vocalRange.min, max: this.vocalRange.max };
+    }
     switch (this.vocalRange) {
       case 'bass': return { min: 80, max: 350 };
       case 'tenor': return { min: 120, max: 520 };
@@ -584,7 +595,10 @@ export class PitchEngine {
   }
 
   /**
-   * Update vocal range
+   * Update vocal range.
+   *
+   * Accepts either a preset string ('bass', 'tenor', 'alto', 'soprano', 'auto')
+   * or an explicit { min, max } frequency band in Hz.
    */
   setVocalRange(range) {
     this.vocalRange = range;
@@ -597,6 +611,17 @@ export class PitchEngine {
         max: freqRange.max
       });
     }
+  }
+
+  /**
+   * Set the pitch-detection frequency band directly.
+   *
+   * Equivalent to `setVocalRange({ min, max })` but reads more naturally at
+   * the call site when the range comes from an octave selection rather than
+   * a voice preset.
+   */
+  setFrequencyRange(min, max) {
+    this.setVocalRange({ min, max });
   }
 
   /**

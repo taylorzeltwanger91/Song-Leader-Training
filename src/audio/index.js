@@ -10,4 +10,5 @@ export {
   MAJOR_SCALE,
   NOTE_NAMES,
   OCTAVE_RANGE_LABELS,
+  octaveToFrequencyRange,
 } from './melody-generator.js';
