@@ -100,7 +100,46 @@ function buildExpectedTiming(melody, msPerBeatUnit) {
 }
 
 /**
+ * Compute the pitch-class distance between a detected MIDI and expected MIDI,
+ * tolerating octave displacement.
+ *
+ * Returns:
+ *   - pitchClassDistance: signed semitone distance in [-6, 6] after pitch-class
+ *     folding. This is how far the detected pitch is from the expected pitch
+ *     class modulo the octave.
+ *   - octaveShift: number of octaves the detected pitch is shifted from the
+ *     expected (positive = sung higher, negative = sung lower). Zero when the
+ *     singer is in the reference octave.
+ *
+ * The goal: a singer who sings the melody one octave down still gets matched
+ * note-for-note, with `pitchClassDistance` reflecting actual intonation error
+ * (not 1200 cents of octave displacement).
+ */
+function computePitchClassDistance(detectedMidi, expectedMidi) {
+  const raw = detectedMidi - expectedMidi;
+  // Fold into [-6, 6] so C-to-B distance is -1 not +11
+  let pc = ((raw % 12) + 12) % 12;
+  if (pc > 6) pc -= 12;
+  // Octave shift: how many whole octaves separate the raw diff from the folded diff
+  const octaveShift = Math.round((raw - pc) / 12);
+  return { pitchClassDistance: pc, octaveShift };
+}
+
+/**
  * Match detected pitches to expected notes
+ *
+ * Matching is octave-tolerant: the best candidate is the one whose pitch
+ * class is closest to the expected pitch class, regardless of which octave
+ * the singer is actually in. This lets a low singer transpose an exercise
+ * down one octave without every note being marked as missed.
+ *
+ * Centrally, `centsOff` reports the intonation error relative to the nearest
+ * pitch-class-equivalent reference, so it stays in [-600, 600] cents and
+ * reflects actual tuning rather than octave displacement.
+ *
+ * `octaveShift` is surfaced on each result so the UI and diagnostics can
+ * report "sung an octave down" without having to reverse-engineer it from
+ * raw MIDI values.
  */
 function matchPitchesToNotes(detectedPitches, expectedNotes) {
   const results = [];
@@ -121,26 +160,39 @@ function matchPitchesToNotes(detectedPitches, expectedNotes) {
         matched: false,
         centsOff: 0,
         timingOffMs: 0,
+        octaveShift: 0,
         detectedMidi: null
       });
       continue;
     }
 
-    // Find the pitch closest to the expected note
+    // Find the pitch whose pitch class is closest to the expected pitch class
     let bestMatch = null;
     let bestDistance = Infinity;
+    let bestOctaveShift = 0;
 
     for (const candidate of candidates) {
-      const midiDistance = Math.abs(candidate.midi - expected.midi);
-      if (midiDistance < bestDistance) {
-        bestDistance = midiDistance;
+      const { pitchClassDistance, octaveShift } = computePitchClassDistance(
+        candidate.midi,
+        expected.midi
+      );
+      const absDistance = Math.abs(pitchClassDistance);
+      if (absDistance < bestDistance) {
+        bestDistance = absDistance;
         bestMatch = candidate;
+        bestOctaveShift = octaveShift;
       }
     }
 
-    // Consider it a match if within 1 semitone (tightened from 2)
+    // Consider it a match if within 1 semitone of the expected pitch class.
+    // Octave displacement alone does NOT count as a miss.
     const matched = bestDistance < 1;
-    const centsOff = matched ? Math.round((bestMatch.midi - expected.midi) * 100) : 0;
+    // Re-compute the pitch-class-aware centsOff so intonation reflects tuning,
+    // not octave displacement
+    const { pitchClassDistance: finalPcDist } = matched
+      ? computePitchClassDistance(bestMatch.midi, expected.midi)
+      : { pitchClassDistance: 0 };
+    const centsOff = matched ? Math.round(finalPcDist * 100) : 0;
     const timingOffMs = matched ? Math.round(bestMatch.timestamp - expected.expectedStart) : 0;
 
     results.push({
@@ -148,6 +200,7 @@ function matchPitchesToNotes(detectedPitches, expectedNotes) {
       matched,
       centsOff,
       timingOffMs,
+      octaveShift: matched ? bestOctaveShift : 0,
       detectedMidi: bestMatch ? bestMatch.midiRounded : null,
       detectedFreq: bestMatch ? bestMatch.frequency : null,
       confidence: bestMatch ? bestMatch.confidence : 0,
@@ -258,6 +311,22 @@ function generateDiagnostics(matchResults, detectedPitches, expectedNotes) {
     diagnostics.push("Many notes were missed or significantly off-pitch. Try singing more slowly and deliberately.");
   } else if (hitRate < 0.8) {
     diagnostics.push("Some notes need work. Focus on the highlighted problem areas.");
+  }
+
+  // Octave displacement — is the singer consistently an octave off from the reference?
+  const shiftCounts = matched.reduce((acc, r) => {
+    const s = r.octaveShift || 0;
+    acc[s] = (acc[s] || 0) + 1;
+    return acc;
+  }, {});
+  const dominantShift = Object.entries(shiftCounts)
+    .sort((a, b) => b[1] - a[1])[0];
+  if (dominantShift && Number(dominantShift[0]) !== 0 && dominantShift[1] > matched.length * 0.6) {
+    const shift = Number(dominantShift[0]);
+    const word = shift > 0 ? "up" : "down";
+    const n = Math.abs(shift);
+    const octaves = n === 1 ? "one octave" : `${n} octaves`;
+    diagnostics.push(`Singing ${octaves} ${word} from the reference. Intonation is scored against the correct pitch class, but try picking an octave that matches your voice for easier reading.`);
   }
 
   // Pitch tendency
