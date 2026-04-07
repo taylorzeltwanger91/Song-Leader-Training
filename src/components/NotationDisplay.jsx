@@ -117,6 +117,25 @@ const KEY_TO_VEX = {
 // ─── Component ──────────────────────────────────────────────
 
 /**
+ * Pick a clef automatically from the median MIDI value of the supplied notes.
+ *
+ * Threshold is the bottom of the treble staff (E4 = MIDI 64) minus a half-
+ * octave cushion, landing at MIDI 60 (C4). Median < 60 → bass, otherwise
+ * treble. Using the median (not the mean) keeps a melody with a single
+ * octave-jump outlier on the right clef.
+ */
+function pickClefFromNotes(notes) {
+  if (!notes?.length) return 'treble';
+  const midis = notes
+    .map(n => n.midi)
+    .filter(m => typeof m === 'number' && !isNaN(m))
+    .sort((a, b) => a - b);
+  if (!midis.length) return 'treble';
+  const median = midis[Math.floor(midis.length / 2)];
+  return median < 60 ? 'bass' : 'treble';
+}
+
+/**
  * NotationDisplay - renders an array of notes as standard music notation
  *
  * Props:
@@ -124,7 +143,8 @@ const KEY_TO_VEX = {
  *   timeSignature - String like "4/4", "3/4", "6/8"
  *   keySignature  - String like "C", "G", "Bb", "F#"
  *   currentNote   - Index of the currently active note (for highlighting), -1 for none
- *   clef          - "treble" or "bass" (default "treble")
+ *   clef          - "treble" or "bass". If omitted, picked automatically from
+ *                   the median MIDI of the notes (median < 60 → bass).
  *   measuresPerLine - How many measures per staff line (default: auto based on container width)
  */
 export function NotationDisplay({
@@ -132,11 +152,17 @@ export function NotationDisplay({
   timeSignature = '4/4',
   keySignature = 'C',
   currentNote = -1,
-  clef = 'treble',
+  clef: clefProp,
   measuresPerLine: measuresPerLineProp,
 }) {
   const containerRef = useRef(null);
   const rendererRef = useRef(null);
+
+  // Resolve clef: explicit prop wins, otherwise pick from note range.
+  const clef = useMemo(
+    () => clefProp || pickClefFromNotes(notes),
+    [clefProp, notes]
+  );
 
   // Group notes by measure
   const measureGroups = useMemo(() => {
