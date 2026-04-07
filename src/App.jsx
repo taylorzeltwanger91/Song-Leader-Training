@@ -1,5 +1,15 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { AudioRecorder, gradePerformance, PitchEngine } from "./audio";
+import {
+  AudioRecorder,
+  gradePerformance,
+  PitchEngine,
+  generateMelody,
+  midiToFreq,
+  midiToNoteName,
+  KEYS,
+  NOTE_NAMES,
+  OCTAVE_RANGE_LABELS,
+} from "./audio";
 import { PitchVisualizer } from "./components/PitchVisualizer";
 import { NotationDisplay } from "./components/NotationDisplay";
 import { loadMidiFromUrl } from "./audio/midi-parser";
@@ -46,119 +56,11 @@ function tsDesc(ts) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// MELODY GENERATOR (Hymn-Style Rules from PRD §4)
+// MELODY GENERATOR
+// `generateMelody`, `scaleDegToMidi`, `KEYS`, `NOTE_NAMES`, `midiToFreq`,
+// `midiToNoteName`, and `OCTAVE_RANGE_LABELS` are imported from
+// `./audio/melody-generator.js` (extracted from this file in M001/S01).
 // ═══════════════════════════════════════════════════════════════
-
-const KEYS = ["C","Db","D","Eb","E","F","F#","G","Ab","A","Bb","B"];
-const MAJOR_SCALE = [0,2,4,5,7,9,11]; // intervals from root
-const NOTE_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
-
-function midiToFreq(m) { return 440 * Math.pow(2, (m-69)/12); }
-function scaleDegToMidi(root, deg, octave=4) {
-  const rootMidi = 60 + KEYS.indexOf(root); // C4 = 60 base
-  const interval = MAJOR_SCALE[((deg-1)%7+7)%7];
-  const octShift = Math.floor((deg-1)/7);
-  return rootMidi + interval + (octave-4)*12 + octShift*12;
-}
-
-// Rhythm templates per meter (note durations in beats)
-function getRhythmTemplates(ts) {
-  const {n,d}=parseTS(ts);
-  if (isCompound(ts)) {
-    // Compound: beats are in eighth notes, group by 3
-    const g = n/3;
-    // Each group = 3 eighth notes. Templates for one group:
-    const groupTemplates = [
-      [3],        // dotted quarter (one note per group)
-      [2,1],      // quarter + eighth
-      [1,2],      // eighth + quarter
-      [1,1,1],    // three eighths
-    ];
-    // Build full-measure templates by combining groups
-    const templates = [];
-    for (let i=0; i<6; i++) {
-      const t = [];
-      for (let gi=0; gi<g; gi++) t.push(...groupTemplates[Math.floor(Math.random()*groupTemplates.length)]);
-      templates.push(t);
-    }
-    return templates;
-  }
-  // Simple meters: durations in quarter-note beats (or half-note beats for 4/2)
-  const templates = {
-    "2/4": [[2],[1,1],[1,0.5,0.5],[0.5,0.5,1]],
-    "3/4": [[3],[2,1],[1,2],[1,1,1],[2,0.5,0.5],[0.5,0.5,1,1]],
-    "4/4": [[4],[2,2],[2,1,1],[1,1,2],[1,1,1,1],[3,1],[1,3],[2,1,0.5,0.5]],
-    "4/2": [[4],[2,2],[2,1,1],[1,1,2],[1,1,1,1],[3,1]],
-  };
-  return templates[ts] || templates["4/4"];
-}
-
-function generateMelody(ts, bpm, measures, key) {
-  const {n,d}=parseTS(ts);
-  const comp = isCompound(ts);
-  const beatsPerMeasure = comp ? n : n; // in subdivision units
-  const rhythmTemplates = getRhythmTemplates(ts);
-
-  // Build rhythm for all measures
-  const rhythm = [];
-  for (let m=0; m<measures; m++) {
-    const tmpl = rhythmTemplates[Math.floor(Math.random()*rhythmTemplates.length)];
-    // Ensure template sums to beatsPerMeasure (for compound) or n (for simple)
-    const targetSum = comp ? n : n * (d===2?1:1);
-    let sum = tmpl.reduce((a,b)=>a+b,0);
-    if (Math.abs(sum-targetSum)<0.01) {
-      tmpl.forEach(dur => rhythm.push({dur, measure:m}));
-    } else {
-      // Fallback: fill with equal notes
-      for (let i=0;i<n;i++) rhythm.push({dur:1, measure:m});
-    }
-  }
-
-  // Generate scale degrees (hymn-style: §4.1)
-  const notes = [];
-  let prevDeg = 1; // start on tonic
-  const chordTones = [1,3,5];
-
-  for (let i=0; i<rhythm.length; i++) {
-    const r = rhythm[i];
-    const isFirst = i===0;
-    const isLast = i===rhythm.length-1;
-    const isSecondLast = i===rhythm.length-2;
-    const isMeasureStart = i===0 || rhythm[i-1]?.measure !== r.measure;
-
-    let deg;
-    if (isFirst) { deg = 1; }
-    else if (isLast) { deg = 1; } // end on tonic
-    else if (isSecondLast) {
-      // Cadence: approach tonic from 2 or 7
-      deg = Math.random()<0.6 ? 2 : 7;
-    }
-    else {
-      // Hymn-style motion: 60-80% stepwise
-      const stepwise = Math.random() < 0.7;
-      if (stepwise) {
-        const dir = Math.random()<0.5 ? 1 : -1;
-        deg = prevDeg + dir;
-      } else {
-        // Leap: mostly 3rds, occasional 4th/5th
-        const leapSize = Math.random()<0.6 ? 2 : (Math.random()<0.7 ? 3 : 4);
-        const dir = Math.random()<0.5 ? 1 : -1;
-        deg = prevDeg + dir * leapSize;
-      }
-      // Keep in range (1-8 for one octave)
-      deg = Math.max(1, Math.min(8, deg));
-      // Strong beats favor chord tones
-      if (isMeasureStart && !chordTones.includes(((deg-1)%7)+1)) {
-        const nearest = chordTones.reduce((a,b) => Math.abs(b-deg)<Math.abs(a-deg)?b:a);
-        if (Math.random()<0.5) deg = nearest;
-      }
-    }
-    const midi = scaleDegToMidi(key, deg);
-    notes.push({ deg, midi, dur: r.dur, measure: r.measure, freq: midiToFreq(midi) });
-    prevDeg = deg;
-  }
-  return notes;
-}
 
 // ═══════════════════════════════════════════════════════════════
 // LYRICS SYSTEM (with syllable complexity + melisma control)
@@ -426,6 +328,7 @@ export default function App() {
   const [genBPM,setGenBPM]=useState(80);
   const [genMeasures,setGenMeasures]=useState(8);
   const [genKey,setGenKey]=useState("auto");
+  const [genOctave,setGenOctave]=useState(4); // tonic octave: 2 (bass) – 5 (soprano)
   const [genSyllables,setGenSyllables]=useState(1); // 1, 2, or 3
   const [genMelisma,setGenMelisma]=useState(0); // 0-40 percent
   const [genNotes,setGenNotes]=useState(null);
