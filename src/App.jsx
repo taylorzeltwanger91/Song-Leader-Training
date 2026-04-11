@@ -93,7 +93,7 @@ function getRhythmTemplates(ts) {
   return templates[ts] || templates["4/4"];
 }
 
-function generateMelody(ts, bpm, measures, key) {
+function generateMelody(ts, bpm, measures, key, octave=4) {
   const {n,d}=parseTS(ts);
   const comp = isCompound(ts);
   const beatsPerMeasure = comp ? n : n; // in subdivision units
@@ -153,7 +153,7 @@ function generateMelody(ts, bpm, measures, key) {
         if (Math.random()<0.5) deg = nearest;
       }
     }
-    const midi = scaleDegToMidi(key, deg);
+    const midi = scaleDegToMidi(key, deg, octave);
     notes.push({ deg, midi, dur: r.dur, measure: r.measure, freq: midiToFreq(midi) });
     prevDeg = deg;
   }
@@ -426,6 +426,7 @@ export default function App() {
   const [genBPM,setGenBPM]=useState(80);
   const [genMeasures,setGenMeasures]=useState(8);
   const [genKey,setGenKey]=useState("auto");
+  const [genOctave,setGenOctave]=useState(4); // 3=low, 4=mid, 5=high
   const [genSyllables,setGenSyllables]=useState(1); // 1, 2, or 3
   const [genMelisma,setGenMelisma]=useState(0); // 0-40 percent
   const [genNotes,setGenNotes]=useState(null);
@@ -647,11 +648,11 @@ export default function App() {
   const doGenerate = useCallback(() => {
     const key = genKey==="auto" ? KEYS[Math.floor(Math.random()*KEYS.length)] : genKey;
     setGenActualKey(key);
-    const notes = generateMelody(genTS, genBPM, genMeasures, key);
+    const notes = generateMelody(genTS, genBPM, genMeasures, key, genOctave);
     const lyrics = assignLyrics(notes, genMelisma, genSyllables);
     setGenNotes(notes);
     setGenLyrics(lyrics);
-  }, [genTS, genBPM, genMeasures, genKey, genSyllables, genMelisma]);
+  }, [genTS, genBPM, genMeasures, genKey, genOctave, genSyllables, genMelisma]);
 
   const playPitch = useCallback((key) => {
     const freq={C:261.63,Db:277.18,D:293.66,Eb:311.13,E:329.63,F:349.23,"F#":369.99,G:392,Ab:415.3,A:440,Bb:466.16,B:493.88}[key]||261.63;
@@ -1363,6 +1364,19 @@ export default function App() {
           <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
             <button onClick={()=>setGenKey("auto")} style={{padding:"8px 16px",borderRadius:8,border:`1.5px solid ${genKey==="auto"?T.wm:T.cb}`,background:genKey==="auto"?T.wl:T.card,color:genKey==="auto"?"#8a6d1f":T.tm,fontSize:12,fontWeight:600,cursor:"pointer"}}>🎲 Auto</button>
             {KEYS.map(k=><button key={k} onClick={()=>setGenKey(k)} style={{padding:"6px 12px",borderRadius:8,border:`1.5px solid ${genKey===k?T.ac:T.cb}`,background:genKey===k?"#e8f0e8":T.card,color:genKey===k?T.ad:T.tm,fontSize:12,fontWeight:600,cursor:"pointer",minWidth:36}}>{k}</button>)}
+          </div>
+        </div>
+
+        {/* Octave / Register */}
+        <div style={{marginBottom:20}}>
+          <div style={{fontSize:12,fontWeight:600,color:T.tx,marginBottom:8}}>Register (Octave)</div>
+          <div style={{display:"flex",gap:8}}>
+            {[{v:3,label:"Low",desc:"Bass / Tenor"},{v:4,label:"Mid",desc:"Alto / Soprano"},{v:5,label:"High",desc:"Upper Soprano"}].map(opt=>(
+              <button key={opt.v} onClick={()=>setGenOctave(opt.v)} style={{flex:1,padding:"10px 8px",borderRadius:8,border:`1.5px solid ${genOctave===opt.v?T.ac:T.cb}`,background:genOctave===opt.v?"#e8f0e8":T.card,color:genOctave===opt.v?T.ad:T.tm,cursor:"pointer",textAlign:"center"}}>
+                <div style={{fontSize:13,fontWeight:600}}>{opt.label}</div>
+                <div style={{fontSize:9,color:genOctave===opt.v?T.ad:T.tl,marginTop:2}}>{opt.desc}</div>
+              </button>
+            ))}
           </div>
         </div>
 
