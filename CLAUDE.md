@@ -40,7 +40,7 @@ Song leader training and coaching app for hymn singing. Client-side only React a
 - **Clean up legacy files in root** (zions-hymns-trainer.jsx, zions-hymns-trainer_3.jsx — dead code). When touching related functionality, prefer removing dead code over working around it.
 - **No auth system needed.** This is a local practice tool. Do not add authentication or user management.
 - **No env vars.** Do not introduce environment variable dependencies.
-- **Add CSP header before deploying new features.** Content-Security-Policy is the last missing security header — add it to vercel.json.
+- ~~**Add CSP header before deploying new features.**~~ (RESOLVED 2026-05-02 — CSP added to vercel.json.)
 <!-- SCAN:AUTO:GUARDRAILS:END -->
 
 ---
@@ -66,10 +66,10 @@ Song leader training and coaching app for hymn singing. Client-side only React a
 <!-- SCAN:AUTO:FLAGS:START -->
 - App.jsx is 1,381 lines (needs decomposition) — maintenance
 - Legacy root files: zions-hymns-trainer.jsx + zions-hymns-trainer_3.jsx (~1,433 lines dead code) — maintenance
-- No Content-Security-Policy header configured — moderate
+- ~~No Content-Security-Policy header configured~~ (RESOLVED 2026-05-02)
 - Google Fonts CDN loaded via CSS @import without SRI (App.jsx line 257) — moderate
 - soundfont-player fetches church_organ from unpinned MusyngKite CDN at runtime — moderate
-- Node version unpinned (no .nvmrc or engines field in package.json) — maintenance
+- Node version: .nvmrc bumped 20→22 on 2026-05-02 (Node 20 EOL'd 2026-04-30) — maintenance
 - soundfont-player v0.12.0 unmaintained since 2018 (no maintained alternative available) — maintenance
 <!-- SCAN:AUTO:FLAGS:END -->
 
@@ -85,8 +85,8 @@ Repo is PUBLIC — no secrets in source (acceptable for this public practice too
 ### Active Flags
 | Severity | Category | Confidence | Description |
 |----------|----------|------------|-------------|
-| P1 | npm-cve-high | 0.90 | 3 high-severity CVEs in dev dependencies (picomatch ReDoS CVSS 7.5, rollup path traversal, vite path traversal + arbitrary file read). Dev-only — no production runtime risk. Exploit: Vite dev server WebSocket allows arbitrary file reads if dev visits a malicious page while running `npm run dev`. Fix: `npm audit fix` or update vite >= 6.4.2. |
-| P3 | missing-csp | 0.95 | Content-Security-Policy header missing from vercel.json — all other headers confirmed deployed. |
+| ~~P1~~ RESOLVED 2026-05-02 | npm-cve-high | 0.90 | (RESOLVED) `npm audit fix` brought 4 vulns → 0. |
+| ~~P3~~ RESOLVED 2026-05-02 | missing-csp | 0.95 | (RESOLVED) CSP + Permissions-Policy added to vercel.json. |
 | P3 | cdn-no-sri | 0.85 | Google Fonts loaded via CSS @import (App.jsx line 257) with no SRI hash. soundfont-player fetches MusyngKite CDN at runtime with no integrity check. |
 
 ### Watch List (confidence < 0.8)
@@ -113,8 +113,8 @@ _None._
 - src/audio/pitch-engine.js is 607 lines — borderline (category: file-over-500)
 - soundfont-player v0.12.0 unmaintained since 2018 — no maintained alternative available (category: deprecated-packages)
 - No Prettier config found; 20 files need formatting — run `npx prettier --write .` and add .prettierrc (category: formatting-inconsistency)
-- Missing /.well-known/security.txt (category: no-security-contact)
-- Missing robots.txt — 404 on deployed site (category: missing-robots-txt)
+- ~~Missing /.well-known/security.txt~~ (RESOLVED 2026-05-02 — added)
+- ~~Missing robots.txt~~ (RESOLVED 2026-05-02 — added)
 <!-- SCAN:AUTO:END -->
 
 ---
