@@ -520,6 +520,7 @@ export default function App() {
               midi: n.midi,
               freq: 440 * Math.pow(2, (n.midi - 69) / 12),
               dur: n.dur,
+              beat: n.beat,
               measure: n.measure,
               lyric: n.lyric
             }));
@@ -848,7 +849,10 @@ export default function App() {
         ps: gradeResult.pitchScore,
         rs: gradeResult.rhythmScore,
         ls: gradeResult.leadershipScore,
-        co: Math.round(gradeResult.stabilityScore * 0.9 + 10),
+        // No `co` (count-off): nothing measures the count-off. It used to be
+        // reported as stabilityScore * 0.9 + 10 — an invented number presented as
+        // a measurement. Removed rather than fabricated; add it back when there is
+        // something real behind it.
         ts: gradeResult.stabilityScore,
         pst: gradeResult.pitchScore,
         tt: gradeResult.tempoData,
@@ -859,7 +863,7 @@ export default function App() {
       });
     } else {
       setRes({
-        ps: 0, rs: 0, ls: 0, co: 0, ts: 0, pst: 0,
+        ps: 0, rs: 0, ls: 0, ts: 0, pst: 0,
         tt: [], pt: [],
         diag: pitchHistory.length === 0
           ? ["No pitch detected. Make sure your microphone is working and sing clearly."]
@@ -966,19 +970,20 @@ export default function App() {
               currentNote={-1}
             />
           </div>}
-          {!hymnMelody && !hymnMelodyLoading && <div style={{marginBottom:12,padding:"8px 16px",background:"#fff8e8",borderRadius:8,display:"inline-block"}}>
-            <span style={{fontSize:11,color:"#7a6c3d"}}>No melody data - pitch tracking only</span>
+          {!hymnMelody && !hymnMelodyLoading && <div style={{marginBottom:12,padding:"10px 16px",background:"#fff8e8",borderRadius:8,maxWidth:420}}>
+            <div style={{fontSize:12,fontWeight:700,color:"#7a6c3d",marginBottom:3}}>No melody data for this hymn yet</div>
+            <div style={{fontSize:11,color:"#7a6c3d",lineHeight:1.5}}>You can read the music, but there is nothing to grade against — so practice is unavailable here. Hymn 237 is the only one transcribed so far.</div>
           </div>}
-          <button onClick={()=>startRec(
-            hymnMelody?.timeSignature||"4/4",
-            hymnMelody?.bpm||80,
-            hymnMelody?.notes,
-            dropMode!=="off" && hymnMelody?.notes?.length>0,
+          {hymnMelody && <button onClick={()=>startRec(
+            hymnMelody.timeSignature||"4/4",
+            hymnMelody.bpm||80,
+            hymnMelody.notes,
+            dropMode!=="off" && hymnMelody.notes?.length>0,
             dropMode,
             dropPoint
           )} style={{...mkB(true),padding:"14px 40px",fontSize:15,borderRadius:12}}>
             {dropMode==="off"?"Begin "+( mode==="test"?"Test":"Practice"):dropMode==="full"?"Play & Sing Along":"Play Lead-in & Sing"}
-          </button>
+          </button>}
         </div>}
 
         {rec && <div style={{marginTop:16,padding:16,background:"#fff",border:"1.5px solid #e8e0d4",borderRadius:10}}>
@@ -1017,7 +1022,7 @@ export default function App() {
       return <div style={{padding:20}}>
         <div style={{...mkC,cursor:"default",display:"flex",justifyContent:"space-around",padding:20}}><Ring s={res.ps} label="Pitch"/><Ring s={res.rs} label="Rhythm"/><Ring s={res.ls} label="Leadership"/></div>
         <div style={{...mkC,cursor:"default",padding:14}}><div style={{fontFamily:"var(--serif)",fontSize:15,marginBottom:10}}>Leadership Breakdown</div>
-          {[{l:"Count-off",s:res.co,w:"30%"},{l:"Tempo Stability",s:res.ts,w:"40%"},{l:"Pitch Stability",s:res.pst,w:"30%"}].map((x,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}><div style={{flex:1,fontSize:12,color:T.tm}}>{x.l}</div><div style={{width:100,height:5,borderRadius:3,background:"#e8e0d4",overflow:"hidden"}}><div style={{height:"100%",borderRadius:3,width:`${x.s}%`,background:x.s>=85?"#5c7a5e":x.s>=65?"#b08d3a":"#a33b3b",transition:"width 1s"}}/></div><span style={{fontSize:12,fontWeight:700,width:28,textAlign:"right"}}>{x.s}</span></div>)}
+          {[{l:"Tempo Stability",s:res.ts,w:"50%"},{l:"Pitch Stability",s:res.pst,w:"50%"}].map((x,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}><div style={{flex:1,fontSize:12,color:T.tm}}>{x.l}</div><div style={{width:100,height:5,borderRadius:3,background:"#e8e0d4",overflow:"hidden"}}><div style={{height:"100%",borderRadius:3,width:`${x.s}%`,background:x.s>=85?"#5c7a5e":x.s>=65?"#b08d3a":"#a33b3b",transition:"width 1s"}}/></div><span style={{fontSize:12,fontWeight:700,width:28,textAlign:"right"}}>{x.s}</span></div>)}
         </div>
         <div style={{...mkC,cursor:"default",padding:14}}><TempLine data={res.tt}/></div>
         <div style={{...mkC,cursor:"default",padding:14}}><div style={{fontFamily:"var(--serif)",fontSize:15,marginBottom:10}}>Feedback</div>{res.diag.map((d,i)=><div key={i} style={{display:"flex",gap:8,marginBottom:6,padding:"6px 10px",background:T.wl,borderRadius:6}}><span>💡</span><span style={{fontSize:12,color:"#6b5c36",lineHeight:1.5}}>{d}</span></div>)}</div>

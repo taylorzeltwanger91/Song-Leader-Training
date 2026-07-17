@@ -35,7 +35,7 @@ export function gradePerformance(detectedPitches, referenceMelody, bpm, timeSign
   }
 
   // Build expected note timing
-  const expectedNotes = buildExpectedTiming(referenceMelody, msPerBeatUnit);
+  const expectedNotes = buildExpectedTiming(referenceMelody, msPerBeatUnit, beatsPerMeasure);
 
   // Match detected pitches to expected notes
   const matchResults = matchPitchesToNotes(detectedPitches, expectedNotes);
@@ -73,27 +73,64 @@ export function gradePerformance(detectedPitches, referenceMelody, bpm, timeSign
 }
 
 /**
- * Build expected timing for each note based on duration and BPM
+ * Signed distance from an expected note to a detected one, ignoring octave.
+ *
+ * Folded into [-6, +6] so C-to-B reads as -1, not +11. Octave displacement is
+ * not an error here: a bass singing the soprano line an octave down is the norm
+ * in congregational singing. Ignoring the octave also makes the pitch detector's
+ * worst failure mode — octave-doubling errors — disappear as a class, which is
+ * why UltraStar does the same thing (see docs/research/grading-methodology.md).
+ *
+ * @returns {number} semitones off the expected pitch class, in [-6, 6]
  */
-function buildExpectedTiming(melody, msPerBeatUnit) {
+function pitchClassDistance(detectedMidi, expectedMidi) {
+  const raw = detectedMidi - expectedMidi;
+  let pc = ((raw % 12) + 12) % 12;
+  if (pc > 6) pc -= 12;
+  return pc;
+}
+
+/**
+ * Build expected timing for each note.
+ *
+ * Prefers the authored absolute onset (`measure` + `beat`) when the melody
+ * carries one. Falls back to cumulatively summing durations otherwise.
+ *
+ * The fallback is only correct when every bar sums exactly to the meter — and
+ * real transcriptions don't (237.json has bars of 5, 2, 4 and 1 beats in 3/2).
+ * Under cumulative summing a single malformed bar shifts every later note, so a
+ * singer hitting the printed beat is graded as missing it. The `beat` field is
+ * the fix and it was already in the data, unused.
+ */
+function buildExpectedTiming(melody, msPerBeatUnit, beatsPerMeasure) {
   const notes = [];
-  let currentTime = 0;
+
+  // Only trust absolute onsets if every note carries one.
+  const hasAbsoluteOnsets = melody.every(
+    n => Number.isFinite(n.beat) && Number.isFinite(n.measure)
+  );
+
+  let cumulativeTime = 0;
 
   for (let i = 0; i < melody.length; i++) {
     const note = melody[i];
     const durationMs = note.dur * msPerBeatUnit;
 
+    const expectedStart = hasAbsoluteOnsets
+      ? (note.measure * beatsPerMeasure + note.beat) * msPerBeatUnit
+      : cumulativeTime;
+
     notes.push({
       index: i,
       midi: note.midi,
       freq: note.freq || midiToFreq(note.midi),
-      expectedStart: currentTime,
+      expectedStart,
       expectedDuration: durationMs,
       measure: note.measure,
       lyric: note.lyric || ''
     });
 
-    currentTime += durationMs;
+    cumulativeTime += durationMs;
   }
 
   return notes;
@@ -126,21 +163,24 @@ function matchPitchesToNotes(detectedPitches, expectedNotes) {
       continue;
     }
 
-    // Find the pitch closest to the expected note
+    // Find the pitch closest to the expected note, ignoring octave
     let bestMatch = null;
     let bestDistance = Infinity;
+    let bestSignedDistance = 0;
 
     for (const candidate of candidates) {
-      const midiDistance = Math.abs(candidate.midi - expected.midi);
+      const signed = pitchClassDistance(candidate.midi, expected.midi);
+      const midiDistance = Math.abs(signed);
       if (midiDistance < bestDistance) {
         bestDistance = midiDistance;
+        bestSignedDistance = signed;
         bestMatch = candidate;
       }
     }
 
-    // Consider it a match if within 1 semitone (tightened from 2)
+    // Consider it a match if within 1 semitone of the expected pitch class
     const matched = bestDistance < 1;
-    const centsOff = matched ? Math.round((bestMatch.midi - expected.midi) * 100) : 0;
+    const centsOff = matched ? Math.round(bestSignedDistance * 100) : 0;
     const timingOffMs = matched ? Math.round(bestMatch.timestamp - expected.expectedStart) : 0;
 
     results.push({
@@ -171,9 +211,13 @@ function calculatePitchScore(matchResults) {
   if (matched.length === 0) return 0;
 
   // Score based on:
-  // 1. Percentage of notes hit (40% weight)
-  // 2. Average cents deviation for hit notes (40% weight)
-  // 3. Confidence-weighted accuracy (20% weight)
+  // 1. Percentage of notes hit (50% weight)
+  // 2. Average cents deviation for hit notes (50% weight)
+  //
+  // Detector confidence is deliberately NOT a term here. It used to carry 20% of
+  // this score, which meant a quiet room or a cheap microphone cost the singer
+  // "pitch" points for a reason that isn't pitch. Confidence is a property of the
+  // signal chain, not of the performance.
 
   const hitRate = matched.length / matchResults.length;
 
@@ -181,11 +225,7 @@ function calculatePitchScore(matchResults) {
   // 0 cents = 100%, 25 cents = 75%, 50 cents = 50%, 100 cents = 0%
   const intonationScore = Math.max(0, 100 - avgCentsOff * 1.2);
 
-  // Confidence-weighted: reward high-confidence matches
-  const avgConfidence = matched.reduce((sum, r) => sum + (r.confidence || 0.5), 0) / matched.length;
-  const confidenceScore = avgConfidence * 100;
-
-  return hitRate * 40 + (intonationScore / 100) * 40 + (confidenceScore / 100) * 20;
+  return hitRate * 50 + (intonationScore / 100) * 50;
 }
 
 /**
