@@ -13,6 +13,44 @@
 
 ---
 
+## 2026-07-17 — Phase 0 run: off-the-shelf OMR fails. Phase 3 is a custom detector.
+
+Ran the 15-minute test. **Audiveris 5.11.0 is out.** Full results and repro command in
+[`docs/research/omr-and-ingest.md`](./docs/research/omr-and-ingest.md).
+
+**It ran clean and produced garbage** — which is the worst failure mode, and worth
+naming: no crash, well-formed MusicXML, correct part/clef structure, ~10s/page. Then:
+- **Voice separation failed.** S+A merged into *chords*, not voices — `voice 2` carried
+  1–10 notes out of 67–122 per page.
+- **Time signature wrong on all 5 pages.** page-427 read `3/4`; the printed page says
+  **3/2** (verified by eye, so this is wrong against the paper, not against our
+  possibly-suspect `237.json`). One page produced no time signature at all.
+- **Soprano pitch accuracy 10%** (2/21), and pitch-class matching doesn't rescue it.
+- ~1/3 of notes missing.
+- The salvage heuristic — take the top note of each treble chord group, since soprano
+  is always on top in a hymnal — was tested and also returns noise.
+
+**The diagnostic that shapes Phase 3:** the *layout* analysis works. Audiveris found
+staves, clefs, and 14 correct vertical S+A pairings; what it got wrong was **notehead
+position** — precisely what shape noteheads predict (a triangle/diamond centroid sits
+differently than a round dot, so the staff-line assignment is off). So:
+- **Don't** rebuild staff detection, clef detection, or measure segmentation. Audiveris
+  does those correctly on this corpus and could serve as the layout pass.
+- **Do** build notehead detection tuned for shape notes: centroid → staff position,
+  fill state → duration, stem direction → voice. 458 identically-engraved pages is the
+  favorable case for template matching.
+
+**Resolved: Audiveris is AGPL v3** (confirmed by the DMG's click-through licence —
+previously listed as unverified). Implication if it's used for the layout pass: run it
+as a **separate offline batch process producing data files**, not linked into a hosted
+server, or the source-disclosure obligation attaches.
+
+oemer was not run. Audiveris's failure is a property of the input (shape noteheads),
+not of the tool, and oemer is trained on round noteheads too. Worth 10 minutes if
+Phase 3 stalls; don't expect a different answer.
+
+**Cost of knowing this: 15 minutes.** Which was the entire point of sequencing it first.
+
 ## 2026-07-16 — Research landed; backend approved; soprano-first; direction set
 
 Research done across five tracks (OMR/ingest, competitive landscape, grading

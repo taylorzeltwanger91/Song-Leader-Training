@@ -1,6 +1,102 @@
 # OMR & Ingest — can we OCR the music?
 
-Research date: **2026-07-16**. This is the load-bearing question for the whole project.
+Research date: **2026-07-16**. Test run: **2026-07-17**. This is the load-bearing
+question for the whole project.
+
+---
+
+## ✅ RESULT — Phase 0 test was run 2026-07-17. Audiveris is out.
+
+**Verdict: off-the-shelf OMR fails on this hymnal. Phase 3 is a custom notehead
+detector.** The prediction below (that shape notes would defeat it) held — but the
+failure mode is more useful than "it crashes."
+
+### What was run
+Audiveris **5.11.0** (macOS arm64 DMG, bundles its own JRE — no Java install needed),
+batch export on 5 pages including `page-427.png` (hymn 237, diffable against
+`237.json`). ~10 seconds per page.
+
+```bash
+Audiveris.app/Contents/MacOS/Audiveris -batch -export -output ./out \
+  page-427.png page-004.png page-100.png page-200.png page-300.png
+```
+
+Note: the DMG carries an AGPL click-through that blocks `hdiutil attach`. Workaround:
+`hdiutil convert audiveris.dmg -format UDTO -o out.cdr` then attach the `.cdr`.
+
+### It ran clean and produced garbage
+
+| Check | Result |
+|---|---|
+| Ran without crashing | **Yes** — well-formed MusicXML, ~10s/page |
+| Part structure | **Correct** — 2 parts per page |
+| Clef detection | **Correct** — G/line2 (treble), F/line4 (bass) |
+| **Voice separation** (the question) | **FAILED.** S+A merged into **chords**, not voices. `voice 2` holds only 1–10 notes out of 67–122 per page. |
+| **Time signature** | **WRONG ON EVERY PAGE.** page-427 → `3/4`; the printed page says **3/2**. Others: 2/4, 2/4, 3/4, and page-100 produced **no time signature at all**. |
+| **Soprano pitch accuracy** | **10%** — 2/21 exact, 2/21 by pitch class |
+| Note count | 21 chord-groups vs 33 true soprano notes — **~1/3 of notes missing** |
+
+Per-page:
+```
+page-004.mxl  notes= 69  chord-members=24  voice2= 4  timesig=2/4
+page-100.mxl  notes=122  chord-members=44  voice2=10  timesig=NONE
+page-200.mxl  notes= 69  chord-members=24  voice2= 2  timesig=2/4
+page-300.mxl  notes= 79  chord-members=35  voice2= 1  timesig=3/4
+page-427.mxl  notes= 67  chord-members=27  voice2= 4  timesig=3/4  (truth: 3/2)
+```
+
+Audiveris logged its own distress throughout — `Measure{#4P2} Voice{#1 excess:1/4} too
+long`, repeatedly. That's the exact signature of
+[issue #839](https://github.com/Audiveris/audiveris/issues/839): bad voice allocation
+corrupting measure durations.
+
+### The salvage path was tested and also fails
+Since S+A merge as chords, both pitches are still present — and in any hymnal soprano
+is the **top note** of a treble chord. So top-of-chord-group *should* recover the
+melody:
+
+```
+OMR top-of-chord: [60, 67, 67, 60, 67, 71, 60, 62, 67, 67, 76, 72, ...]
+TRUTH soprano:    [64, 64, 67, 69, 64, 65, 67, 67, 69, 64, 67, 64, ...]
+→ 2/21 match (10%). Not an offset, not a transposition. Noise.
+```
+
+### 🔑 The diagnostic that matters
+**The layout analysis works. The notehead reading doesn't.** Audiveris correctly found
+the staves, the clefs, and grouped 14 vertical S+A pairs. What it got wrong was
+**notehead position** — which is exactly what shape notes predict: a triangle or
+diamond has a different centroid than a round dot, so the engine misjudges which staff
+line it sits on.
+
+So the result isn't "OMR is impossible here." It's:
+**the hard part is notehead detection, and the easy part is already solved.**
+
+That shapes Phase 3 concretely:
+- **Do NOT** write staff detection, clef detection, or system/measure segmentation from
+  scratch. Audiveris does those correctly on this corpus and could plausibly be used
+  **for the layout pass only** (AGPL implications apply — see below).
+- **DO** build notehead detection tuned to shape noteheads: centroid → staff position
+  (pitch), fill state (duration), stem direction (voice). 458 pages of identical
+  engraving is the favorable case for template matching.
+
+### Caveats, stated honestly
+- **`237.json` is a suspect ground truth.** The audit found its bars don't sum to the
+  meter, and the file self-describes as *"first-pass transcription and may need
+  refinement."* So "10%" is OMR-wrong measured against possibly-also-wrong.
+- **The time signature is not subject to that caveat.** The printed page plainly reads
+  **3/2** (verified by eye); Audiveris said 3/4. That's wrong against the paper, not
+  against our data. Every duration downstream inherits it.
+- oemer was **not** run — Audiveris's failure mode (notehead position, not tooling) is
+  a property of the input, and oemer is trained on round noteheads too. Worth 10
+  minutes if Phase 3 stalls, but don't expect a different answer.
+
+### ✅ Resolved: the license question
+**Audiveris is AGPL v3** — confirmed by the DMG's own click-through licence. This was
+listed as unverified below; it's now closed. **AGPL matters if we ship it
+server-side**: linking/shipping it in a hosted service triggers source-disclosure
+obligations. For a private app among friends this is low-stakes, but if Audiveris is
+used for the layout pass in Phase 3, run it as a **separate offline batch process**
+producing data files — not linked into the app server.
 
 ---
 
@@ -150,6 +246,9 @@ machine-readable corpus. Worth an hour before writing any CV code.
 
 ## Recommended first experiment
 
+> **This was run on 2026-07-17 — see the RESULT section at the top of this file.
+> Kept below for the reasoning; the answer is now known.**
+
 **Cost: ~15 minutes. It decides Phase 3 entirely.**
 
 Run Audiveris batch export on **5 pages** from `public/sheet_music/`, including
@@ -185,7 +284,8 @@ this specific hymnal. That's a test, not research.
 ---
 
 ## Could not verify
-- Audiveris's license (believed AGPL v3)
+- ~~Audiveris's license~~ → **RESOLVED 2026-07-17: AGPL v3**, confirmed via the DMG's
+  click-through licence.
 - Any SATB/hymnal-specific OMR accuracy benchmark — none appears to exist publicly
 - Enote's existence or capabilities
 - homr's maintenance status, and whether it beats oemer on voice separation

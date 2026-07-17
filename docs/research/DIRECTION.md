@@ -58,18 +58,25 @@ simply what we wire up and validate first.
 
 ## The plan
 
-### Phase 0 — The 15-minute test ⟵ do this first
-Run Audiveris 5.11.0 batch export + oemer on **5 pages** including `page-427.png`
-(hymn 237, so output diffs against known-good `237.json`).
+### ~~Phase 0 — The 15-minute test~~ ✅ DONE 2026-07-17 — Audiveris is out
 
-**The one question:** on the treble staff carrying Soprano and Alto, do voices split
-into `<voice>1</voice>` / `<voice>2</voice>`, or mash into one? Check measure durations
-as a cheap correctness signal.
+Ran Audiveris 5.11.0 batch export on 5 pages. **The prediction held: it fails.** Full
+results in [omr-and-ingest.md](./omr-and-ingest.md).
 
-**Prediction (stated to be falsifiable): it fails, because of the shape notes.** Run it
-anyway — 15 minutes, and if the prediction is wrong, Phase 3 collapses to a batch loop.
+It ran clean and produced garbage: voices merged into chords (not separated), **time
+signature wrong on every page** (3/4 where the paper says 3/2; one page got none at
+all), soprano pitch accuracy **10%**, a third of notes missing.
 
-Also worth an hour here: check whether Zion's Hymns tunes already exist in any
+**The useful part — the layout analysis works; the notehead reading doesn't.**
+Audiveris found the staves, clefs, and vertical S+A pairings correctly, and misread
+notehead *positions* — exactly what shape noteheads predict (different centroid than a
+round dot → wrong staff line). So Phase 3 doesn't start from zero: **don't rebuild
+staff/clef/measure segmentation; do build shape-note notehead detection.**
+
+Also resolved: **Audiveris is AGPL v3** (confirmed via the DMG's click-through). Run it
+as an offline batch process producing data files, never linked into an app server.
+
+Still open, worth an hour: check whether Zion's Hymns tunes already exist in any
 machine-readable corpus. Sourcing beats re-keying, and beats OCR.
 
 ### Phase 1 — Fix the grader, gate it with tests ⟵ independent of everything
