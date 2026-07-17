@@ -1,6 +1,6 @@
 # Tech Debt
 
-Last reviewed: 2026-07-16
+Last reviewed: 2026-07-17
 
 > Known debt to revisit. Things that work but aren't ideal.
 > Updated when new debt is identified, items are resolved, or priorities shift.
@@ -8,13 +8,24 @@ Last reviewed: 2026-07-16
 
 ## Active
 
-### M001's octave-tolerant grading fix is written but unmerged
-- **Where:** branch `origin/huz/1319110013384ed4a3be779f7ced8246`; affects `src/audio/grader.js`, `src/components/NotationDisplay.jsx`, `src/audio/melody-generator.js` (new), `src/audio/pitch-engine.js`
-- **What:** `main` still grades octave-strict. `grader.js:134-142` computes `Math.abs(candidate.midi - expected.midi)` and accepts `bestDistance < 1`, so a singer performing the melody one octave off the reference scores `distance = 12` on every note and is marked as missing all of them. The fix — folding the difference into pitch class ± octave shift — exists on the branch and never landed. Auto-clef selection and the extracted `melody-generator.js` are stranded with it.
-- **Why it's debt:** this is the app's value path. Pitch grading is the product; a bass singing an octave-4 exercise in their natural register gets a score of zero and concludes the app is broken. `M001-CONTEXT.md` documents this as the *original user complaint* ("pitch is kinda out of whack") and correctly diagnoses it as a grader bug, not an engine bug. The work was done and then lost to a merge that took a different branch.
-- **Cost to fix:** small-to-medium. The code exists and was UAT'd. Cost is reviewing agent-written code neither of us has read, then reconciling with the ~160 lines of `App.jsx` change that landed separately in `b16dbb1` — the two branches touch overlapping lines, so this is not a clean cherry-pick.
-- **Risk of not fixing:** **high.** Silent wrong output. The app confidently reports a bad grade for a correct performance.
-- **Trigger:** any user with a non-soprano range. Already triggered — it's the bug report that started M001.
+### Match windows overlap — a note can match its predecessor's audio
+- **Where:** `src/audio/grader.js`, `matchPitchesToNotes` — `windowStart = expectedStart - 150`
+- **What:** the ±150ms tolerance reaches back into the *previous* note's frames. On an ascending line, a singer who is consistently a semitone sharp makes note N sound the pitch of note N+1, and note N+1 then "matches" note N's trailing audio. Found 2026-07-17 while writing the first grader tests (the test had to be rewritten to use a monotone melody to isolate what it meant to assert).
+- **Why it's debt:** it inflates scores in a specific, plausible failure case — a singer drifting sharp gets credit they didn't earn. It's a matching-precision bug, not a silent-zero like the octave bug, so it's lower severity, but it's still the grader lying.
+- **Cost to fix:** small-to-medium. Options: clamp each window to the midpoint between adjacent onsets, or assign each detected frame to exactly one note (a real alignment pass — DTW-style — rather than independent per-note searches).
+- **Risk of not fixing:** medium.
+- **Trigger:** any attempt to make scoring stricter or more trustworthy. Worth doing when the data model lands (Phase 2), since real alignment wants absolute onsets anyway.
+
+### Unmerged M001 branch — now superseded, decide whether to abandon it
+- **Where:** branch `origin/huz/1319110013384ed4a3be779f7ced8246`
+- **What:** the octave-tolerant grading fix on that branch **has been superseded** — Phase 1 (2026-07-17, commit `070e215`) went fully octave-*agnostic*, which is simpler and strictly better than the branch's pitch-class-fold-plus-octave-shift. But the branch also carries **auto-clef selection** in `NotationDisplay` and an **extracted `melody-generator.js` (222 lines)** that `main` still lacks. `NotationDisplay.jsx:135` still hardcodes `clef = 'treble'`, so bass singers still get a ledger-line wall.
+- **Why it's debt:** two useful pieces are still stranded, and the branch will drift further from `main` with every Phase 1–2 change.
+- **Cost to fix:** medium. Not a clean cherry-pick — it overlaps the ~160 lines of `App.jsx` that landed separately in `b16dbb1`, and now also overlaps the Phase 1 grader rewrite.
+- **Risk of not fixing:** low-medium. The severe part (octave grading) is fixed; what's left is UX quality for low voices.
+- **Trigger:** Phase 4 (layout) or any work on notation. **Taylor's call** — it's his agent's code.
+
+### ~~Octave-strict grading~~ ✅ FIXED 2026-07-17
+See Resolved.
 
 ### Only 1 of 250 hymns has melody data — because the OCR step doesn't exist
 - **Where:** `public/hymn_melodies/` (contains `237.json` and nothing else); `public/hymn_index.json` (250 entries); `public/sheet_music/` (458 page PNGs)
@@ -83,4 +94,43 @@ Last reviewed: 2026-07-16
 
 ## Resolved
 
-_None recorded yet. This file starts 2026-07-16; items resolved before that date are in `CLAUDE.md`'s SCAN:AUTO "Resolved Issues" block, maintained by the Watch Tower scan._
+### Octave-strict grading — 2026-07-17 (`070e215`)
+`grader.js` computed `Math.abs(detected - expected)` and matched on `< 1`, so a singer
+one octave from the reference scored distance 12 on every note → 0. Measured on real
+hymn 237 data, a *perfect* performance sung an octave down scored **0 (0/33)**; it now
+scores **100 (33/33)**, identical to at-pitch. Fixed by folding distance into the pitch
+class and ignoring octave entirely (UltraStar's design — it also makes the detector's
+octave-doubling errors vanish as a class). Regression-locked by 6 tests in
+`src/audio/grader.test.js`.
+
+### Timing rebuilt from cumulative duration sums — 2026-07-17 (`070e215`)
+`buildExpectedTiming` ignored the authored `beat` field and summed durations, so one
+malformed bar shifted every later note past the ±150ms window. Now uses absolute onsets
+(`measure` + `beat`) when present, cumulative as fallback. The loader in `App.jsx` was
+also dropping `beat` before the grader ever saw it.
+
+### 237.json bars didn't sum to the meter — 2026-07-17 (`070e215`)
+Measures 0/3/11/12 summed to 5/2/4/1 beats in 3/2. Corrected the final note's duration
+in each; authored beats were already self-consistent and untouched, and corrections net
+to zero (total stays 39 = 13 bars × 3). Regression-locked by 8 tests in
+`src/audio/melody-data.test.js`, which any future transcription must pass.
+
+### Fabricated Count-off score — 2026-07-17 (`070e215`)
+The results screen showed a "Count-off" bar computed as `stabilityScore * 0.9 + 10`.
+Nothing measures a count-off. Removed the value and the bar.
+
+### Detector confidence leaked into the pitch grade — 2026-07-17 (`070e215`)
+`calculatePitchScore` weighted confidence at 20%, so a cheap mic cost "pitch" points for
+a reason that isn't pitch (a perfect performance at 0.4 confidence scored 88 vs 99).
+Weights now hitRate 50 / intonation 50.
+
+### 249 hymns walked users to a zero — 2026-07-17 (`070e215`)
+Begin stayed enabled with no melody data: full ceremony, count-in, recording, then three
+red zeros. Now disabled with an explanation.
+
+### No tests on the value path — 2026-07-17 (`070e215`)
+19 tests added and **wired**: `prebuild` runs `lint && test`, so the build fails if they
+do. This is the gate that would have caught M001's loss in April.
+
+_Items resolved before 2026-07-16 are in `CLAUDE.md`'s SCAN:AUTO "Resolved Issues"
+block, maintained by the Watch Tower scan._

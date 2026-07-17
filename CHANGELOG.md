@@ -11,12 +11,25 @@
 
 ## [Unreleased]
 
+### Fixed
+- **Grading no longer fails singers who sing in their own octave.** A bass singing a hymn perfectly used to score **0 — every note marked missed**; it now scores the same as a soprano at pitch. Matching is octave-agnostic. (2026-07-17)
+- **Timing is read from where notes are printed**, not from adding up durations. A malformed bar used to shift every later note out of the match window, so a correct performance graded as wrong. (2026-07-17)
+- **A quiet room or cheap microphone no longer costs you pitch points.** Detector confidence was 20% of the pitch score; it isn't pitch, so it's gone. (2026-07-17)
+- **Hymn 237's music data corrected** — four bars didn't add up to the 3/2 meter. (2026-07-17)
+- **Hymns with no melody data no longer let you record a performance and then hand back a zero.** Practice is disabled with an explanation instead. (2026-07-17)
+
+### Removed
+- **The "Count-off" score.** Nothing measured a count-off — the number was derived from the stability score. It will come back when something real is behind it. (2026-07-17)
+
 ### Added
 - Project memory layer: `PROJECT-LOG.md`, `SESSION-HANDOFF.md`, `TECH-DEBT.md`, this file, and `AGENTS.md` for non-Claude agents. (2026-07-16)
+- Research findings and project direction in `docs/research/`. (2026-07-16)
+- Tests on the grading math, wired into the build (`prebuild` runs lint + test). (2026-07-17)
 
 ### Known issues
-- Grading is octave-strict: singing a melody an octave from the reference scores as a miss on every note. Fix exists on an unmerged branch — see `TECH-DEBT.md`.
-- Only hymn 237 has melody data; the other 249 hymns are sheet-music browsing only.
+- Only hymn 237 has melody data; the other 249 hymns are sheet-music browsing only. Off-the-shelf OMR was tested and fails on this hymnal's shape notes — see `docs/research/omr-and-ingest.md`.
+- Match windows overlap: a singer drifting sharp can get credit for a note they didn't hit. See `TECH-DEBT.md`.
+- Bass parts render with a wall of ledger lines — clef is hardcoded to treble.
 
 ---
 

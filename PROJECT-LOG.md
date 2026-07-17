@@ -13,6 +13,56 @@
 
 ---
 
+## 2026-07-17 — Phase 1 shipped: the grader tells the truth now, and it's gated
+
+Commit `070e215`. Measured on real hymn 237 data, a **perfect** performance:
+
+| | before | after |
+|---|---|---|
+| at written pitch | 98 (33/33) | 100 (33/33) |
+| **one octave down** (any bass) | **0 (0/33)** | **100 (33/33)** |
+| one octave up | 0 (0/33) | 100 (33/33) |
+
+Every change was proven by a test that failed first, then passed.
+
+**Decision: fully octave-agnostic, not octave-tolerant.** The stranded M001 branch folds
+distance into pitch class ± an octave-shift term. Phase 1 goes further and drops octave
+entirely — simpler, and strictly better for hymnody where singing in your own register
+is the norm. It also makes the pitch detector's worst failure mode (octave-doubling
+errors) vanish as a class rather than needing to be handled, which is precisely why
+UltraStar does the same (`docs/research/grading-methodology.md`). **This supersedes the
+M001 grading work.** What's still stranded on that branch is auto-clef selection and the
+extracted `melody-generator.js` — logged in TECH-DEBT, Taylor's call.
+
+**Decision: delete the Count-off score rather than fake it.** It was
+`stabilityScore * 0.9 + 10`. Nothing measures a count-off. Removed the value and the bar;
+it comes back when something real is behind it.
+
+**Decision: `237.json`'s bars were corrected, not rewritten.** Measures 0/3/11/12 summed
+to 5/2/4/1 in 3/2. The authored `beat` onsets were already self-consistent (verified: no
+note's `beat + dur` disagreed with the next note's `beat`), so the beats are right and
+the durations drifted. Corrected only the final note's duration in each bad bar. The
+corrections **net to zero** — total stays 39 beats = 13 bars × 3 — so this redistributes
+rather than invents. Corroborating: the last note lands on "strive." held for a full bar,
+which is what a hymn ending does. **The pitches remain unverified against the printed
+page.**
+
+**Decision: tests are wired, not suggested.** `prebuild` now runs `lint && test`. 19
+tests: 11 on the grader, 8 validating melody data (bars sum to the meter, onsets agree
+with durations, no note overruns its bar). That data-validation suite is the ingest gate
+any future transcription — hand-entered or OMR-derived — has to pass. This is the gate
+that would have caught M001's loss in April.
+
+**Dependency added: vitest** (dev-only). `AGENTS.md` says ask before adding deps; Phase 1
+required tests and vitest is the natural pair for Vite. Flagged for Taylor.
+
+**Found while testing, not fixed:** match windows overlap. The ±150ms early tolerance
+reaches into the previous note's frames, so on an ascending line a note can match its
+predecessor's audio — a singer drifting sharp gets credit they didn't earn. Logged in
+TECH-DEBT. The honest note: this was discovered because a test failed for a reason I
+hadn't predicted, and the test was rewritten to isolate its actual subject rather than
+widened to pass.
+
 ## 2026-07-17 — Phase 0 run: off-the-shelf OMR fails. Phase 3 is a custom detector.
 
 Ran the 15-minute test. **Audiveris 5.11.0 is out.** Full results and repro command in

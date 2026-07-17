@@ -1,104 +1,102 @@
-# Session Handoff — 2026-07-16
+# Session Handoff — 2026-07-17
 
 > **Ephemeral.** Rewritten at the end of each session via `/log` or trigger phrase. Don't append — overwrite.
 
-## What was done this session
+## What was done
 
-### Picked the project back up after ~4 months
-- Last real feature work by Galen was 2026-02-17. Everything under his name since is automated Watch Tower scan traffic rewriting `CLAUDE.md`'s SCAN:AUTO block, plus two chores (ESLint config 2026-05-07, security auto-fixes 2026-05-02).
-- `git pull` brought main from `f8c0eeb` → `2afa9a8`. The local copy was 4 months stale and missing all of Taylor's April feature work.
-- Installed new deps (VexFlow, `@tonejs/midi`, ESLint 9 toolchain) and verified the build.
+Picked this project back up after ~4 months idle, established what it is and where
+it's going, and shipped Phase 1. Four commits, **none pushed**.
 
-### Audited state and authorship
-- Feature work in April is **taylorzeltwanger91**, not Galen: VexFlow notation, MIDI parsing, pitch-engine accuracy, octave selection.
-- Found a third committer: `huz-agent <huz@local>`, an agent Taylor is running.
-- Traced the M001 milestone and found its planning artifacts and half its code stranded on an unmerged branch. Full writeup in `PROJECT-LOG.md` (2026-07-16). This is the headline finding.
+### 1. Pulled and audited (was 4 months stale)
+`main` moved `f8c0eeb` → `2afa9a8`. Taylor's April feature work (VexFlow notation, MIDI
+parsing, octave selection, pitch-engine accuracy) had never been pulled locally.
 
-### Added the project memory layer
-- Created `PROJECT-LOG.md`, `TECH-DEBT.md`, `CHANGELOG.md`, `AGENTS.md`, and this file. None existed before.
-- Content is derived from git history, branch artifacts, and verified command output — not from memory. Where a fact was unknown (the melody-data plan, the project's actual goal) it's recorded as an open question rather than guessed.
+### 2. Added the project memory layer (`78f414a`)
+None of it existed. Found while auditing: **milestone M001 was planned, built and UAT'd
+by `huz-agent` on a branch that was never merged** — a different, partial huz branch was
+merged instead. Its octave-tolerant grading fix never landed, so `main` shipped a
+silent wrong-output bug for three months.
+
+### 3. Research + direction (`1a69e2c`)
+Five parallel tracks → `docs/research/` (~1,080 lines, `DIRECTION.md` is the entry
+point). Headlines: **Zion's Hymns is a shape-note hymnal** (verified by reading
+`page-427.png`); **nobody has shipped scan→sing→grade**; **UltraStar's octave-agnostic
+matching** is the design to copy; live audio jamming is physically off the table.
+
+### 4. Phase 0 — OMR test (`388e0d4`)
+Ran Audiveris 5.11.0 on 5 pages. **It fails.** Ran clean, produced garbage: voices
+merged into chords, time signature wrong on every page (3/4 where the paper says 3/2),
+soprano accuracy 10%, a third of notes missing. **The useful part: layout analysis works
+(staves/clefs/pairings correct); notehead *position* is what fails** — exactly what
+shape noteheads predict. Also resolved: **Audiveris is AGPL v3**.
+
+### 5. Phase 1 — fixed the grader, gated it with tests (`070e215`)
+Measured on real hymn 237 data, a **perfect** performance:
+
+| | before | after |
+|---|---|---|
+| at pitch | 98 (33/33) | 100 (33/33) |
+| **−1 octave** (any bass) | **0 (0/33)** | **100 (33/33)** |
+| +1 octave | 0 (0/33) | 100 (33/33) |
+
+Every change was proven by a test that failed first. Octave-agnostic matching; timing
+from authored absolute onsets; confidence removed from the pitch score; the fabricated
+Count-off score deleted; Begin disabled when there's no melody data; 237.json's four
+malformed bars corrected. **19 tests, wired** — `prebuild` now runs `lint && test`.
 
 ## Current state
 
-- On `main` at `2afa9a8`, clean except untracked `.bg-shell/` and the new memory files.
-- **Nothing pushed.** Remote is `taylorzeltwanger91/Song-Leader-Training` — Taylor's repo. Push is his call.
-- Build is green: lint 0 errors / 35 warnings, Vite transforms 181 modules in ~1s, bundle 1.4 MB (776 kB gzipped).
-- **`main` still has the octave-strict grading bug.** `grader.js:134-142`. The fix is written and UAT'd on `origin/huz/1319110013384ed4a3be779f7ced8246` and was never merged.
+- On `main`, **4 commits ahead of `origin/main`, nothing pushed.** Galen wants one push.
+- Build green: 0 lint errors (35 warnings), 19/19 tests, ~1s.
+- **Vitest was added as a dev dependency** — flagged, since `AGENTS.md` says ask before
+  adding deps. It's dev-only and Phase 1 required tests. Taylor should know.
+- Working tree: `package-lock.json` modified by installs; untracked `.bg-shell/`.
 
 ## Running state
 
-**none** — no dev server, no background shells, no worktrees. (`.bg-shell/` is a stale untracked artifact directory, not a running process.)
+**none** — no dev server, no background shells, no worktrees.
+
+Scratchpad (safe to delete): Audiveris 5.11.0 + its OMR output live in
+`/private/tmp/claude-501/-Users-galengrimm/9c1e04e1-66cf-42c4-920c-da4bc2f05bf8/scratchpad/`.
+Not in the repo. Re-downloadable from the GitHub release if Phase 3 wants it.
 
 ## Verification
 
-- `npm run build` → exits 0; prebuild lint reports 0 errors, ~35 warnings; "✓ built in ~1s"
-- `git log --oneline -1` → `2afa9a8`
-- `ls public/hymn_melodies/` → `237.json` and nothing else (confirms the 1-of-250 gap is real, not a bad path)
-- `grep -n "bestDistance < 1" src/audio/grader.js` → line 142; **if this still matches, the octave bug is still live**
+- `npm test` → **19 passed** (2 files)
+- `npm run build` → exits 0; prebuild runs lint (0 errors) + tests; "✓ built in ~1s"
+- `git log --oneline origin/main..HEAD` → **4 commits**, the push queue
+- `node -e "..."` sanity: grading hymn 237 sung an octave down should score **100,
+  33/33**. If it ever returns 0 again, the octave regression is back and
+  `src/audio/grader.test.js` should have caught it.
 
-## Research + direction (the bulk of this session)
+## Open questions / next steps
 
-Five research tracks ran in parallel; all findings are committed to
-[`docs/research/`](./docs/research/) with `DIRECTION.md` as the entry point.
-Load-bearing results:
+1. **Phase 2 — the data model** is next per `DIRECTION.md`: voice/part tag (SATB),
+   absolute onsets as source of truth, rests first-class, ingest validation. It's the
+   change that propagates to every consumer, and **it must land before the layout
+   redesign** — part selection is a navigation concept that can't exist until the data
+   can express parts.
+2. **Phase 3 is now a custom notehead detector**, not an Audiveris pipeline. Don't
+   rebuild staff/clef/measure segmentation — Audiveris does those correctly and could
+   serve as the layout pass (run offline as a batch producing data files; AGPL).
+3. **Still unchecked, worth an hour:** does any machine-readable corpus already contain
+   Zion's Hymns tunes? Sourcing beats re-keying and beats OCR.
+4. **The unmerged M001 branch** — its grading fix is now superseded, but auto-clef
+   selection and the extracted `melody-generator.js` are still stranded there. Taylor's
+   call.
+5. **`237.json` pitches are still unverified** against the printed page. The bar sums
+   are fixed; nobody has checked the notes are right.
 
-- **Zion's Hymns is a shape-note hymnal** (verified by opening `page-427.png` — Aiken
-  7-shape noteheads, 4 stacked verses). Worst case for off-the-shelf OMR; ~20 years of
-  shape-note digitization produced **zero** OMR-derived corpora. But the shape is
-  redundant for our purpose, and 458 identically-engraved pages is a favorable CV
-  problem.
-- **Nobody has shipped scan→sing→grade.** The whole choral category is playback-only.
-- **UltraStar's octave-agnostic matching** is the grading design to copy; it supersedes
-  the M001 branch's pitch-class fold.
-- **A second silent-wrong-output bug found:** `237.json`'s bars don't sum to the meter
-  and the authored `beat` field is discarded. Plus the Count-off score is fabricated.
-- **Live audio jamming is physically off the table**; pass-the-mic spectating is the
-  fun and feasible room design.
+## ⚠️ Loose end that will bite
 
-### Decisions recorded (Galen, this session)
-- **Backend approved — the "client-side only" guardrail is retired.**
-- **Soprano is the priority part, but parse all four voices.** Sequencing, not scope.
-- Private app among friends; copyright handled by the owners.
-- Research goes in the repo, not a scratch folder.
-
-### ⚠️ Loose end worth knowing
-The retired guardrail exists **twice** in `CLAUDE.md`. The manual "Scope & Boundaries"
-section (~line 179) is updated. **Line ~133 lives inside the `SCAN:AUTO` block and was
-deliberately NOT edited** — that block is regenerated by the Watch Tower security scan,
-so a hand-edit would be overwritten. **The scan prompt needs updating or the next scan
-will re-assert "do not introduce backend services"** and agents will start refusing the
-approved direction. Until then, `AGENTS.md` + the Scope section are authoritative.
-
-## Answered this session
-
-- **What is this for / whose is it?** Taylor's project, joint collaboration with
-  Galen, sideline fun project — no customers, no deadline. `huz` is Taylor's
-  OpenClaw agent. Full vision recorded in `PROJECT-LOG.md` (2026-07-16, top entry):
-  upload/photo music → OCR notes per voice part (SATB) → sing a cappella (optional
-  keyboard reference playback) → grade pitch and timing.
-- **How do the other 249 hymns get melody data?** They don't, by hand. OCR is the
-  answer, and it's also the product. Reclassified in `TECH-DEBT.md`.
-- **Do the memory files get committed?** Yes, to main. Committed locally this
-  session. **Not pushed** — bundling into one push later, per Galen.
-
-## Open questions / decisions pending
-
-1. **Does OMR actually work on these pages?** The whole vision rests on it, and
-   nobody has tried. Recommended next action: spike Audiveris and/or oemer against
-   ~5 pages from `public/sheet_music/` and look at real output. Multi-voice SATB on
-   a shared grand staff is the known-hard case for OMR. This answers whether the
-   project is plumbing or research before anything gets designed around it.
-2. **What to do about the unmerged M001 branch** — merge, cherry-pick just the
-   grader fix, or rewrite? Not a clean cherry-pick: it overlaps the ~160 lines of
-   `App.jsx` that landed separately in `b16dbb1`. Taylor's call; it's his agent's
-   code and neither of us has read it. Independent of the OCR work — worth doing
-   regardless, since it fixes a live wrong-output bug.
-3. **Should the `huz-agent` commits be reviewed before building on them?** ~8
-   agent-written commits touch the audio and notation paths — the parts that make
-   or break grading.
+The retired "client-side only, no backend" guardrail exists **twice** in `CLAUDE.md`.
+The manual Scope & Boundaries section is updated. **Line ~133 lives inside the
+`SCAN:AUTO` block and was deliberately NOT edited** — that block is regenerated by the
+Watch Tower scan, so a hand-edit gets overwritten. **The scan prompt (in
+`Public Watchtower/prompts/`) needs updating or the next scan will re-assert "do not
+introduce backend services"** and agents will start refusing the approved direction.
+Until then, `AGENTS.md` + the Scope section are authoritative.
 
 ## How to resume
 
-Read `PROJECT-LOG.md` top-down — the 2026-07-16 vision entry, then the M001 finding
-below it. Then `TECH-DEBT.md`, top two items. The next real move is the OMR spike
-(open question #1); everything else is downstream of whether that works.
+Read `docs/research/DIRECTION.md`, then `PROJECT-LOG.md` top-down. Phase 2 is next.
