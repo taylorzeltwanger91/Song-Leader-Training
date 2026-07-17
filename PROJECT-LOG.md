@@ -13,6 +13,67 @@
 
 ---
 
+## 2026-07-16 — Research landed; backend approved; soprano-first; direction set
+
+Research done across five tracks (OMR/ingest, competitive landscape, grading
+methodology, multiplayer architecture, full code audit) and committed to
+[`docs/research/`](./docs/research/). The proposal that came out of it is
+[`docs/research/DIRECTION.md`](./docs/research/DIRECTION.md). Highlights that
+changed how we think about this:
+
+**1. Zion's Hymns is a shape-note hymnal.** Verified by opening
+`public/sheet_music/page-427.png` — the noteheads are triangles, diamonds, squares
+and ovals (Aiken 7-shape), with four verses of lyrics stacked beneath. Shape notes
+are the known-worst case for off-the-shelf OMR, and in ~20 years of shape-note
+digitization **no corpus has ever been produced by OMR** — Sacred Harp, Christian
+Harmony, Southern Harmony are all hand-entry. The one OMR artifact in the space is a
+2003 research prototype that shipped nothing.
+
+*But* the shape is **redundant for our purpose**: solfège is derivable from staff
+position + key, so we need notehead position (pitch), fill state (duration), and stem
+direction (voice) — never the shape itself. And 458 pages from one engraver with rigid
+layout is an unusually favorable CV problem. Ingest is a test, not research.
+
+**2. Nobody has shipped this.** OMR products refuse to listen; grading products refuse
+to let you import; the entire choral category (Cyberbass, ChoraLine, LearnMyPart,
+Choir Player) is playback-only that never evaluates the singer. The join is unserved.
+
+**3. Grading has a known-good design to copy.** UltraStar ignores octave *on purpose* —
+it makes octave-doubling detector errors vanish as a class. That supersedes the
+pitch-class fold on the stranded M001 branch: simpler, and strictly better for hymnody
+where men singing an octave down is the norm.
+
+**4. The audit found a second silent-wrong-output bug and a fabricated measurement.**
+`237.json`'s bars don't sum to the meter (m0=5.0, m3=2.0, m11=4.0, m12=1.0 in 3/2),
+the authored `beat` field is discarded, and timing is rebuilt by cumulative summing —
+so notes drift up to 2 beats against a ±150ms window. Separately, the "Count-off"
+score on the results screen is `stability * 0.9 + 10` — nothing measures a count-off.
+
+### Decisions made (Galen, 2026-07-16)
+
+- **A backend is approved. The "client-side only, no backend, no auth, no env vars —
+  by design" guardrail is RETIRED.** It was the single largest blocker to the vision,
+  and it was governance, not engineering: every agent reading `AGENTS.md` or
+  `CLAUDE.md` would have refused or routed around the goal. Updated in both files.
+- **Soprano is the priority part** — it's what gets sung and what a song leader leads
+  with. **But we parse all four voices.** Soprano-first is sequencing, not scope: the
+  data model, ingest pipeline, and part-picker are built for SATB from day one;
+  soprano is what we wire up and validate first.
+- **Private app among friends. Copyright is handled by the owners** and is not an
+  engineering constraint.
+- **Research lives in the repo**, not in a scratch folder — this is a collaboration and
+  Taylor should see the findings.
+
+### Sequencing (the non-obvious call)
+
+Phase 0 (15-min OMR test) → Phase 1 (fix grader + first tests) → Phase 2 (SATB data
+model) → Phase 3 (ingest) → Phase 4 (layout) → Phase 5 (rooms).
+
+**Layout redesign is deliberately AFTER the data model.** The current IA is built
+around one soprano line; the vision is multi-part. Part selection is a top-level
+navigation concept that cannot exist until the data can express parts. Redesign now
+and we redesign twice.
+
 ## 2026-07-16 — The goal, stated
 
 Recorded from Galen, 2026-07-16. Until now nothing in the repo said where this was

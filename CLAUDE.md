@@ -182,9 +182,30 @@ npm run preview  # vite preview — serve the production build locally
 <!-- SCAN:AUTO:END -->
 
 ## Scope & Boundaries
-Local-only, client-side practice tool for a cappella song leaders. No accounts, no server state, no analytics, no payments. Hymn data is checked into `public/`. Microphone is requested at runtime for pitch detection; nothing leaves the device.
 
-Out of scope: multi-user features, cloud sync, recordings being uploaded anywhere, AI grading, monetization.
+> **Updated 2026-07-16 — this section changed materially. See `PROJECT-LOG.md`.**
+
+Practice tool for a cappella song leaders, private to a small group of friends. The
+goal (see [`docs/research/DIRECTION.md`](./docs/research/DIRECTION.md)): photo/upload
+of music → OCR the notes per voice part (SATB) → sing a cappella → graded on pitch and
+timing. **Soprano is the priority part; all four voices get parsed.** Later:
+multiplayer sing-off rooms.
+
+**A backend is approved** (2026-07-16). OCR ingest and rooms both require server-side
+work. Still ask before adding a service or dependency — hobby budget, Taylor's project.
+
+Today the app is still fully client-side with hymn data checked into `public/`; the
+mic is requested at runtime and nothing leaves the device. That describes the *current
+state*, not a constraint.
+
+Out of scope: monetization, analytics, public/open signup.
+
+⚠️ **Known stale rule:** the `SCAN:AUTO` block above still carries *"Do not introduce
+auth, env vars, or backend services. This is a local practice tool by design."* That
+rule is **retired** and contradicts the approved direction. It is not hand-edited here
+because the block is scan-managed and would be overwritten. **The security-scan prompt
+needs updating so the scan stops re-asserting it.** Until then, this section and
+`AGENTS.md` are authoritative.
 
 ## Conventions
 - Single-file `App.jsx` is intentional — extract only when adding a new feature or when the file forces a search miss.

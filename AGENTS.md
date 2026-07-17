@@ -48,6 +48,14 @@ you're about to do.
 - **Commit format:** `M###/S##/T##: <what changed>` for milestone work; conventional
   prefixes (`feat:`, `chore:`, `fix:`) otherwise. Both are in use.
 
+## Where this is going
+
+Read [`docs/research/DIRECTION.md`](./docs/research/DIRECTION.md) before proposing
+architecture. Short version: photo/upload of music → OCR notes per voice part (SATB)
+→ sing a cappella → graded on pitch and timing. Later, multiplayer sing-off rooms.
+**Soprano is the priority part, but all four voices get parsed** — soprano-first is
+sequencing, not scope.
+
 ## Hard rules
 
 - **Do not push.** This is `taylorzeltwanger91/Song-Leader-Training`, a shared repo.
@@ -55,9 +63,19 @@ you're about to do.
 - **Do not add code to `App.jsx`.** It is ~1,380 lines. New logic goes in
   `src/audio/` modules or new components under `src/components/`.
 - **Do not add dependencies** without explicit approval.
-- **No backend, no auth, no env vars, no database.** Client-side only, by design.
 - **Do not remove `console.warn`/`console.error` in `src/audio/`** — accepted pattern.
 - **Do not delete or overwrite existing files** without explicit confirmation.
+
+### Retired 2026-07-16: "client-side only, no backend"
+
+This file and `CLAUDE.md` used to carry **"No backend, no auth, no env vars, no
+database. Client-side only, by design."** **That rule is retired** — the owners
+approved a backend on 2026-07-16 (`PROJECT-LOG.md`). It is called out here rather
+than silently deleted because it was the single largest blocker to the project's
+actual goal, and an agent finding it in a stale cache should know it's dead. OCR
+ingest and multiplayer rooms both require server-side work. Build accordingly, but
+still **ask before adding a service or a dependency** — hobby budget, and it's
+Taylor's project.
 
 ## Verify before you claim done
 
