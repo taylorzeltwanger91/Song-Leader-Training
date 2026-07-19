@@ -105,8 +105,14 @@ function pitchClassDistance(detectedMidi, expectedMidi) {
 function buildExpectedTiming(melody, msPerBeatUnit, beatsPerMeasure) {
   const notes = [];
 
-  // Only trust absolute onsets if every note carries one.
-  const hasAbsoluteOnsets = melody.every(
+  // Timing source of truth, in priority order:
+  //  1. an explicit `onset` (absolute beats from the start) — the only representation
+  //     that survives an anacrusis (pickup bar), since measure*beats+beat assumes every
+  //     bar is full and a pickup makes bar 0 shorter than the meter.
+  //  2. measure*beats+beat, when every note carries beat+measure and there's no pickup.
+  //  3. cumulative duration sum, as a last resort.
+  const hasOnsets = melody.every(n => Number.isFinite(n.onset));
+  const hasMeasureBeat = !hasOnsets && melody.every(
     n => Number.isFinite(n.beat) && Number.isFinite(n.measure)
   );
 
@@ -116,7 +122,9 @@ function buildExpectedTiming(melody, msPerBeatUnit, beatsPerMeasure) {
     const note = melody[i];
     const durationMs = note.dur * msPerBeatUnit;
 
-    const expectedStart = hasAbsoluteOnsets
+    const expectedStart = hasOnsets
+      ? note.onset * msPerBeatUnit
+      : hasMeasureBeat
       ? (note.measure * beatsPerMeasure + note.beat) * msPerBeatUnit
       : cumulativeTime;
 

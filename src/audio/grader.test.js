@@ -8,6 +8,8 @@
  * Rule for this file: assert on computed output, never on "it returned something".
  */
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { gradePerformance } from './grader.js';
 
 /** Build a detected-pitch trace that sings `melody` perfectly, optionally shifted. */
@@ -151,6 +153,53 @@ describe('timing from absolute onsets', () => {
     ];
     const r = gradePerformance(sung, noBeat, 60, '4/4');
     expect(r.summary.matchedNotes).toBe(2);
+  });
+});
+
+describe('real hymn 237 (verified transcription) grades end to end', () => {
+  const data = JSON.parse(
+    readFileSync(join(process.cwd(), 'public', 'hymn_melodies', '237.json'), 'utf8')
+  );
+
+  function singHymn(notes, { octaveShift = 0, msPerBeat = 1000 } = {}) {
+    // Sing each note perfectly at its absolute onset (handles the pickup bar).
+    const frames = [];
+    for (const n of notes) {
+      const start = n.onset * msPerBeat;
+      const durMs = n.dur * msPerBeat;
+      const midi = n.midi + octaveShift * 12;
+      for (let k = 0; k < 8; k++) {
+        frames.push({
+          timestamp: start + (durMs * k) / 8,
+          midi,
+          midiRounded: Math.round(midi),
+          frequency: 440 * Math.pow(2, (midi - 69) / 12),
+          confidence: 0.95
+        });
+      }
+    }
+    return frames;
+  }
+
+  it('scores a perfect performance near 100, all 32 notes matched', () => {
+    // bpm 60, 3/2 -> msPerBeatUnit (half note) = 1000ms, matching onset units.
+    const r = gradePerformance(singHymn(data.notes), data.notes, data.bpm, data.timeSignature);
+    expect(r.summary.totalNotes).toBe(32);
+    expect(r.summary.matchedNotes).toBe(32);
+    expect(r.pitchScore).toBeGreaterThan(95);
+  });
+
+  it('grades a bass singing 237 an octave down exactly the same', () => {
+    const atPitch = gradePerformance(singHymn(data.notes), data.notes, data.bpm, data.timeSignature);
+    const octaveDown = gradePerformance(singHymn(data.notes, { octaveShift: -1 }), data.notes, data.bpm, data.timeSignature);
+    expect(octaveDown.summary.matchedNotes).toBe(32);
+    expect(octaveDown.pitchScore).toBe(atPitch.pitchScore);
+  });
+
+  it('honors the pickup: a singer starting on the pickup note (t=0) is on time', () => {
+    const r = gradePerformance(singHymn(data.notes), data.notes, data.bpm, data.timeSignature);
+    expect(r.noteByNote[0].matched).toBe(true);
+    expect(Math.abs(r.noteByNote[0].timingOffMs)).toBeLessThan(150);
   });
 });
 

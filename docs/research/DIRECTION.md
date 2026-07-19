@@ -114,11 +114,39 @@ Then wire the part-picker that's already ~80% built: `midi-parser.js` models tra
 App already stores `selectedTrack` and never renders a selector. **Soprano is the
 default; all four parts are selectable.**
 
-### Phase 3 — Ingest ⟵ shape decided entirely by Phase 0
-Either the Audiveris batch loop, or a purpose-built notehead detector (centroid +
-staff position + fill state + stem direction), tuned to one hymnal's fixed engraving.
-**Do not build an upload UI first.** The pipeline proves out on the 458 pages we
-already have; arbitrary photo upload is a later generalization.
+### Phase 3 — Ingest ⟵ PIVOTED 2026-07-19: dual vision-model consensus, NOT CV
+
+**The custom CV detector is parked. Off-the-shelf OMR is dead. Ingest is vision-LLM
+reading.** This was proven, not guessed — see PROJECT-LOG 2026-07-19:
+
+- Audiveris (off-the-shelf OMR): failed on shape notes (Phase 0).
+- Custom OpenCV notehead detector: reached ~27% pitch accuracy after 6 iterations,
+  with a clear ceiling. Parked.
+- **Two independent vision models (Fable + GPT-5.6) reading the same page agreed on
+  31 of 32 soprano notes.** The 32nd was resolved by pixel geometry and confirmed by
+  ear. A second Fable pass read the durations; every interior bar summed to the meter.
+  Result: **hymn 237 is fully transcribed and verified**, and grades a perfect
+  performance to 100.
+
+**Why vision-LLM wins where OMR failed — the key inversion:** shape noteheads encode
+the pitch *twice* (the shape = solfège syllable, the position = pitch). That redundancy
+*breaks* classical OMR (unexpected glyphs) but *helps* a vision model, which cross-checks
+shape against position. The exact feature that killed Audiveris is the feature that makes
+the vision read reliable.
+
+**The proven ingest recipe:**
+1. Detect staves and crop per-system treble/bass images (the CV staff-detection from the
+   parked detector is genuinely good and is retained *for this cropping step only*).
+2. Read each voice with two independent vision models, shape-note-aware prompt.
+3. Where the models agree, accept. Where they differ, resolve by pixel geometry
+   (relative position to a confirmed note is bias-immune) and/or ear.
+4. Read durations the same way; validate every interior bar sums to the meter (the
+   `melody-data` test suite is this gate) before accepting.
+5. A human (Taylor/Galen) spot-checks by ear — the final authority.
+
+**Do not build an upload UI first.** Prove the recipe over the 458 pages we have.
+Cost note: ~85–130k tokens and ~7–16 min per page per model — fine as an offline batch,
+not real-time.
 
 ### Phase 4 — Layout redesign ⟵ deliberately *after* Phase 2
 The layout genuinely isn't ideal (see the audit: the hymn flow is the poor cousin of

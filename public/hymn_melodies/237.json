@@ -6,238 +6,264 @@
   "timeSignature": "3/2",
   "bpm": 60,
   "meter": "8.7.8.7",
+  "anacrusis": true,
   "notes": [
     {
       "midi": 64,
-      "dur": 1,
-      "beat": 0,
+      "dur": 0.5,
+      "beat": 2.0,
       "measure": 0,
-      "lyric": "Thus"
+      "onset": 0.0,
+      "lyric": ""
     },
     {
-      "midi": 64,
-      "dur": 1,
-      "beat": 1,
+      "midi": 67,
+      "dur": 0.5,
+      "beat": 2.5,
       "measure": 0,
-      "lyric": "u-"
+      "onset": 0.5,
+      "lyric": ""
     },
     {
       "midi": 67,
       "dur": 1,
-      "beat": 2,
-      "measure": 0,
-      "lyric": "nit-"
-    },
-    {
-      "midi": 69,
-      "dur": 1,
-      "beat": 0,
+      "beat": 0.0,
       "measure": 1,
-      "lyric": "ed"
+      "onset": 1.0,
+      "lyric": ""
     },
     {
       "midi": 64,
       "dur": 1,
-      "beat": 1,
+      "beat": 1.0,
       "measure": 1,
-      "lyric": "and"
+      "onset": 2.0,
+      "lyric": ""
     },
     {
       "midi": 65,
-      "dur": 1,
-      "beat": 2,
+      "dur": 0.5,
+      "beat": 2.0,
       "measure": 1,
-      "lyric": "in"
+      "onset": 3.0,
+      "lyric": ""
     },
     {
-      "midi": 67,
-      "dur": 2,
-      "beat": 0,
-      "measure": 2,
-      "lyric": "con-"
-    },
-    {
-      "midi": 67,
-      "dur": 1,
-      "beat": 2,
-      "measure": 2,
-      "lyric": "cord"
+      "midi": 69,
+      "dur": 0.5,
+      "beat": 2.5,
+      "measure": 1,
+      "onset": 3.5,
+      "lyric": ""
     },
     {
       "midi": 69,
       "dur": 1,
-      "beat": 0,
+      "beat": 0.0,
+      "measure": 2,
+      "onset": 4.0,
+      "lyric": ""
+    },
+    {
+      "midi": 67,
+      "dur": 1,
+      "beat": 1.0,
+      "measure": 2,
+      "onset": 5.0,
+      "lyric": ""
+    },
+    {
+      "midi": 72,
+      "dur": 0.5,
+      "beat": 2.0,
+      "measure": 2,
+      "onset": 6.0,
+      "lyric": ""
+    },
+    {
+      "midi": 64,
+      "dur": 0.5,
+      "beat": 2.5,
+      "measure": 2,
+      "onset": 6.5,
+      "lyric": ""
+    },
+    {
+      "midi": 64,
+      "dur": 1,
+      "beat": 0.0,
       "measure": 3,
-      "lyric": "Let"
+      "onset": 7.0,
+      "lyric": ""
     },
     {
-      "midi": 64,
-      "dur": 2,
-      "beat": 1,
+      "midi": 62,
+      "dur": 0.5,
+      "beat": 1.0,
       "measure": 3,
-      "lyric": "us"
+      "onset": 8.0,
+      "lyric": ""
     },
     {
-      "midi": 67,
+      "midi": 64,
+      "dur": 0.5,
+      "beat": 1.5,
+      "measure": 3,
+      "onset": 8.5,
+      "lyric": ""
+    },
+    {
+      "midi": 65,
+      "dur": 0.5,
+      "beat": 2.0,
+      "measure": 3,
+      "onset": 9.0,
+      "lyric": ""
+    },
+    {
+      "midi": 64,
+      "dur": 0.5,
+      "beat": 2.5,
+      "measure": 3,
+      "onset": 9.5,
+      "lyric": ""
+    },
+    {
+      "midi": 62,
       "dur": 2,
-      "beat": 0,
+      "beat": 0.0,
       "measure": 4,
-      "lyric": "walk"
+      "onset": 10.0,
+      "lyric": ""
     },
     {
-      "midi": 64,
-      "dur": 1,
-      "beat": 2,
+      "midi": 67,
+      "dur": 0.5,
+      "beat": 2.0,
       "measure": 4,
-      "lyric": "the"
-    },
-    {
-      "midi": 64,
-      "dur": 1,
-      "beat": 0,
-      "measure": 5,
-      "lyric": "foot-"
-    },
-    {
-      "midi": 64,
-      "dur": 1,
-      "beat": 1,
-      "measure": 5,
-      "lyric": "prints"
+      "onset": 12.0,
+      "lyric": ""
     },
     {
       "midi": 67,
-      "dur": 1,
-      "beat": 2,
-      "measure": 5,
-      "lyric": "of"
+      "dur": 0.5,
+      "beat": 2.5,
+      "measure": 4,
+      "onset": 12.5,
+      "lyric": ""
     },
     {
-      "midi": 67,
+      "midi": 76,
       "dur": 1,
-      "beat": 0,
+      "beat": 0.0,
+      "measure": 5,
+      "onset": 13.0,
+      "lyric": ""
+    },
+    {
+      "midi": 72,
+      "dur": 1,
+      "beat": 1.0,
+      "measure": 5,
+      "onset": 14.0,
+      "lyric": ""
+    },
+    {
+      "midi": 69,
+      "dur": 0.5,
+      "beat": 2.0,
+      "measure": 5,
+      "onset": 15.0,
+      "lyric": ""
+    },
+    {
+      "midi": 72,
+      "dur": 0.25,
+      "beat": 2.5,
+      "measure": 5,
+      "onset": 15.5,
+      "lyric": ""
+    },
+    {
+      "midi": 69,
+      "dur": 0.25,
+      "beat": 2.75,
+      "measure": 5,
+      "onset": 15.75,
+      "lyric": ""
+    },
+    {
+      "midi": 69,
+      "dur": 1,
+      "beat": 0.0,
       "measure": 6,
-      "lyric": "path"
+      "onset": 16.0,
+      "lyric": ""
     },
     {
       "midi": 67,
-      "dur": 2,
-      "beat": 1,
+      "dur": 1,
+      "beat": 1.0,
       "measure": 6,
-      "lyric": "of"
-    },
-    {
-      "midi": 64,
-      "dur": 1,
-      "beat": 0,
-      "measure": 7,
-      "lyric": "life;"
-    },
-    {
-      "midi": 64,
-      "dur": 1,
-      "beat": 1,
-      "measure": 7,
-      "lyric": "Hand"
+      "onset": 17.0,
+      "lyric": ""
     },
     {
       "midi": 67,
-      "dur": 1,
-      "beat": 2,
+      "dur": 0.5,
+      "beat": 2.0,
+      "measure": 6,
+      "onset": 18.0,
+      "lyric": ""
+    },
+    {
+      "midi": 76,
+      "dur": 0.5,
+      "beat": 2.5,
+      "measure": 6,
+      "onset": 18.5,
+      "lyric": ""
+    },
+    {
+      "midi": 74,
+      "dur": 0.5,
+      "beat": 0.0,
       "measure": 7,
-      "lyric": "in"
+      "onset": 19.0,
+      "lyric": ""
     },
     {
       "midi": 72,
-      "dur": 2,
-      "beat": 0,
-      "measure": 8,
-      "lyric": "hand,"
+      "dur": 0.5,
+      "beat": 0.5,
+      "measure": 7,
+      "onset": 19.5,
+      "lyric": ""
     },
     {
-      "midi": 72,
+      "midi": 74,
       "dur": 1,
-      "beat": 2,
-      "measure": 8,
-      "lyric": "oh,"
-    },
-    {
-      "midi": 72,
-      "dur": 1,
-      "beat": 0,
-      "measure": 9,
-      "lyric": "may"
+      "beat": 1.0,
+      "measure": 7,
+      "onset": 20.0,
+      "lyric": ""
     },
     {
       "midi": 71,
-      "dur": 0.5,
-      "beat": 1,
-      "measure": 9,
-      "lyric": "love"
-    },
-    {
-      "midi": 69,
-      "dur": 0.5,
-      "beat": 1.5,
-      "measure": 9,
-      "lyric": "bind"
-    },
-    {
-      "midi": 67,
       "dur": 1,
-      "beat": 2,
-      "measure": 9,
-      "lyric": "us,"
+      "beat": 2.0,
+      "measure": 7,
+      "onset": 21.0,
+      "lyric": ""
     },
     {
       "midi": 72,
-      "dur": 1,
-      "beat": 0,
-      "measure": 10,
-      "lyric": "For"
-    },
-    {
-      "midi": 72,
-      "dur": 1,
-      "beat": 1,
-      "measure": 10,
-      "lyric": "each"
-    },
-    {
-      "midi": 67,
-      "dur": 1,
-      "beat": 2,
-      "measure": 10,
-      "lyric": "oth-"
-    },
-    {
-      "midi": 67,
-      "dur": 1,
-      "beat": 0,
-      "measure": 11,
-      "lyric": "er's"
-    },
-    {
-      "midi": 64,
-      "dur": 1,
-      "beat": 1,
-      "measure": 11,
-      "lyric": "wel-"
-    },
-    {
-      "midi": 72,
-      "dur": 1,
-      "beat": 2,
-      "measure": 11,
-      "lyric": "fare"
-    },
-    {
-      "midi": 69,
-      "dur": 3,
-      "beat": 0,
-      "measure": 12,
-      "lyric": "strive."
+      "dur": 2,
+      "beat": 0.0,
+      "measure": 8,
+      "onset": 22.0,
+      "lyric": ""
     }
   ],
-  "_note": "Transcribed by hand; first pass. 2026-07-17: durations of the final note in measures 0, 3, 11 and 12 corrected so each bar sums to the 3/2 meter. The authored `beat` onsets were already self-consistent and were not touched; only the overrunning/underrunning last-note durations changed, and the corrections net to zero (total remains 39 beats = 13 bars x 3). Pitches are unverified against the printed page."
+  "_note": "Soprano transcribed 2026-07-19 by dual vision-model consensus (Fable + GPT-5.6 agreed on 31/32 pitches; note 7 resolved to A4 by pixel geometry and confirmed by ear). Durations by vision read, every interior bar verified to sum to the 3/2 meter with a 1-beat pickup and 2-beat final bar. `onset` (cumulative half-note-beats from 0) is the timing source of truth; measure/beat are for notation. Supersedes the prior unverified first-pass transcription whose pitches were wrong."
 }

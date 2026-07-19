@@ -521,6 +521,7 @@ export default function App() {
               freq: 440 * Math.pow(2, (n.midi - 69) / 12),
               dur: n.dur,
               beat: n.beat,
+              onset: n.onset,
               measure: n.measure,
               lyric: n.lyric
             }));

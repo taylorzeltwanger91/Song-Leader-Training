@@ -13,6 +13,55 @@
 
 ---
 
+## 2026-07-19 — Ingest PIVOT: dual vision-model consensus. Hymn 237 fully verified.
+
+The custom CV detector is parked and off-the-shelf OMR is abandoned. **Ingest is now
+vision-LLM reading**, and this is proven end to end on hymn 237, not hypothesized.
+
+**How we got here in one session:**
+- Built a from-scratch OpenCV notehead detector. Staff detection was perfect and lyric
+  rejection worked, but pitch accuracy plateaued at ~27% (vs the unverified `237.json`)
+  after 6 iterations — the notehead-center + voice-separation problem on shape notes is a
+  real ceiling. Parked, but its **staff detection is retained** for per-system cropping.
+- Confirmed the blocker was bad ground truth: `237.json`'s pitches were the unverified
+  first pass, and by eye they were wrong. Data-sourcing research (2026-07-19) found no
+  external note data to source, but found zionsharp.info's per-hymn 4-part MP3s.
+- The MP3-as-ground-truth idea failed (pYIN on a 4-part mix tracks the *bass*, not the
+  soprano — the polyphonic problem).
+- **The breakthrough:** vision models read the page directly. Fable read the soprano
+  (32 notes). GPT-5.6, given the same prompt independently, agreed on **31 of 32**. The
+  one disagreement (system 1 note 7: A4 vs F4) was resolved to **A4** by pixel geometry
+  — the detector measures it at the identical height (to 0.1px) as the adjacent note both
+  models call A4, and relative position is immune to the detector's absolute bias.
+- Galen's ear confirmed the read (rendered to audio, "almost exactly right").
+- A second Fable pass read the **durations**; every interior bar sums to the 3/2 meter
+  (1-beat pickup + 2-beat final = anacrusis).
+
+**Why vision-LLM succeeds where OMR failed — worth internalizing:** shape noteheads
+encode pitch *redundantly* (shape = solfège syllable, position = pitch). That redundancy
+is noise to classical OMR but a cross-check to a vision model. The feature that killed
+Audiveris is the feature that makes the vision read reliable. Full recipe in
+`docs/research/DIRECTION.md` Phase 3.
+
+**Hymn 237 is now our first fully-verified hymn.** `237.json` rebuilt: 32 soprano notes,
+consensus pitches, vision-read durations, bars validated. It grades a perfect performance
+to 100 (and a bass singing it an octave down to the same, per the Phase 1 grader).
+
+**Model decision, answering "would Fable do better":** yes, for *reading* the notes —
+not because the model is magic, but because the vision-LLM approach exploits shape/position
+redundancy that CV throws away. Fable and GPT-5.6 both did well; using two independent
+models as a consensus check is the method, not either one alone.
+
+**Data-model change (a slice of Phase 2, forced by 237's pickup):** added an explicit
+`onset` field (absolute beats from start) as the timing source of truth. `measure*beats +
+beat` cannot represent an anacrusis (bar 0 is shorter than the meter); `onset` can, and it
+is what the grader now uses first. `melody-data` validation grew to allow a pickup/final
+anacrusis and to check `onset` equals cumulative duration. 23 tests pass (was 19).
+
+**Verification assets in ~/Downloads (not committed):** `unity_237_FINAL.wav`/`.mid` (the
+verified transcription), the A/B files that proved the old data wrong, and
+`hymn237_unity.pdf` + prompt used for the GPT-5.6 cross-check.
+
 ## 2026-07-17 — Phase 1 shipped: the grader tells the truth now, and it's gated
 
 Commit `070e215`. Measured on real hymn 237 data, a **perfect** performance:
