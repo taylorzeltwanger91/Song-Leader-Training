@@ -76,8 +76,15 @@ staff/clef/measure segmentation; do build shape-note notehead detection.**
 Also resolved: **Audiveris is AGPL v3** (confirmed via the DMG's click-through). Run it
 as an offline batch process producing data files, never linked into an app server.
 
-Still open, worth an hour: check whether Zion's Hymns tunes already exist in any
-machine-readable corpus. Sourcing beats re-keying, and beats OCR.
+~~Still open: check whether Zion's Hymns tunes already exist in any machine-readable
+corpus.~~ ✅ DONE 2026-07-19 — see [data-sourcing.md](./data-sourcing.md). Verdict:
+**no note-data set exists for this book, and sourcing won't replace the detector** (the
+tune stock is German/Continental and absent from English corpora; name-matching is
+unreliable — the target tune UNITY has a same-name/same-composer decoy in hymnary that
+is a different tune). Two things did come out of it: the hymnal is actually the
+**Apostolic Christian Zion's Harp shape-note edition (256 hymns), not Mennonite**; and
+**zionsharp.info has per-hymn 4-part MP3s for all 256 hymns** — a real audio ground
+truth we can pitch-track to break the detector-validation deadlock.
 
 ### Phase 1 — Fix the grader, gate it with tests ⟵ independent of everything
 This is the difference between an app that works and one that lies. Do it regardless
