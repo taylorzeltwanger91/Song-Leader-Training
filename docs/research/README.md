@@ -11,6 +11,7 @@ parallel research agents plus a full read of the codebase.
 | **[DIRECTION.md](./DIRECTION.md)** | **Start here.** Where we think this should go and why. The plan. |
 | [omr-and-ingest.md](./omr-and-ingest.md) | Can we OCR the music? **The finding that reshaped the plan lives here.** |
 | [data-sourcing.md](./data-sourcing.md) | Can we skip OCR by finding the tunes already digitized? (Verdict: no, but it corrected what this hymnal *is*.) |
+| [ingest-pipeline.md](./ingest-pipeline.md) | **The operational flow** for building the full 4-part archive — vision-read → validate → ear-verify. |
 | [current-app-audit.md](./current-app-audit.md) | What the app actually is today, and what's broken in it |
 | [grading-methodology.md](./grading-methodology.md) | How to score singing correctly (and how we're scoring it wrong) |
 | [competitive-landscape.md](./competitive-landscape.md) | Has anyone already built this? |
