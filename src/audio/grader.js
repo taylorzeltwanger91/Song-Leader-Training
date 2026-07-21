@@ -64,7 +64,8 @@ export function gradePerformance(detectedPitches, referenceMelody, bpm, timeSign
     tempoData,
     pitchData,
     summary: {
-      totalNotes: referenceMelody.length,
+      // Count only singable notes — a rest is not something the singer is graded on.
+      totalNotes: referenceMelody.filter(n => !n.rest).length,
       matchedNotes: matchResults.filter(r => r.matched).length,
       avgCentsOff: Math.round(matchResults.filter(r => r.matched).reduce((sum, r) => sum + Math.abs(r.centsOff), 0) / Math.max(1, matchResults.filter(r => r.matched).length)),
       avgTimingOff: Math.round(matchResults.filter(r => r.matched).reduce((sum, r) => sum + Math.abs(r.timingOffMs), 0) / Math.max(1, matchResults.filter(r => r.matched).length))
@@ -111,9 +112,13 @@ function buildExpectedTiming(melody, msPerBeatUnit, beatsPerMeasure) {
   //     bar is full and a pickup makes bar 0 shorter than the meter.
   //  2. measure*beats+beat, when every note carries beat+measure and there's no pickup.
   //  3. cumulative duration sum, as a last resort.
+  // A rest ({ rest: true, dur, onset }) advances time but is never an expected note to
+  // sing — it is skipped here, so during a rest the grader has nothing to match and a
+  // singer who correctly pauses is neither rewarded nor penalized. Onsets carry the
+  // rest's duration for us; the cumulative fallback adds it explicitly.
   const hasOnsets = melody.every(n => Number.isFinite(n.onset));
   const hasMeasureBeat = !hasOnsets && melody.every(
-    n => Number.isFinite(n.beat) && Number.isFinite(n.measure)
+    n => n.rest || (Number.isFinite(n.beat) && Number.isFinite(n.measure))
   );
 
   let cumulativeTime = 0;
@@ -121,6 +126,11 @@ function buildExpectedTiming(melody, msPerBeatUnit, beatsPerMeasure) {
   for (let i = 0; i < melody.length; i++) {
     const note = melody[i];
     const durationMs = note.dur * msPerBeatUnit;
+
+    if (note.rest) {
+      cumulativeTime += durationMs; // silence occupies time, but is not a note to match
+      continue;
+    }
 
     const expectedStart = hasOnsets
       ? note.onset * msPerBeatUnit

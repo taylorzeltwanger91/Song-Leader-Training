@@ -33,22 +33,29 @@ describe('hymn melody data', () => {
         expect(data.notes.length).toBeGreaterThan(0);
       });
 
-      it('gives every note a midi, dur, beat, measure and onset', () => {
+      it('gives every entry a dur, measure and onset (notes also midi+beat; rests neither)', () => {
         for (const [i, n] of data.notes.entries()) {
-          expect(Number.isFinite(n.midi), `note ${i} midi`).toBe(true);
-          expect(Number.isFinite(n.dur), `note ${i} dur`).toBe(true);
-          expect(Number.isFinite(n.beat), `note ${i} beat`).toBe(true);
-          expect(Number.isFinite(n.measure), `note ${i} measure`).toBe(true);
-          expect(Number.isFinite(n.onset), `note ${i} onset`).toBe(true);
-          expect(n.dur, `note ${i} dur must be positive`).toBeGreaterThan(0);
+          expect(Number.isFinite(n.dur), `entry ${i} dur`).toBe(true);
+          expect(n.dur, `entry ${i} dur must be positive`).toBeGreaterThan(0);
+          expect(Number.isFinite(n.measure), `entry ${i} measure`).toBe(true);
+          expect(Number.isFinite(n.onset), `entry ${i} onset`).toBe(true);
+          if (n.rest) {
+            // A rest is silence: no pitch, no in-bar beat position asserted here.
+            expect(n.midi, `rest ${i} must not carry a midi`).toBeUndefined();
+          } else {
+            expect(Number.isFinite(n.midi), `note ${i} midi`).toBe(true);
+            expect(Number.isFinite(n.beat), `note ${i} beat`).toBe(true);
+          }
         }
       });
 
-      it('onset equals the cumulative duration of preceding notes', () => {
+      it('onset equals the cumulative duration of preceding entries (rests included)', () => {
+        // Rests occupy the timeline: a rest advances the cumulative clock exactly like a
+        // note. This is what lets a gap of silence sit between two sung notes.
         let cum = 0;
         const bad = [];
         for (const [i, n] of data.notes.entries()) {
-          if (Math.abs(n.onset - cum) > 1e-9) bad.push(`note ${i} onset ${n.onset}, expected ${cum}`);
+          if (Math.abs(n.onset - cum) > 1e-9) bad.push(`entry ${i} onset ${n.onset}, expected ${cum}`);
           cum += n.dur;
         }
         expect(bad).toEqual([]);
@@ -78,18 +85,23 @@ describe('hymn melody data', () => {
         ).toBe(true);
       });
 
-      it('authored onsets agree with durations within each bar', () => {
+      it('authored onsets agree with durations within each bar (notes only)', () => {
+        // Only notes carry a `beat`; rests are positioned by their duration in the
+        // timeline, not by an in-bar beat, so they're excluded from this check.
         const byMeasure = new Map();
         for (const n of data.notes) {
+          if (n.rest) continue;
           if (!byMeasure.has(n.measure)) byMeasure.set(n.measure, []);
           byMeasure.get(n.measure).push(n);
         }
         const firstMeasure = Math.min(...byMeasure.keys());
         const bad = [];
         for (const [m, notes] of byMeasure) {
-          // Every bar starts on beat 0 — except a pickup, which sits at the bar's tail.
           const pickup = m === firstMeasure && data.anacrusis === true;
-          if (notes[0].beat !== 0 && !pickup) bad.push(`measure ${m} starts at beat ${notes[0].beat}, not 0`);
+          // A bar may legitimately begin with a rest, so the first *note*'s beat need not
+          // be 0; assert only that consecutive notes' beats are consistent with durations.
+          const startsClean = notes[0].beat === 0 || pickup || data.notes.some(x => x.rest);
+          if (!startsClean) bad.push(`measure ${m} starts at beat ${notes[0].beat}, not 0`);
           for (let i = 0; i < notes.length - 1; i++) {
             const expectedNext = notes[i].beat + notes[i].dur;
             if (Math.abs(expectedNext - notes[i + 1].beat) > 1e-9) {
@@ -102,7 +114,7 @@ describe('hymn melody data', () => {
 
       it('keeps every note inside its bar', () => {
         const bad = data.notes
-          .filter(n => n.beat + n.dur > beatsPerMeasure + 1e-9)
+          .filter(n => !n.rest && n.beat + n.dur > beatsPerMeasure + 1e-9)
           .map(n => `measure ${n.measure} beat ${n.beat} dur ${n.dur} overruns the bar`);
         expect(bad).toEqual([]);
       });

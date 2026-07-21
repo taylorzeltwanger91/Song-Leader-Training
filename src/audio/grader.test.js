@@ -203,6 +203,44 @@ describe('real hymn 237 (verified transcription) grades end to end', () => {
   });
 });
 
+describe('rests', () => {
+  // A rest is silence that occupies the timeline. It must (a) never be an expected note
+  // to sing, and (b) push everything after it later by its duration.
+  // Short (0.5-beat = 500ms) notes so the match window is tight and unambiguous.
+  it('shifts a following note later by the rest duration and never matches', () => {
+    const withRest = [
+      { midi: 60, dur: 0.5, beat: 0, measure: 0, onset: 0 },
+      { rest: true, dur: 1, measure: 0, onset: 0.5 },        // 1-beat (1000ms) rest
+      { midi: 62, dur: 0.5, beat: 1.5, measure: 0, onset: 1.5 } // sung after the rest, at 1500ms
+    ];
+    const sung = [
+      { timestamp: 0, midi: 60, midiRounded: 60, frequency: 261, confidence: 0.95 },
+      { timestamp: 1500, midi: 62, midiRounded: 62, frequency: 293, confidence: 0.95 }
+    ];
+    const r = gradePerformance(sung, withRest, 60, '4/4');
+
+    expect(r.summary.totalNotes).toBe(2);   // two singable notes, not three — the rest is not a note
+    expect(r.summary.matchedNotes).toBe(2);
+    expect(r.noteByNote[1].matched).toBe(true);
+    expect(Math.abs(r.noteByNote[1].timingOffMs)).toBeLessThan(150);
+  });
+
+  it('without the rest, that same late note is judged a miss', () => {
+    // No rest: the second note is expected at 500ms (window ~[350,1150]). Singing it at
+    // 1500ms lands well outside — a miss. This is what the rest was compensating for.
+    const noRest = [
+      { midi: 60, dur: 0.5, beat: 0, measure: 0, onset: 0 },
+      { midi: 62, dur: 0.5, beat: 0.5, measure: 0, onset: 0.5 }
+    ];
+    const sung = [
+      { timestamp: 0, midi: 60, midiRounded: 60, frequency: 261, confidence: 0.95 },
+      { timestamp: 1500, midi: 62, midiRounded: 62, frequency: 293, confidence: 0.95 }
+    ];
+    const r = gradePerformance(sung, noRest, 60, '4/4');
+    expect(r.noteByNote[1].matched).toBe(false);
+  });
+});
+
 describe('pitch score measures pitch', () => {
   // Detector confidence was folded in at 20% weight: a cheap microphone cost you
   // "pitch" points for a reason that is not pitch.
