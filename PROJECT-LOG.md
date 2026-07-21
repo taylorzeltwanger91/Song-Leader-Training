@@ -13,6 +13,44 @@
 
 ---
 
+## 2026-07-20 — Pipeline proven on 3 hymns; codified as a workflow project
+
+Ran the ingest pipeline on hymns **5** (G major, 1 sharp) and **79** (Db major, 5 flats,
+rests, fermatas, two pages) after 237. Between them they exercised every hard feature:
+no-key / 1-sharp / 5-flat signatures, pickup bars, mid-phrase rests, fermatas, one and
+two pages, 3/2 and 2/2 meters. **The method held on all of it.** All three verified and
+committed as 4-part JSON in `data/hymns-satb/`.
+
+**Things learned that changed the pipeline (now codified in `tools/omr/README.md`):**
+
+- **Auto-detect the key; never assert it.** I told the readers "Ab major (4 flats)" for
+  hymn 79 — wrong, it's Db (5 flats). Two independent Fable agents *both* overrode me and
+  a pixel flat-count confirmed 5. Asserting the key was the single biggest error source.
+  `tools/omr/lib.py: count_key_accidentals()` removes it.
+- **Shape-note geometry resolves disagreements cheaply (~30s each) — the real unlock.**
+  When two readers disagree, cropping the disputed note and reading its Aiken *shape*
+  (which encodes the letter) is decisive. On hymn 79 this settled all 9 inner-voice
+  disputes, every one in Fable's favor. Disagreements are no longer dead-ends.
+- **Reader reality:** Fable (Agent tool) is the most accurate but slow and API-priced and
+  hit a weekly limit mid-session; GPT-5.6 is strong but web-paste-only (not reachable via
+  Codex on a ChatGPT account); Codex-5.5 is fast and automatable but the weakest on shape
+  notes AND wandered into 80 web searches on hymn 79 until leashed (tools must be
+  disabled). **Cost correction: Codex/GPT run on Galen's $20/mo ChatGPT plan — fixed but
+  rate-limited, so throughput is the real 250-hymn constraint, not dollars.**
+- **The validation gate earns its place:** it caught Fable undercounting hymn 5's system 4
+  by a measure (60 vs 63 beats) before it could ship, and confirmed hymn 79's four voices
+  at 66 beats.
+- **Rests are first-class now** (grader + model), motivated by hymn 79's phrase-start
+  half-rests; committed separately (`1c947ff`).
+
+**Committed as a workflow project:** `tools/omr/` (lib.py staff+key detection, cropping,
+pitch mapping; validate_satb.py structural gate; render_satb.py → WAV+MIDI; README as the
+canonical process doc), and `data/hymns-satb/` (the three verified hymns + schema README).
+The missing piece for scale is a batch driver over a 250-hymn work-list — next build.
+
+Media (WAV/MIDI/PDF per hymn) lives in `~/Downloads/ZionsHymns-Archive/hymn-NNN-title/`,
+not the repo.
+
 ## 2026-07-19 — Ingest PIVOT: dual vision-model consensus. Hymn 237 fully verified.
 
 The custom CV detector is parked and off-the-shelf OMR is abandoned. **Ingest is now

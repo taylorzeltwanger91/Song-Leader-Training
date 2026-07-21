@@ -1,0 +1,7 @@
+# OMR pipeline tooling (Python 3.9+). Install into a venv:
+#   python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
+opencv-python-headless>=4.8
+numpy>=1.24
+midiutil>=1.2
+librosa>=0.10        # only for audio cross-checks / MIDI note-name helpers
+pillow>=10           # only for building PDFs to hand to a paste-based reader

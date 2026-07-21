@@ -3,6 +3,13 @@
 Written **2026-07-19**, after the method was proven on hymn 237. This is the flow for
 turning 458 scanned pages into verified 4-part (SATB) note data for all ~256 hymns.
 
+> **⚠️ SUPERSEDED as the how-to (2026-07-20).** This doc is the original plan, written
+> before hymns 5 and 79 were done. The **empirical, working pipeline** — reader
+> comparison, shape-note-geometry dispute resolution, auto-key-detection, and the
+> corrected cost model ($20/mo ChatGPT plan, rate-limited — NOT free) — now lives in
+> [`tools/omr/README.md`](../../tools/omr/README.md) with the actual scripts. Read that
+> for the process; this remains for the reasoning.
+
 **Scope decision (Galen, 2026-07-19):** capture **all four voices** for every hymn,
 even though the app may only ever grade soprano. If we're doing the work, we build the
 complete archive once.

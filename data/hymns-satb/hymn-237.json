@@ -1,0 +1,643 @@
+{
+ "hymnId": 237,
+ "title": "Unity",
+ "key": "C",
+ "timeSignature": "3/2",
+ "bpm": 60,
+ "anacrusis": true,
+ "voices": {
+  "soprano": [
+   {
+    "midi": 64,
+    "dur": 0.5,
+    "onset": 0
+   },
+   {
+    "midi": 67,
+    "dur": 0.5,
+    "onset": 0.5
+   },
+   {
+    "midi": 67,
+    "dur": 1,
+    "onset": 1.0
+   },
+   {
+    "midi": 64,
+    "dur": 1,
+    "onset": 2.0
+   },
+   {
+    "midi": 65,
+    "dur": 0.5,
+    "onset": 3.0
+   },
+   {
+    "midi": 69,
+    "dur": 0.5,
+    "onset": 3.5
+   },
+   {
+    "midi": 69,
+    "dur": 1,
+    "onset": 4.0
+   },
+   {
+    "midi": 67,
+    "dur": 1,
+    "onset": 5.0
+   },
+   {
+    "midi": 72,
+    "dur": 0.5,
+    "onset": 6.0
+   },
+   {
+    "midi": 64,
+    "dur": 0.5,
+    "onset": 6.5
+   },
+   {
+    "midi": 64,
+    "dur": 1,
+    "onset": 7.0
+   },
+   {
+    "midi": 62,
+    "dur": 0.5,
+    "onset": 8.0
+   },
+   {
+    "midi": 64,
+    "dur": 0.5,
+    "onset": 8.5
+   },
+   {
+    "midi": 65,
+    "dur": 0.5,
+    "onset": 9.0
+   },
+   {
+    "midi": 64,
+    "dur": 0.5,
+    "onset": 9.5
+   },
+   {
+    "midi": 62,
+    "dur": 2,
+    "onset": 10.0
+   },
+   {
+    "midi": 67,
+    "dur": 0.5,
+    "onset": 12.0
+   },
+   {
+    "midi": 67,
+    "dur": 0.5,
+    "onset": 12.5
+   },
+   {
+    "midi": 76,
+    "dur": 1,
+    "onset": 13.0
+   },
+   {
+    "midi": 72,
+    "dur": 1,
+    "onset": 14.0
+   },
+   {
+    "midi": 69,
+    "dur": 0.5,
+    "onset": 15.0
+   },
+   {
+    "midi": 72,
+    "dur": 0.25,
+    "onset": 15.5
+   },
+   {
+    "midi": 69,
+    "dur": 0.25,
+    "onset": 15.75
+   },
+   {
+    "midi": 69,
+    "dur": 1,
+    "onset": 16.0
+   },
+   {
+    "midi": 67,
+    "dur": 1,
+    "onset": 17.0
+   },
+   {
+    "midi": 67,
+    "dur": 0.5,
+    "onset": 18.0
+   },
+   {
+    "midi": 76,
+    "dur": 0.5,
+    "onset": 18.5
+   },
+   {
+    "midi": 74,
+    "dur": 0.5,
+    "onset": 19.0
+   },
+   {
+    "midi": 72,
+    "dur": 0.5,
+    "onset": 19.5
+   },
+   {
+    "midi": 74,
+    "dur": 1,
+    "onset": 20.0
+   },
+   {
+    "midi": 71,
+    "dur": 1,
+    "onset": 21.0
+   },
+   {
+    "midi": 72,
+    "dur": 2,
+    "onset": 22.0
+   }
+  ],
+  "alto": [
+   {
+    "midi": 60,
+    "dur": 0.5,
+    "onset": 0
+   },
+   {
+    "midi": 64,
+    "dur": 0.5,
+    "onset": 0.5
+   },
+   {
+    "midi": 64,
+    "dur": 1,
+    "onset": 1.0
+   },
+   {
+    "midi": 60,
+    "dur": 1,
+    "onset": 2.0
+   },
+   {
+    "midi": 62,
+    "dur": 0.5,
+    "onset": 3.0
+   },
+   {
+    "midi": 65,
+    "dur": 0.5,
+    "onset": 3.5
+   },
+   {
+    "midi": 65,
+    "dur": 1,
+    "onset": 4.0
+   },
+   {
+    "midi": 64,
+    "dur": 1,
+    "onset": 5.0
+   },
+   {
+    "midi": 64,
+    "dur": 0.5,
+    "onset": 6.0
+   },
+   {
+    "midi": 60,
+    "dur": 0.5,
+    "onset": 6.5
+   },
+   {
+    "midi": 60,
+    "dur": 1,
+    "onset": 7.0
+   },
+   {
+    "midi": 59,
+    "dur": 0.5,
+    "onset": 8.0
+   },
+   {
+    "midi": 60,
+    "dur": 0.5,
+    "onset": 8.5
+   },
+   {
+    "midi": 62,
+    "dur": 0.5,
+    "onset": 9.0
+   },
+   {
+    "midi": 60,
+    "dur": 0.5,
+    "onset": 9.5
+   },
+   {
+    "midi": 59,
+    "dur": 2,
+    "onset": 10.0
+   },
+   {
+    "midi": 64,
+    "dur": 0.5,
+    "onset": 12.0
+   },
+   {
+    "midi": 64,
+    "dur": 0.5,
+    "onset": 12.5
+   },
+   {
+    "midi": 67,
+    "dur": 1,
+    "onset": 13.0
+   },
+   {
+    "midi": 67,
+    "dur": 1,
+    "onset": 14.0
+   },
+   {
+    "midi": 65,
+    "dur": 0.5,
+    "onset": 15.0
+   },
+   {
+    "midi": 65,
+    "dur": 0.5,
+    "onset": 15.5
+   },
+   {
+    "midi": 65,
+    "dur": 1,
+    "onset": 16.0
+   },
+   {
+    "midi": 64,
+    "dur": 1,
+    "onset": 17.0
+   },
+   {
+    "midi": 64,
+    "dur": 0.5,
+    "onset": 18.0
+   },
+   {
+    "midi": 67,
+    "dur": 0.5,
+    "onset": 18.5
+   },
+   {
+    "midi": 67,
+    "dur": 0.5,
+    "onset": 19.0
+   },
+   {
+    "midi": 67,
+    "dur": 0.5,
+    "onset": 19.5
+   },
+   {
+    "midi": 69,
+    "dur": 1,
+    "onset": 20.0
+   },
+   {
+    "midi": 67,
+    "dur": 0.5,
+    "onset": 21.0
+   },
+   {
+    "midi": 65,
+    "dur": 0.5,
+    "onset": 21.5
+   },
+   {
+    "midi": 64,
+    "dur": 2,
+    "onset": 22.0
+   }
+  ],
+  "tenor": [
+   {
+    "midi": 55,
+    "dur": 0.5,
+    "onset": 0
+   },
+   {
+    "midi": 60,
+    "dur": 0.5,
+    "onset": 0.5
+   },
+   {
+    "midi": 60,
+    "dur": 1,
+    "onset": 1.0
+   },
+   {
+    "midi": 55,
+    "dur": 1,
+    "onset": 2.0
+   },
+   {
+    "midi": 57,
+    "dur": 0.5,
+    "onset": 3.0
+   },
+   {
+    "midi": 60,
+    "dur": 0.5,
+    "onset": 3.5
+   },
+   {
+    "midi": 60,
+    "dur": 1,
+    "onset": 4.0
+   },
+   {
+    "midi": 60,
+    "dur": 1,
+    "onset": 5.0
+   },
+   {
+    "midi": 55,
+    "dur": 0.5,
+    "onset": 6.0
+   },
+   {
+    "midi": 55,
+    "dur": 0.5,
+    "onset": 6.5
+   },
+   {
+    "midi": 55,
+    "dur": 1,
+    "onset": 7.0
+   },
+   {
+    "midi": 55,
+    "dur": 1,
+    "onset": 8.0
+   },
+   {
+    "midi": 55,
+    "dur": 0.5,
+    "onset": 9.0
+   },
+   {
+    "midi": 55,
+    "dur": 0.5,
+    "onset": 9.5
+   },
+   {
+    "midi": 55,
+    "dur": 2,
+    "onset": 10.0
+   },
+   {
+    "midi": 55,
+    "dur": 0.5,
+    "onset": 12.0
+   },
+   {
+    "midi": 55,
+    "dur": 0.5,
+    "onset": 12.5
+   },
+   {
+    "midi": 60,
+    "dur": 1,
+    "onset": 13.0
+   },
+   {
+    "midi": 60,
+    "dur": 1,
+    "onset": 14.0
+   },
+   {
+    "midi": 60,
+    "dur": 0.5,
+    "onset": 15.0
+   },
+   {
+    "midi": 60,
+    "dur": 0.5,
+    "onset": 15.5
+   },
+   {
+    "midi": 60,
+    "dur": 1,
+    "onset": 16.0
+   },
+   {
+    "midi": 60,
+    "dur": 1,
+    "onset": 17.0
+   },
+   {
+    "midi": 60,
+    "dur": 0.5,
+    "onset": 18.0
+   },
+   {
+    "midi": 60,
+    "dur": 0.5,
+    "onset": 18.5
+   },
+   {
+    "midi": 59,
+    "dur": 0.5,
+    "onset": 19.0
+   },
+   {
+    "midi": 60,
+    "dur": 0.5,
+    "onset": 19.5
+   },
+   {
+    "midi": 60,
+    "dur": 1,
+    "onset": 20.0
+   },
+   {
+    "midi": 62,
+    "dur": 1,
+    "onset": 21.0
+   },
+   {
+    "midi": 55,
+    "dur": 2,
+    "onset": 22.0
+   }
+  ],
+  "bass": [
+   {
+    "midi": 48,
+    "dur": 0.5,
+    "onset": 0
+   },
+   {
+    "midi": 48,
+    "dur": 0.5,
+    "onset": 0.5
+   },
+   {
+    "midi": 48,
+    "dur": 1,
+    "onset": 1.0
+   },
+   {
+    "midi": 48,
+    "dur": 1,
+    "onset": 2.0
+   },
+   {
+    "midi": 53,
+    "dur": 0.5,
+    "onset": 3.0
+   },
+   {
+    "midi": 53,
+    "dur": 0.5,
+    "onset": 3.5
+   },
+   {
+    "midi": 48,
+    "dur": 1,
+    "onset": 4.0
+   },
+   {
+    "midi": 48,
+    "dur": 1,
+    "onset": 5.0
+   },
+   {
+    "midi": 48,
+    "dur": 0.5,
+    "onset": 6.0
+   },
+   {
+    "midi": 48,
+    "dur": 0.5,
+    "onset": 6.5
+   },
+   {
+    "midi": 43,
+    "dur": 1,
+    "onset": 7.0
+   },
+   {
+    "midi": 43,
+    "dur": 1,
+    "onset": 8.0
+   },
+   {
+    "midi": 48,
+    "dur": 0.5,
+    "onset": 9.0
+   },
+   {
+    "midi": 48,
+    "dur": 0.5,
+    "onset": 9.5
+   },
+   {
+    "midi": 43,
+    "dur": 2,
+    "onset": 10.0
+   },
+   {
+    "midi": 48,
+    "dur": 0.5,
+    "onset": 12.0
+   },
+   {
+    "midi": 48,
+    "dur": 0.5,
+    "onset": 12.5
+   },
+   {
+    "midi": 48,
+    "dur": 1,
+    "onset": 13.0
+   },
+   {
+    "midi": 52,
+    "dur": 1,
+    "onset": 14.0
+   },
+   {
+    "midi": 53,
+    "dur": 0.5,
+    "onset": 15.0
+   },
+   {
+    "midi": 57,
+    "dur": 0.25,
+    "onset": 15.5
+   },
+   {
+    "midi": 53,
+    "dur": 0.25,
+    "onset": 15.75
+   },
+   {
+    "midi": 48,
+    "dur": 1,
+    "onset": 16.0
+   },
+   {
+    "midi": 48,
+    "dur": 1,
+    "onset": 17.0
+   },
+   {
+    "midi": 48,
+    "dur": 0.5,
+    "onset": 18.0
+   },
+   {
+    "midi": 48,
+    "dur": 0.5,
+    "onset": 18.5
+   },
+   {
+    "midi": 55,
+    "dur": 0.5,
+    "onset": 19.0
+   },
+   {
+    "midi": 52,
+    "dur": 0.5,
+    "onset": 19.5
+   },
+   {
+    "midi": 53,
+    "dur": 1,
+    "onset": 20.0
+   },
+   {
+    "midi": 43,
+    "dur": 1,
+    "onset": 21.0
+   },
+   {
+    "midi": 48,
+    "dur": 2,
+    "onset": 22.0
+   }
+  ]
+ }
+}
