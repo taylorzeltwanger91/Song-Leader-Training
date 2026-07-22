@@ -21,9 +21,10 @@ function midiToVexKey(midi, keySignature = 'C') {
   const names = useFlats ? NOTE_NAMES_FLAT : NOTE_NAMES_SHARP;
   const noteName = names[noteIdx];
 
-  // VexFlow key format: "note/octave" — accidentals are separate modifiers
-  // Base note without accidental
-  const baseName = noteName.replace(/[#b]/g, '');
+  // VexFlow key format: "note/octave" — accidentals are separate modifiers.
+  // The letter is the first char; take only that. (Do NOT strip [#b] with a
+  // regex — that also eats the note letter "b" for B natural, yielding "/octave".)
+  const baseName = noteName[0];
   return `${baseName}/${octave}`;
 }
 
@@ -35,8 +36,11 @@ function midiToAccidental(midi, keySignature = 'C') {
   const useFlats = FLAT_KEYS.has(keySignature);
   const names = useFlats ? NOTE_NAMES_FLAT : NOTE_NAMES_SHARP;
   const noteName = names[noteIdx];
-  if (noteName.includes('#')) return '#';
-  if (noteName.includes('b')) return 'b';
+  // The accidental is the SECOND char, if any (the letter is [0]). Using
+  // includes('b') here would misread B natural ("b") as a flat.
+  const acc = noteName[1];
+  if (acc === '#') return '#';
+  if (acc === 'b') return 'b';
   return null;
 }
 
