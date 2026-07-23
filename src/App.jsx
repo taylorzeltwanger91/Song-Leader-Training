@@ -479,8 +479,11 @@ export default function App() {
   const [dropMode, setDropMode] = useState("measure");
   const [dropPoint, setDropPoint] = useState(4); // Default: drop after 4 measures
   const [leadInPlaying, setLeadInPlaying] = useState(false);
+  // Practice tempo (BPM) for hymns — overrides the transcription tempo. Adjustable.
+  const [hymnTempo, setHymnTempo] = useState(120);
 
   const tmr=useRef(null),actx=useRef(null);
+  const countInRef=useRef(null); // count-in interval, so it can be cancelled
   const instrumentRef = useRef(null);
   const [instrumentLoading, setInstrumentLoading] = useState(false);
 
@@ -718,8 +721,8 @@ export default function App() {
 
       const { d } = parseTS(hymnMelody.timeSignature);
       const secPerUnit = isCompound(hymnMelody.timeSignature)
-        ? 60 / (hymnMelody.bpm * 3)
-        : 60 / hymnMelody.bpm; // half- or quarter-beat unit both = 60/bpm here
+        ? 60 / (hymnTempo * 3)
+        : 60 / hymnTempo; // half- or quarter-beat unit both = 60/bpm here
       const start = ctx.currentTime + 0.1;
       let songEnd = 0;
 
@@ -734,7 +737,7 @@ export default function App() {
       });
       melodyTimers.current.push(setTimeout(() => setMelodyPlaying(false), songEnd * 1000 + 200));
     } catch (e) { setMelodyPlaying(false); }
-  }, [hymnMelody, loadInstrument]);
+  }, [hymnMelody, hymnTempo, loadInstrument]);
 
   const doGenerate = useCallback(() => {
     const key = genKey==="auto" ? KEYS[Math.floor(Math.random()*KEYS.length)] : genKey;
@@ -898,10 +901,10 @@ export default function App() {
       const ct = parseTS(ts).n;
       setCd(ct);
       let c = ct;
-      const iv = setInterval(() => {
+      countInRef.current = setInterval(() => {
         c--;
         if (c <= 0) {
-          clearInterval(iv);
+          clearInterval(countInRef.current);
           setCd(null);
           beginRecording();
         } else {
@@ -910,6 +913,19 @@ export default function App() {
       }, (60 / tempo) * 1000);
     }
   }, [getDropNoteIndex, playLeadIn]);
+
+  // Abort a lead-in or count-in before recording starts, back to the ready state.
+  const cancelPractice = useCallback(() => {
+    stopMelody();                              // clears lead-in timers + setLeadInPlaying(false)
+    clearInterval(countInRef.current);
+    clearInterval(tmr.current);
+    melodyTimers.current.forEach(t => clearTimeout(t));
+    melodyTimers.current = [];
+    setCd(null);
+    setLeadInPlaying(false);
+    setRec(false);
+    if (recorderRef.current) { try { recorderRef.current.stop(); } catch (e) { /* noop */ } }
+  }, [stopMelody]);
 
   const stopRec = useCallback((destView, referenceMelody = null) => {
     setRec(false);
@@ -1001,6 +1017,19 @@ export default function App() {
         <div style={{marginBottom:16}}><div style={{fontSize:11,fontWeight:600,color:T.tm,marginBottom:6,letterSpacing:"0.06em",textTransform:"uppercase"}}>Mode</div><div style={{display:"flex",gap:6}}>{["practice","test"].map(m=><button key={m} onClick={()=>setMode(m)} style={{padding:"8px 18px",borderRadius:8,border:`1.5px solid ${mode===m?T.ac:T.cb}`,background:mode===m?"#e8f0e8":T.card,color:mode===m?T.ad:T.tm,fontSize:12,fontWeight:600,cursor:"pointer"}}>{m==="test"?"Leadership Test":"Practice"}</button>)}</div></div>
         <div style={{...mkC,cursor:"default",background:T.wl,borderColor:"#e8dcc4",padding:14}}><div style={{fontSize:12,color:"#7a6c3d",lineHeight:1.5}}>{mode==="practice"?"Lead-in plays → MIDI drops off → you continue singing → graded on your portion.":"Leadership Test: evaluates count-off, tempo, and pitch stability."}</div></div>
 
+        {/* Tempo control — adjustable BPM for playback and grading */}
+        {hymnMelody && !rec && !cd && !leadInPlaying && <div style={{...mkC,cursor:"default",padding:14,marginTop:8}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+            <span style={{fontSize:11,fontWeight:600,color:T.tm,letterSpacing:"0.06em",textTransform:"uppercase"}}>Tempo</span>
+            <div style={{display:"flex",alignItems:"center",gap:10}}>
+              <button onClick={()=>setHymnTempo(t=>Math.max(40,t-5))} style={{width:28,height:28,borderRadius:"50%",border:"1px solid #d4cfc5",background:"#fff",fontSize:16,cursor:"pointer",lineHeight:1}}>−</button>
+              <span style={{fontFamily:"var(--serif)",fontSize:20,color:T.tx,minWidth:70,textAlign:"center"}}>{hymnTempo} <span style={{fontSize:11,color:T.tm}}>BPM</span></span>
+              <button onClick={()=>setHymnTempo(t=>Math.min(220,t+5))} style={{width:28,height:28,borderRadius:"50%",border:"1px solid #d4cfc5",background:"#fff",fontSize:16,cursor:"pointer",lineHeight:1}}>+</button>
+            </div>
+          </div>
+          <input type="range" min="40" max="220" step="1" value={hymnTempo} onChange={e=>setHymnTempo(Number(e.target.value))} style={{width:"100%",accentColor:"#5c7a5e"}}/>
+        </div>}
+
         {/* Lead-in configuration - only show when melody data is available */}
         {hymnMelody && !rec && !cd && !leadInPlaying && <div style={{...mkC,cursor:"default",padding:14,marginTop:8}}>
           <div style={{fontSize:11,fontWeight:600,color:T.tm,marginBottom:10,letterSpacing:"0.06em",textTransform:"uppercase"}}>Lead-in Settings</div>
@@ -1059,7 +1088,7 @@ export default function App() {
         {!rec && cd===null && !leadInPlaying && <div style={{textAlign:"center",marginTop:16}}>
           {hymnMelody && <div style={{marginBottom:12,padding:"8px 16px",background:"#e8f0e8",borderRadius:8,display:"inline-block"}}>
             <span style={{fontSize:11,color:"#3d5640"}}>
-              {hymnMelody.title} · {hymnMelody.timeSignature} · {hymnMelody.bpm} BPM · {totalNotes} notes
+              {hymnMelody.title} · {hymnMelody.timeSignature} · {hymnTempo} BPM · {totalNotes} notes
               {hymnMelody.source === 'midi' && ' · from MIDI'}
               {hymnMelody.voices && ` · ${VOICE_LABEL[selectedVoice]}`}
             </span>
@@ -1101,7 +1130,7 @@ export default function App() {
           </div>}
           {hymnMelody && <button onClick={()=>startRec(
             hymnMelody.timeSignature||"4/4",
-            hymnMelody.bpm||80,
+            hymnTempo,
             hymnMelody.notes,
             dropMode!=="off" && hymnMelody.notes?.length>0,
             dropMode,
@@ -1133,12 +1162,14 @@ export default function App() {
           <div style={{fontFamily:"var(--serif)",fontSize:32,color:T.ac,lineHeight:1,marginBottom:8}}>🎵</div>
           <div style={{fontSize:13,color:T.tm}}>Listen and prepare to sing...</div>
           <div style={{fontSize:11,color:T.tl,marginTop:8}}>MIDI drops after note {dropNoteIdx}</div>
+          <button onClick={cancelPractice} style={{marginTop:16,padding:"6px 18px",borderRadius:8,border:"1.5px solid #a33b3b",background:"#fff",color:"#a33b3b",fontSize:12,fontWeight:600,cursor:"pointer"}}>■ Cancel</button>
         </div>}
 
         {/* Count-in overlay */}
         {cd!==null && <div style={{position:"absolute",inset:0,background:"rgba(250,246,240,0.9)",borderRadius:10,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",backdropFilter:"blur(2px)",zIndex:10}}>
           <div style={{fontSize:11,color:T.tm,marginBottom:8,fontWeight:600,letterSpacing:"0.1em",textTransform:"uppercase"}}>Count-in</div>
           <div style={{fontFamily:"var(--serif)",fontSize:72,color:T.ac,lineHeight:1}}>{cd}</div>
+          <button onClick={cancelPractice} style={{marginTop:16,padding:"6px 18px",borderRadius:8,border:"1.5px solid #a33b3b",background:"#fff",color:"#a33b3b",fontSize:12,fontWeight:600,cursor:"pointer"}}>■ Cancel</button>
         </div>}
       </div>;
     };
