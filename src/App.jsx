@@ -11,6 +11,26 @@ import Soundfont from "soundfont-player";
 
 const METERS = ["2/4","3/4","4/4","4/2","6/8","9/8","12/8"];
 
+// SATB voices in score order (top to bottom).
+const VOICE_ORDER = ["soprano", "alto", "tenor", "bass"];
+const VOICE_LABEL = { soprano: "Soprano", alto: "Alto", tenor: "Tenor", bass: "Bass" };
+
+// Map a stored 4-part voice (notes and rests: { midi|rest, dur, onset, measure, beat })
+// into the shape the app's playback/notation/grader expect. Rests are preserved
+// (they carry no midi); notes gain a computed frequency.
+function voiceToNotes(voiceNotes) {
+  return (voiceNotes || []).map(n =>
+    n.rest
+      ? { rest: true, dur: n.dur, onset: n.onset, measure: n.measure, beat: n.beat }
+      : {
+          midi: n.midi,
+          freq: 440 * Math.pow(2, (n.midi - 69) / 12),
+          dur: n.dur, onset: n.onset, measure: n.measure, beat: n.beat,
+          lyric: n.lyric,
+        }
+  );
+}
+
 function parseTS(ts) { const [n,d]=(ts||"4/4").split("/").map(Number); return {n,d}; }
 
 function isCompound(ts) { const {n,d}=parseTS(ts); return d>=8 && n>3 && n%3===0; }
@@ -450,6 +470,9 @@ export default function App() {
   // Hymn melody data (when available)
   const [hymnMelody, setHymnMelody] = useState(null);
   const [hymnMelodyLoading, setHymnMelodyLoading] = useState(false);
+  // Which voice the singer practices (SATB hymns only). This is the part shown,
+  // played on lead-in, and graded. Defaults to soprano — the part that gets led.
+  const [selectedVoice, setSelectedVoice] = useState('soprano');
 
   // Lead-in / drop point settings
   // dropMode: "off" = no lead-in, "measure" = drop after N measures, "note" = drop after N notes, "full" = play entire melody
@@ -491,8 +514,25 @@ export default function App() {
       return;
     }
     setHymnMelodyLoading(true);
+    setSelectedVoice('soprano'); // each hymn starts on the soprano line
 
-    // Try MIDI file first, then fall back to JSON melody data
+    // Try 4-part (SATB) data first — the verified, part-selectable format.
+    fetch(`/hymn_satb/${hymn.id}.json`)
+      .then(r => { if (!r.ok) throw new Error('no satb'); return r.json(); })
+      .then(data => {
+        setHymnMelody({
+          ...data,
+          keySignature: data.key,
+          voices: data.voices,
+          notes: voiceToNotes(data.voices.soprano), // default active voice
+          source: 'satb',
+        });
+        setHymnMelodyLoading(false);
+      })
+      .catch(() => loadLegacyMelody());
+
+    // Legacy path: MIDI (404s), then single-voice JSON.
+    function loadLegacyMelody() {
     loadMidiFromUrl(`/hymn_midi/${hymn.id}.mid`)
       .then(midiData => {
         if (midiData.notes.length === 0) throw new Error('No notes in MIDI');
@@ -533,7 +573,18 @@ export default function App() {
             setHymnMelodyLoading(false);
           });
       });
+    }
   }, [hymn]);
+
+  // When the singer switches voice on a 4-part hymn, swap the active notes to
+  // that voice (drives notation, playback and grading). Only touches SATB hymns.
+  useEffect(() => {
+    setHymnMelody(prev =>
+      prev?.voices
+        ? { ...prev, notes: voiceToNotes(prev.voices[selectedVoice]) }
+        : prev
+    );
+  }, [selectedVoice]);
 
   // Load the full hymn index from public/hymn_index.json
   useEffect(() => {
@@ -647,6 +698,37 @@ export default function App() {
     setLeadInPlaying(false);
   }, []);
 
+  // Play all four SATB voices together on the church organ — the full-hymn sound.
+  const playAllVoices = useCallback(async () => {
+    if (!hymnMelody?.voices) return;
+    try {
+      const instrument = await loadInstrument();
+      if (!instrument) return;
+      const ctx = actx.current;
+      setMelodyPlaying(true);
+      melodyTimers.current.forEach(t => clearTimeout(t));
+      melodyTimers.current = [];
+
+      const { d } = parseTS(hymnMelody.timeSignature);
+      const secPerUnit = isCompound(hymnMelody.timeSignature)
+        ? 60 / (hymnMelody.bpm * 3)
+        : 60 / hymnMelody.bpm; // half- or quarter-beat unit both = 60/bpm here
+      const start = ctx.currentTime + 0.1;
+      let songEnd = 0;
+
+      VOICE_ORDER.forEach(v => {
+        (hymnMelody.voices[v] || []).forEach(note => {
+          if (!note.rest) {
+            instrument.play(note.midi, start + note.onset * secPerUnit,
+              { duration: note.dur * secPerUnit, gain: 0.55 });
+          }
+          songEnd = Math.max(songEnd, (note.onset + note.dur) * secPerUnit);
+        });
+      });
+      melodyTimers.current.push(setTimeout(() => setMelodyPlaying(false), songEnd * 1000 + 200));
+    } catch (e) { setMelodyPlaying(false); }
+  }, [hymnMelody, loadInstrument]);
+
   const doGenerate = useCallback(() => {
     const key = genKey==="auto" ? KEYS[Math.floor(Math.random()*KEYS.length)] : genKey;
     setGenActualKey(key);
@@ -713,10 +795,10 @@ export default function App() {
       const leadInNotes = notes.slice(0, dropNoteIndex);
       let totalDuration = 0;
 
-      // Schedule all notes using soundfont
+      // Schedule all notes using soundfont. Rests advance the clock but play nothing.
       leadInNotes.forEach((note) => {
         const dur = note.dur * secPerUnit;
-        instrument.play(note.midi, time, { duration: dur, gain: 0.7 });
+        if (!note.rest) instrument.play(note.midi, time, { duration: dur, gain: 0.7 });
         totalDuration = (time - ctx.currentTime) + dur;
         time += dur;
       });
@@ -960,7 +1042,29 @@ export default function App() {
             <span style={{fontSize:11,color:"#3d5640"}}>
               {hymnMelody.title} · {hymnMelody.timeSignature} · {hymnMelody.bpm} BPM · {totalNotes} notes
               {hymnMelody.source === 'midi' && ' · from MIDI'}
+              {hymnMelody.voices && ` · ${VOICE_LABEL[selectedVoice]}`}
             </span>
+          </div>}
+          {/* Voice picker — SATB hymns only. Selects the part you sing, see and are graded on. */}
+          {hymnMelody?.voices && <div style={{marginBottom:14}}>
+            <div style={{fontSize:11,fontWeight:700,color:T.tm,marginBottom:6,letterSpacing:.3}}>YOUR PART</div>
+            <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+              {VOICE_ORDER.filter(v=>hymnMelody.voices[v]?.length).map(v=>(
+                <button key={v} onClick={()=>{stopMelody();setSelectedVoice(v);}}
+                  style={{padding:"7px 16px",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer",border:"1px solid",
+                    borderColor:selectedVoice===v?"#5c7a5e":"#d4cfc5",
+                    background:selectedVoice===v?"#5c7a5e":"#fff",
+                    color:selectedVoice===v?"#fff":T.tx}}>
+                  {VOICE_LABEL[v]}
+                </button>
+              ))}
+              <button onClick={()=>melodyPlaying?stopMelody():playAllVoices()}
+                style={{padding:"7px 16px",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer",
+                  border:"1px solid #b08d3a",background:melodyPlaying?"#b08d3a":"#fff",
+                  color:melodyPlaying?"#fff":"#8a6d2a",marginLeft:"auto"}}>
+                {melodyPlaying?"■ Stop":"▶ Hear all 4 parts"}
+              </button>
+            </div>
           </div>}
           {/* Notation display for hymns with melody data */}
           {hymnMelody?.notes?.length > 0 && <div style={{marginBottom:16,textAlign:"left"}}>
@@ -968,6 +1072,7 @@ export default function App() {
               notes={hymnMelody.notes}
               timeSignature={hymnMelody.timeSignature || '4/4'}
               keySignature={hymnMelody.keySignature || 'C'}
+              clef={hymnMelody.voices && (selectedVoice==='tenor'||selectedVoice==='bass') ? 'bass' : 'treble'}
               currentNote={-1}
             />
           </div>}
