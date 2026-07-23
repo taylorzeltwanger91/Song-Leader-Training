@@ -494,10 +494,17 @@ export default function App() {
       if (!actx.current) {
         actx.current = new (window.AudioContext || window.webkitAudioContext)();
       }
-      // Use church organ for authentic hymn sound
-      const instrument = await Soundfont.instrument(actx.current, 'church_organ', {
-        soundfont: 'MusyngKite'
-      });
+      // Browsers create an AudioContext suspended until a user gesture — resume it or
+      // playback is silent and scheduling times drift.
+      if (actx.current.state === 'suspended') {
+        try { await actx.current.resume(); } catch (e) { /* best effort */ }
+      }
+      // Race the CDN fetch against a timeout so a slow/blocked soundfont can never hang
+      // the whole flow (the caller falls back to recording without a lead-in).
+      const instrument = await Promise.race([
+        Soundfont.instrument(actx.current, 'church_organ', { soundfont: 'MusyngKite' }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('soundfont load timed out')), 8000)),
+      ]);
       instrumentRef.current = instrument;
       setInstrumentLoading(false);
       return instrument;
@@ -855,10 +862,17 @@ export default function App() {
       ? getDropNoteIndex(referenceMelody, leadInDropMode, leadInDropPoint)
       : 0;
 
-    // Store reference melody for grading (only notes after drop point)
-    const gradingMelody = dropNoteIndex > 0 && referenceMelody
+    // Store reference melody for grading (only the notes after the drop point).
+    // Rebase onsets to 0: recording starts when the singer takes over, so the first
+    // graded note must sit at t=0 — not at its absolute position in the full song, or
+    // nothing ever lands in the match window and every performance scores 0.
+    let gradingMelody = dropNoteIndex > 0 && referenceMelody
       ? referenceMelody.slice(dropNoteIndex)
       : referenceMelody;
+    if (gradingMelody?.length && Number.isFinite(gradingMelody[0].onset) && gradingMelody[0].onset > 0) {
+      const base = gradingMelody[0].onset;
+      gradingMelody = gradingMelody.map(n => ({ ...n, onset: n.onset - base }));
+    }
 
     recorderRef.current._referenceMelody = gradingMelody;
     recorderRef.current._fullMelody = referenceMelody; // Keep full melody for reference
@@ -925,9 +939,14 @@ export default function App() {
       recorderRef.current = null;
     }
 
+    let gradeResult = null;
     if (melody && pitchHistory.length > 0) {
-      const gradeResult = gradePerformance(pitchHistory, melody, tempo, ts);
-
+      // Grade defensively — a throw here must never strand the singer in the recording
+      // view. If grading fails, fall through to the empty-result branch and still navigate.
+      try { gradeResult = gradePerformance(pitchHistory, melody, tempo, ts); }
+      catch (e) { gradeResult = null; }
+    }
+    if (gradeResult) {
       setRes({
         ps: gradeResult.pitchScore,
         rs: gradeResult.rhythmScore,
