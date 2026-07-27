@@ -23,10 +23,19 @@ for the notes + **automated validation** + **shape-geometry tiebreak** + **your 
 `detect_staves()` → 6 staves/page. Crop each system's **treble** (S+A) and **bass**
 (T+B) staff separately (`crop_staff`). Isolation is what makes the reads accurate.
 
-### 2. Detect the key  — `lib.py: count_key_accidentals()`, deterministic
-Count the flats/sharps in the signature. **Always detect; never assert.** On hymn 79
-the operator said "4 flats (Ab)"; the counter said 5 (Db major) and the page agreed.
-Asserting the key is the single biggest error source we hit — this removes it.
+### 2. Detect the key  — `lib.py: count_key_accidentals()`, deterministic BUT UNRELIABLE
+Count the accidentals in the signature. **Always verify the key; never assert it.**
+
+⚠️ **The counter is a weak hint, not ground truth** (found batching hymns 1-4, 2026-07-27):
+it over-counted every hymn (1♭→4, 3♭→5, 2♭→4, 3♯→7) and cannot tell flats from sharps —
+it likely double-counts each glyph (stem + bulb) and catches stray ink. The reliable
+step is a **visual key-signature check**: crop each hymn's first treble key signature
+into one montage and read the keys by eye (seconds for a whole batch). Feed the verified
+key to the vision reads. `count_key_accidentals()` needs a rewrite (glyph-shape
+classification for flat vs sharp, dedup of split components) before it can be trusted.
+
+The batch cropper `batch_crop.py` runs steps 1+2 over a list of hymn ids and writes a
+manifest + all per-system treble/bass crops — the automatable half, seconds for a batch.
 
 ### 3. Two independent vision reads  — the expensive step
 Read each staff with **two** models, shape-note-aware prompt (see
