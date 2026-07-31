@@ -158,8 +158,9 @@ describe('timing from absolute onsets', () => {
 
 describe('real hymn 237 (verified transcription) grades end to end', () => {
   const data = JSON.parse(
-    readFileSync(join(process.cwd(), 'public', 'hymn_melodies', '237.json'), 'utf8')
+    readFileSync(join(process.cwd(), 'public', 'hymn_satb', '237.json'), 'utf8')
   );
+  const notes = data.voices.soprano; // the sung part; SATB soprano = the legacy 237 melody (32 notes)
 
   function singHymn(notes, { octaveShift = 0, msPerBeat = 1000 } = {}) {
     // Sing each note perfectly at its absolute onset (handles the pickup bar).
@@ -183,21 +184,21 @@ describe('real hymn 237 (verified transcription) grades end to end', () => {
 
   it('scores a perfect performance near 100, all 32 notes matched', () => {
     // bpm 60, 3/2 -> msPerBeatUnit (half note) = 1000ms, matching onset units.
-    const r = gradePerformance(singHymn(data.notes), data.notes, data.bpm, data.timeSignature);
+    const r = gradePerformance(singHymn(notes), notes, data.bpm, data.timeSignature);
     expect(r.summary.totalNotes).toBe(32);
     expect(r.summary.matchedNotes).toBe(32);
     expect(r.pitchScore).toBeGreaterThan(95);
   });
 
   it('grades a bass singing 237 an octave down exactly the same', () => {
-    const atPitch = gradePerformance(singHymn(data.notes), data.notes, data.bpm, data.timeSignature);
-    const octaveDown = gradePerformance(singHymn(data.notes, { octaveShift: -1 }), data.notes, data.bpm, data.timeSignature);
+    const atPitch = gradePerformance(singHymn(notes), notes, data.bpm, data.timeSignature);
+    const octaveDown = gradePerformance(singHymn(notes, { octaveShift: -1 }), notes, data.bpm, data.timeSignature);
     expect(octaveDown.summary.matchedNotes).toBe(32);
     expect(octaveDown.pitchScore).toBe(atPitch.pitchScore);
   });
 
   it('honors the pickup: a singer starting on the pickup note (t=0) is on time', () => {
-    const r = gradePerformance(singHymn(data.notes), data.notes, data.bpm, data.timeSignature);
+    const r = gradePerformance(singHymn(notes), notes, data.bpm, data.timeSignature);
     expect(r.noteByNote[0].matched).toBe(true);
     expect(Math.abs(r.noteByNote[0].timingOffMs)).toBeLessThan(150);
   });

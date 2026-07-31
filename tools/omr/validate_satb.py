@@ -45,7 +45,12 @@ def validate(hymn):
     if len(set(round(t, 6) for t in totals.values())) > 1:
         problems.append(f"voice totals differ (must be equal): {totals}")
 
-    # Each voice's bars must sum to the meter (allowing a pickup/final anacrusis).
+    # All four voices must AGREE on the measure structure (shared barlines) — the real
+    # cross-check. We do NOT force every interior measure to equal the meter: this
+    # repertoire has legitimate phrase-cadence short measures (e.g. two 1.5-beat bars
+    # that complement to one) and split measures at system breaks. A voice that drifts
+    # out of alignment shows up as a differing profile here.
+    profiles = {}
     for v in VOICES:
         notes = hymn['voices'].get(v)
         if not notes or not all('measure' in n for n in notes):
@@ -53,18 +58,18 @@ def validate(hymn):
         sums = {}
         for n in notes:
             sums[n['measure']] = sums.get(n['measure'], 0) + n['dur']
-        ms = sorted(sums)
-        first, last = ms[0], ms[-1]
-        for m in ms:
-            if m in (first, last):
-                continue
-            if abs(sums[m] - beats_per_measure) > 1e-9:
-                problems.append(f"{v}: interior measure {m} sums to {sums[m]}, expected {beats_per_measure}")
-        f, l = sums[first], sums[last]
-        full = abs(f - beats_per_measure) < 1e-9 and abs(l - beats_per_measure) < 1e-9
-        anac = anacrusis and abs(f + l - beats_per_measure) < 1e-9
-        if not (full or anac):
-            problems.append(f"{v}: first bar {f} + last bar {l} not full and not a valid anacrusis")
+        profiles[v] = tuple(round(sums[m], 6) for m in sorted(sums))
+    if len(set(profiles.values())) > 1:
+        problems.append(f"voices disagree on measure structure: "
+                        f"{ {v: p for v, p in profiles.items()} }")
+    elif profiles:
+        # single agreed profile — sanity: interior bars are the meter, and any
+        # non-meter bars pair up (first/last anacrusis, or complementing short bars).
+        prof = next(iter(profiles.values()))
+        odd = [round(x, 6) for x in prof if abs(x - beats_per_measure) > 1e-9]
+        if odd and abs(sum(odd) - beats_per_measure * round(sum(odd) / beats_per_measure)) > 1e-9:
+            problems.append(f"non-meter bars {odd} do not complement to whole measures "
+                            f"(meter {beats_per_measure})")
 
     return problems
 
