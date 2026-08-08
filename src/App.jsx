@@ -485,6 +485,7 @@ export default function App() {
   const tmr=useRef(null),actx=useRef(null);
   const countInRef=useRef(null); // count-in interval, so it can be cancelled
   const instrumentRef = useRef(null);
+  const masterRef = useRef(null); // gain -> limiter -> destination; keeps stacked SATB voices from clipping
   const [instrumentLoading, setInstrumentLoading] = useState(false);
 
   // Load soundfont instrument (church organ for hymns)
@@ -502,10 +503,29 @@ export default function App() {
       if (actx.current.state === 'suspended') {
         try { await actx.current.resume(); } catch (e) { /* best effort */ }
       }
+      // Master output chain: gain -> limiter -> speakers. Up to 4 SATB voices play at
+      // once through a sustained organ timbre; summed, they run past 1.0 and clip. The
+      // DynamicsCompressor acts as a brickwall limiter that only bites on those peaks —
+      // it leaves single-voice playback untouched but stops the stacked-voice distortion
+      // that a small mobile speaker turns harsh (laptop speakers/DSP mask it; phones don't).
+      if (!masterRef.current) {
+        const ctx = actx.current;
+        const gain = ctx.createGain();
+        gain.gain.value = 0.9;
+        const limiter = ctx.createDynamicsCompressor();
+        limiter.threshold.value = -6;  // start limiting ~6 dB below clip
+        limiter.knee.value = 0;        // hard knee = limiter, not gentle compression
+        limiter.ratio.value = 20;      // brickwall
+        limiter.attack.value = 0.003;  // catch fast organ onsets
+        limiter.release.value = 0.25;
+        gain.connect(limiter);
+        limiter.connect(ctx.destination);
+        masterRef.current = gain;
+      }
       // Race the CDN fetch against a timeout so a slow/blocked soundfont can never hang
       // the whole flow (the caller falls back to recording without a lead-in).
       const instrument = await Promise.race([
-        Soundfont.instrument(actx.current, 'church_organ', { soundfont: 'MusyngKite' }),
+        Soundfont.instrument(actx.current, 'church_organ', { soundfont: 'MusyngKite', destination: masterRef.current }),
         new Promise((_, reject) => setTimeout(() => reject(new Error('soundfont load timed out')), 8000)),
       ]);
       instrumentRef.current = instrument;
