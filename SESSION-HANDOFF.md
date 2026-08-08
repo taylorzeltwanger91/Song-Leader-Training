@@ -1,102 +1,72 @@
-# Session Handoff — 2026-07-17
+# Session Handoff — 2026-08-07
 
 > **Ephemeral.** Rewritten at the end of each session via `/log` or trigger phrase. Don't append — overwrite.
 
 ## What was done
 
-Picked this project back up after ~4 months idle, established what it is and where
-it's going, and shipped Phase 1. Four commits, **none pushed**.
+Transcribed and verified **SATB hymns 1–10**, built the analysis tooling that gates
+them, and pushed the entire project (16 commits, previously all unpushed) to `main`.
 
-### 1. Pulled and audited (was 4 months stale)
-`main` moved `f8c0eeb` → `2afa9a8`. Taylor's April feature work (VexFlow notation, MIDI
-parsing, octave selection, pitch-engine accuracy) had never been pulled locally.
+### 1. Ingest — hymns 1–10 to verified 4-part data
+- **Method: dual vision-model consensus.** Every hymn read by **Fable** (Agent tool,
+  `model: fable`) and **GPT-5.6** (manual paste into ChatGPT), both staves. Disagreements
+  resolved by a harmony adjudicator (does the note fit a triad with the other 3 voices?)
+  and, when needed, a third tiebreak read.
+- **The dual-pass caught errors in BOTH directions** — this is the case for keeping it:
+  - Hymn **2**: GPT misread the *entire* lower staff (~100% SER); replaced with Fable's.
+  - Hymn **6**: Fable *dropped a measure* (60 beats), GPT *over-counted* three cadences
+    (66); a tiebreak read got the truth — **63 beats, all bars 3/2**.
+  - Hymns **7–10**: **0% SER** — Fable and GPT agreed note-for-note. Gold standard.
+- All 10 served at `public/hymn_satb/{1..10}.json`, all pass `validate_satb.py`.
+  Full hymnal now live: **1–10 + 5, 79, 237**.
 
-### 2. Added the project memory layer (`78f414a`)
-None of it existed. Found while auditing: **milestone M001 was planned, built and UAT'd
-by `huz-agent` on a branch that was never merged** — a different, partial huz branch was
-merged instead. Its octave-tolerant grading fix never landed, so `main` shipped a
-silent wrong-output bug for three months.
+### 2. Tooling (all in `tools/omr/`)
+- `ser.py` — Symbol Error Rate (Levenshtein on `pitch:dur` tokens). The scorekeeper.
+- `harmony_scan.py` — independent per-hymn triad/7th consistency check.
+- `validate_satb.py` — **generalized**: was "every bar == meter"; now "all 4 voices agree
+  on bar structure" + odd bars must complement. This unblocked irregular hymns (hymn 6's
+  1.5-beat phrase cadences, split measures at system breaks).
+- `batch_crop.py` — batch steps 1+2 over a hymn-id list.
 
-### 3. Research + direction (`1a69e2c`)
-Five parallel tracks → `docs/research/` (~1,080 lines, `DIRECTION.md` is the entry
-point). Headlines: **Zion's Hymns is a shape-note hymnal** (verified by reading
-`page-427.png`); **nobody has shipped scan→sing→grade**; **UltraStar's octave-agnostic
-matching** is the design to copy; live audio jamming is physically off the table.
+### 3. Build gate hardened
+- `src/audio/melody-data.test.js` **rewritten** to validate the shipped SATB data (all 12
+  hymns) — the JS mirror of `validate_satb.py`. Was validating the removed legacy format.
+- `src/audio/grader.test.js` 237 fixture repointed to `hymn_satb/237.json` soprano.
+- Removed superseded `public/hymn_melodies/237.json`. **101 tests pass; vite build clean.**
 
-### 4. Phase 0 — OMR test (`388e0d4`)
-Ran Audiveris 5.11.0 on 5 pages. **It fails.** Ran clean, produced garbage: voices
-merged into chords, time signature wrong on every page (3/4 where the paper says 3/2),
-soprano accuracy 10%, a third of notes missing. **The useful part: layout analysis works
-(staves/clefs/pairings correct); notehead *position* is what fails** — exactly what
-shape noteheads predict. Also resolved: **Audiveris is AGPL v3**.
+### 4. MuSViT evaluated, bookmarked as Phase 2 (see PROJECT-LOG)
+Foundation OMR vision model. Encoder-only (no note head), OOD on shape notes,
+CC-BY-NC-SA. Not our pipeline today; the play is to fine-tune a head on our verified
+hymns later. Bookmarked in `tools/omr/README.md`.
 
-### 5. Phase 1 — fixed the grader, gated it with tests (`070e215`)
-Measured on real hymn 237 data, a **perfect** performance:
-
-| | before | after |
-|---|---|---|
-| at pitch | 98 (33/33) | 100 (33/33) |
-| **−1 octave** (any bass) | **0 (0/33)** | **100 (33/33)** |
-| +1 octave | 0 (0/33) | 100 (33/33) |
-
-Every change was proven by a test that failed first. Octave-agnostic matching; timing
-from authored absolute onsets; confidence removed from the pitch score; the fabricated
-Count-off score deleted; Begin disabled when there's no melody data; 237.json's four
-malformed bars corrected. **19 tests, wired** — `prebuild` now runs `lint && test`.
-
-## Current state
-
-- On `main`, **4 commits ahead of `origin/main`, nothing pushed.** Galen wants one push.
-- Build green: 0 lint errors (35 warnings), 19/19 tests, ~1s.
-- **Vitest was added as a dev dependency** — flagged, since `AGENTS.md` says ask before
-  adding deps. It's dev-only and Phase 1 required tests. Taylor should know.
-- Working tree: `package-lock.json` modified by installs; untracked `.bg-shell/`.
+### 5. Firebase ownership scoped, then tabled
+Decision: **Galen owns/operates the Firebase project**, wired into Taylor's Vercel via 6
+public `VITE_FIREBASE_*` env vars; rules/functions deploy from Galen's machine; **must add
+Firebase hosts to the `vercel.json` CSP `connect-src`** or calls silently fail. Only for
+future rooms — app is fully client-side today. Scaffolding not built yet.
 
 ## Running state
+- **Background processes:** none (all Fable read-agents completed).
+- **Dev servers:** none running.
+- **Worktrees:** none.
+- **Scratchpad (NOT in repo):** the assembler `asm.py` + per-hymn `drive_h*.py` +
+  `compare_*.py` live in the session scratchpad only. See TECH-DEBT — they should be
+  migrated into `tools/omr/` for the data to be reproducible from the repo.
 
-**none** — no dev server, no background shells, no worktrees.
-
-Scratchpad (safe to delete): Audiveris 5.11.0 + its OMR output live in
-`/private/tmp/claude-501/-Users-galengrimm/9c1e04e1-66cf-42c4-920c-da4bc2f05bf8/scratchpad/`.
-Not in the repo. Re-downloadable from the GitHub release if Phase 3 wants it.
-
-## Verification
-
-- `npm test` → **19 passed** (2 files)
-- `npm run build` → exits 0; prebuild runs lint (0 errors) + tests; "✓ built in ~1s"
-- `git log --oneline origin/main..HEAD` → **4 commits**, the push queue
-- `node -e "..."` sanity: grading hymn 237 sung an octave down should score **100,
-  33/33**. If it ever returns 0 again, the octave regression is back and
-  `src/audio/grader.test.js` should have caught it.
+## Verification commands
+- `CI=true npm run build` → 101 tests pass, then `vite build` succeeds.
+- `python3 tools/omr/validate_satb.py public/hymn_satb/6.json` → `VALID: ... 63.0 beats`.
+- `python3 tools/omr/harmony_scan.py public/hymn_satb/9.json` → flags are legit passing tones only.
 
 ## Open questions / next steps
-
-1. **Phase 2 — the data model** is next per `DIRECTION.md`: voice/part tag (SATB),
-   absolute onsets as source of truth, rests first-class, ingest validation. It's the
-   change that propagates to every consumer, and **it must land before the layout
-   redesign** — part selection is a navigation concept that can't exist until the data
-   can express parts.
-2. **Phase 3 is now a custom notehead detector**, not an Audiveris pipeline. Don't
-   rebuild staff/clef/measure segmentation — Audiveris does those correctly and could
-   serve as the layout pass (run offline as a batch producing data files; AGPL).
-3. **Still unchecked, worth an hour:** does any machine-readable corpus already contain
-   Zion's Hymns tunes? Sourcing beats re-keying and beats OCR.
-4. **The unmerged M001 branch** — its grading fix is now superseded, but auto-clef
-   selection and the extracted `melody-generator.js` are still stranded there. Taylor's
-   call.
-5. **`237.json` pitches are still unverified** against the printed page. The bar sums
-   are fixed; nobody has checked the notes are right.
-
-## ⚠️ Loose end that will bite
-
-The retired "client-side only, no backend" guardrail exists **twice** in `CLAUDE.md`.
-The manual Scope & Boundaries section is updated. **Line ~133 lives inside the
-`SCAN:AUTO` block and was deliberately NOT edited** — that block is regenerated by the
-Watch Tower scan, so a hand-edit gets overwritten. **The scan prompt (in
-`Public Watchtower/prompts/`) needs updating or the next scan will re-assert "do not
-introduce backend services"** and agents will start refusing the approved direction.
-Until then, `AGENTS.md` + the Scope section are authoritative.
+- **Hymn 2 soprano `F5` vs `Eb5` at m5/m11** — the one unresolved note; needs an ear-check
+  (`~/Downloads/ZionsHymns-Archive/hymn-002.../hymn2_soprano.wav`). One-line fix if wrong.
+- **Migrate `asm.py` + drive scripts into `tools/omr/`** (reproducibility gap).
+- **Continue the batch** — hymns 11+ using the same crop → dual-read → adjudicate → validate flow.
+- **Firebase rooms** — build the scaffold against placeholders when ready.
 
 ## How to resume
-
-Read `docs/research/DIRECTION.md`, then `PROJECT-LOG.md` top-down. Phase 2 is next.
+Everything is on `main` (pushed). Re-read this file + `tools/omr/README.md` (the empirical
+pipeline). To transcribe more hymns, the scratchpad drive scripts are the current
+(un-migrated) tooling; `batch_crop.py` + the Fable-read prompt pattern in `GPT-PROMPTS.md`
+are the entry points.

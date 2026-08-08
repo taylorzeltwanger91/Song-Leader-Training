@@ -13,6 +13,50 @@
 
 ---
 
+## 2026-08-07 — Hymns 1–10 verified; dual-model consensus + SER/harmony tooling; whole project pushed
+
+Transcribed and verified **SATB hymns 1–10** (hymnal now 1–10 + 5, 79, 237), and pushed
+the entire project to `origin/main` for the first time — 16 commits that had been
+accumulating locally over months (the whole OMR pipeline, grader rewrite, SATB loader,
+research docs, memory layer) had **never been pushed**. Taylor's remote had only
+automated security-scan commits.
+
+**Ingest method — dual vision-model consensus (this is now the standard).** Each hymn is
+read independently by **Fable** (Agent tool) and **GPT-5.6** (manual ChatGPT paste), both
+staves. Agreement → accept; disagreement → resolve by harmony (does the note complete a
+triad against the other three voices?), shape geometry, or a third tiebreak read. The
+value is proven: it caught errors in **both** directions —
+- Hymn **2**: GPT misread the entire lower staff (~100% SER); Fable's reading was correct.
+- Hymn **6**: Fable dropped a measure (60 beats) *and* GPT over-counted three cadences
+  (66); a tiebreak read found the truth (**63**). Neither original was right.
+- Hymns **7–10**: **0% SER** — byte-identical between the two readers.
+Lesson wired into `tools/omr/README.md`: the second pass on the **lower** staff is not
+optional (a treble-only consensus would have shipped hymn 2's fictional bass).
+
+**Tooling built** (`tools/omr/`): `ser.py` (Symbol Error Rate — the accuracy metric, from
+the MuSViT benchmark convention), `harmony_scan.py` (independent triad/7th check),
+`batch_crop.py`, and a **generalized `validate_satb.py`** — the old "every bar must equal
+the meter" rule false-rejected legitimate irregular music (phrase-cadence short bars,
+split measures at system breaks), so it now checks the real invariant: all four voices
+must *agree* on bar structure, and odd bars must complement to whole measures.
+
+**MuSViT decision — Phase 2, not now.** [MuSViT](https://huggingface.co/PRAIG/musvit)
+(Alicante/PRAIG, MAE-pretrained ViT on 9.7M IMSLP pages) is a strong foundation OMR model
+(16.4% SER frozen vs 48.6% PaliGemma), but for us: ships **encoder-only** (embeddings, no
+note head), is **out-of-distribution on Aiken shape notes** (IMSLP is round-note), its
+ceiling (10.9% SER fine-tuned) is **below our verified-zero bar**, and it's **CC-BY-NC-SA**
+(non-commercial). The real play: our hand-verified hymns are becoming *the* labeled
+shape-note dataset — fine-tune a recognition head on MuSViT embeddings once ~30–50 are
+verified, to build a fast local scaler for the remaining ~200 (the throughput bottleneck,
+which is Fable rate-limits + GPT manual paste, not accuracy). Bookmarked in the OMR README.
+
+**Backend (Firebase) — ownership resolved, build tabled.** The app is fully client-side
+today; Firebase is only for future multiplayer rooms. Decision: **Galen owns/operates the
+Firebase project** (his Google account, free tier at friend-scale), wired into Taylor's
+Vercel via 6 public `VITE_FIREBASE_*` env vars. Firebase ≠ Vercel — rules/functions deploy
+from Galen's machine to his project; no repo fork needed. Gotcha recorded: the locked
+`vercel.json` CSP `connect-src` must gain the Firebase hosts or calls silently fail.
+
 ## 2026-07-20 — Pipeline proven on 3 hymns; codified as a workflow project
 
 Ran the ingest pipeline on hymns **5** (G major, 1 sharp) and **79** (Db major, 5 flats,

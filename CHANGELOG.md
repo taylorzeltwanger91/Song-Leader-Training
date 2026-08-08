@@ -11,6 +11,9 @@
 
 ## [Unreleased]
 
+### Added
+- **Hymns 1–10 are now available as full four-part (SATB) practice material** — pick any voice (soprano, alto, tenor, bass) and hear or sing your part. Transcribed from the hymnal and cross-checked by two independent readers plus harmony and structural validation. (2026-08-07)
+
 ### Fixed
 - **Grading no longer fails singers who sing in their own octave.** A bass singing a hymn perfectly used to score **0 — every note marked missed**; it now scores the same as a soprano at pitch. Matching is octave-agnostic. (2026-07-17)
 - **Timing is read from where notes are printed**, not from adding up durations. A malformed bar used to shift every later note out of the match window, so a correct performance graded as wrong. (2026-07-17)

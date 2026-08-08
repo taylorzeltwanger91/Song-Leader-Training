@@ -1,12 +1,34 @@
 # Tech Debt
 
-Last reviewed: 2026-07-17
+Last reviewed: 2026-08-07
 
 > Known debt to revisit. Things that work but aren't ideal.
 > Updated when new debt is identified, items are resolved, or priorities shift.
 > Resolved items move to a Resolved section at the bottom (don't delete — paper trail matters).
 
 ## Active
+
+### SATB assembler + drive scripts live only in the session scratchpad (reproducibility gap)
+- **Where:** the scratchpad — `asm.py` (pitch-list → SATB JSON + WAV/MIDI, with the
+  explicit-barline support for irregular measures), the per-hymn `drive_h*.py`, and the
+  `compare_*.py` / `harmony_*.py` reconciliation scripts. **None are in the repo.**
+- **What:** `tools/omr/` has the *validation/analysis* half (validate, ser, harmony_scan,
+  batch_crop) but not the *assembly* half. The shipped `hymn_satb/*.json` therefore can't
+  be regenerated from the repo alone.
+- **Why it's debt:** a future session (or Taylor) can't reproduce or extend the data
+  without re-deriving the assembler. It also means the README references tooling that
+  isn't present.
+- **Cost to fix:** small — migrate `asm.py` into `tools/omr/`, generalize the drive
+  scripts into one data-driven builder (read pitch/dur lists from a per-hymn file), commit.
+- **Trigger:** before transcribing hymns 11+ at any scale. Identified 2026-08-07.
+
+### Hymn 2 soprano F5-vs-Eb5 (m5/m11) unresolved — needs an ear-check
+- **Where:** `public/hymn_satb/2.json`, soprano, measures 5 and 11 (the repeat).
+- **What:** both reads left one melodic note ambiguous — `F5` (appoggiatura) vs `Eb5`
+  (chord tone). Harmony leans `Eb5`; it's audibly obvious when sung. Everything else in
+  hymn 2 is dual-verified.
+- **Cost to fix:** trivial — one-line edit + re-validate once the ear settles it.
+- **Trigger:** next time the WAVs are played. Recorded in the hymns commit message too.
 
 ### Match windows overlap — a note can match its predecessor's audio
 - **Where:** `src/audio/grader.js`, `matchPitchesToNotes` — `windowStart = expectedStart - 150`
