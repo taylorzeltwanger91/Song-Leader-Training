@@ -1,4 +1,7 @@
-# Session Handoff — 2026-08-07
+# Session Handoff — 2026-08-10
+
+> Full portable handoff also written to `~/Downloads/Song-Leader-Training-HANDOFF.md`
+> (self-contained cold-start doc, incl. how to rebuild the lost `asm.py` assembler).
 
 > **Ephemeral.** Rewritten at the end of each session via `/log` or trigger phrase. Don't append — overwrite.
 
@@ -45,6 +48,13 @@ public `VITE_FIREBASE_*` env vars; rules/functions deploy from Galen's machine; 
 Firebase hosts to the `vercel.json` CSP `connect-src`** or calls silently fail. Only for
 future rooms — app is fully client-side today. Scaffolding not built yet.
 
+### 6. Audio: master limiter for mobile clipping (`78d0b80`, pushed)
+Playback routed the church_organ soundfont straight to the speakers with no master stage,
+so "Hear all 4 parts" (up to 4 stacked voices) clipped — harsh on phone speakers, fine on
+laptop. Added `GainNode(0.9) → DynamicsCompressor(limiter) → destination` in
+`loadInstrument` (`src/App.jsx`); routes all soundfont output through it. Build gate green.
+**Awaiting a mobile ear-check to confirm.**
+
 ## Running state
 - **Background processes:** none (all Fable read-agents completed).
 - **Dev servers:** none running.
@@ -59,6 +69,8 @@ future rooms — app is fully client-side today. Scaffolding not built yet.
 - `python3 tools/omr/harmony_scan.py public/hymn_satb/9.json` → flags are legit passing tones only.
 
 ## Open questions / next steps
+- **Mobile audio ear-check** — the limiter fix (`78d0b80`) is deployed; confirm "Hear all 4
+  parts" sounds clean on a phone. If still rough → iOS Web Audio (sample-rate/scheduling), deeper.
 - **Hymn 2 soprano `F5` vs `Eb5` at m5/m11** — the one unresolved note; needs an ear-check
   (`~/Downloads/ZionsHymns-Archive/hymn-002.../hymn2_soprano.wav`). One-line fix if wrong.
 - **Migrate `asm.py` + drive scripts into `tools/omr/`** (reproducibility gap).
