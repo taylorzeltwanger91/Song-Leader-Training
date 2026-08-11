@@ -1,0 +1,21 @@
+# hymn 2 — A Christian's Joy and Hope
+# recovered from public/hymn_satb/2.json
+
+id: 2
+title: A Christian's Joy and Hope
+key: Eb
+time: 4/2
+bpm: 120
+anacrusis: 1
+
+soprano.pitches: Bb4, Eb5, Bb4, C5, C5, Bb4, Ab4, G4, Bb4, G4, G4, F4, G4, Bb4, G4, F4, Bb4, G4, Bb4, F5, D5, C5, Bb4, Bb4, F5, Bb4, C5, C5, Bb4, G4, G4, Bb4, G4, Eb4, F4, G4, G4, G4, F4, Bb4, G4, Bb4, F5, D5, C5, Bb4, C5, Bb4, Ab4, G4, C5, Ab4, F4, G4, C5, F5, Eb5, D5, Eb5, Eb5, D5, Bb4, C5, Ab4, Bb4, C5, F5, Eb5, D5, Eb5
+soprano.durs: 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3
+
+alto.pitches: Eb4, Eb4, Eb4, Eb4, Eb4, Eb4, D4, Eb4, F4, Eb4, Eb4, D4, Eb4, F4, Eb4, D4, F4, Eb4, F4, Eb4, F4, G4, F4, D4, Eb4, Eb4, Eb4, Eb4, Eb4, Eb4, D4, Eb4, F4, Eb4, Eb4, D4, Eb4, F4, Eb4, D4, F4, Eb4, F4, Eb4, F4, G4, F4, D4, Ab4, G4, F4, Eb4, Ab4, F4, D4, Eb4, Eb4, Ab4, G4, F4, G4, A4, F4, F4, Ab4, Eb4, Eb4, Eb4, Ab4, G4, F4, Ab4, G4
+alto.durs: 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3
+
+tenor.pitches: G3, Bb3, G3, Ab3, Ab3, G3, Bb3, Bb3, Bb3, Bb3, Bb3, Ab3, Bb3, Bb3, Bb3, Bb3, Bb3, Bb3, Bb3, G3, Bb3, Bb3, A3, Bb3, G3, Bb3, G3, Ab3, Ab3, G3, Bb3, Bb3, Bb3, Bb3, Bb3, Ab3, Bb3, Bb3, Bb3, Bb3, Bb3, Bb3, Bb3, G3, Bb3, Bb3, A3, Bb3, Eb4, Eb4, C4, C4, Eb4, C4, Bb3, Bb3, Ab3, C4, Bb3, Bb3, Bb3, Eb4, D4, D4, Eb4, Ab3, G3, Ab3, C4, Bb3, Bb3, Bb3
+tenor.durs: 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3
+
+bass.pitches: Eb3, G3, Eb3, Ab3, Ab2, Bb2, Bb2, Eb3, D3, Eb3, G3, F3, Eb3, D3, Eb3, Bb2, D3, Eb3, D3, C3, D3, Eb3, F3, Bb2, Eb3, G3, Eb3, Ab3, Ab2, Bb2, Bb2, Eb3, D3, Eb3, G3, F3, Eb3, D3, Eb3, Bb2, D3, Eb3, D3, C3, D3, Eb3, F3, Bb2, Ab2, Eb3, F3, C3, Ab2, Ab2, Bb2, Eb3, Ab3, Ab3, Bb3, Bb2, Eb3, C3, Bb2, Bb2, Ab2, C3, Eb3, Ab3, F3, G3, Ab3, Bb3, Bb2, Eb3
+bass.durs: 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.5, 0.5, 1, 1, 3

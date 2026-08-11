@@ -1,0 +1,21 @@
+# hymn 8 — The Resurrection From Baptism
+# recovered from public/hymn_satb/8.json
+
+id: 8
+title: The Resurrection From Baptism
+key: D
+time: 4/2
+bpm: 120
+anacrusis: 1
+
+soprano.pitches: A4, F#4, D4, G4, E4, D4, D4, A4, REST, A4, B4, G4, F#4, A4, D5, D5, C#5, E5, F#5, E5, D5, A4, B4, G4, D5, REST, F#4, G4, A4, F#4, D4, A4, A4, A4, D5, E5, C#5, D5
+soprano.durs: 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 2, 2, 3
+
+alto.pitches: F#4, D4, A3, E4, C#4, A3, A3, C#4, REST, D4, D4, D4, D4, E4, F#4, G#4, A4, A4, A4, G4, F#4, D4, D4, D4, F#4, REST, D4, D4, E4, D4, D4, E4, F#4, E4, A4, G4, E4, F#4
+alto.durs: 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 2, 2, 3
+
+tenor.pitches: D4, A3, F#3, B3, G3, F#3, F#3, E3, REST, F#3, G3, G3, A3, C#4, D4, D4, E4, C#4, D4, C#4, D4, D4, G3, B3, A3, REST, A3, B3, A3, A3, F#3, A3, D4, C#4, D4, B3, A3, A3
+tenor.durs: 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 2, 2, 3
+
+bass.pitches: D3, D3, D3, G2, A2, D3, D3, A2, REST, D3, G2, B2, D3, C#3, B2, B2, A2, A2, D3, A3, B3, F#3, G3, G3, D3, REST, D3, B2, C#3, D3, D3, C#3, D3, A3, F#3, G3, A3, D3
+bass.durs: 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 2, 2, 3

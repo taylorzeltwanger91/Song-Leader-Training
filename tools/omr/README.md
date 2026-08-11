@@ -102,10 +102,28 @@ one staff rather than guessing from a wide crop.
 plausible-looking but harmonically-impossible bass. A treble-only consensus, which the
 batch defaulted to, would have shipped it silently. Both staves get two reads.
 
-### 6. Assemble → render → ear-check  — `render_satb.py` + you
-Write the 4-part JSON (`data/hymns-satb/`), render WAV + multi-track MIDI, and
-**listen against the recording** (zionsharp.info has a 4-part MP3 per hymn). Your ear
-is the final authority — soprano especially, since it's the part that gets sung.
+### 6. Assemble → render → ear-check  — `assemble.py` + `render_satb.py` + you
+
+Put the verified reads in a source file under `hymns/<id>.txt` (header + two lines per
+voice — the format is documented in `assemble.py`), then:
+
+```bash
+python assemble.py hymns/11.txt -o ../../public/hymn_satb/11.json   # validates as it writes
+python render_satb.py ../../public/hymn_satb/11.json ~/Downloads/ZionsHymns-Archive/hymn-011-<slug>/
+```
+
+`assemble.py` accumulates onsets, tiles the barlines, and runs `validate_satb.py` before
+it will write anything — a hymn that fails the gate produces no file. Then **listen
+against the recording** (zionsharp.info has a 4-part MP3 per hymn). Your ear is the final
+authority — soprano especially, since it's the part that gets sung.
+
+**The source files are the point.** The reads live in `hymns/*.txt` under version
+control, not in a scratch drive script. The original assembler kept its inputs in
+throwaway per-hymn scripts; when the scratchpad was cleaned up the JSONs survived and the
+reads did not. `extract_source.py` recovered them from the committed JSON, and
+`roundtrip_test.py` proves the recovery: all 12 verified hymns re-assemble to the data
+that shipped (6 byte-identical, the rest differing only in two documented legacy quirks —
+see the script). Run it after any change to the assembler.
 
 ## Tiering (soprano is the product)
 
@@ -122,6 +140,7 @@ is the final authority — soprano especially, since it's the part that gets sun
 | 3 vision read | ⚠️ run by hand (Agent tool / codex CLI / paste). Not yet a batch driver. |
 | 4 validate | ✅ `validate_satb.py` |
 | 5 resolve | ⚠️ semi — guide crops scripted, shape call by eye |
+| 6 assemble | ✅ `assemble.py` (source in `hymns/*.txt`, validated on write) |
 | 6 render | ✅ `render_satb.py` |
 
 The missing piece for scale is a **batch driver** over a 250-hymn work-list that
@@ -165,7 +184,11 @@ not a replacement for it.**
 
 - `lib.py` — staff detection, key detection, cropping, pitch mapping (the CV core)
 - `validate_satb.py` — the structural gate
+- `assemble.py` — per-voice reads (`hymns/*.txt`) → the 4-part JSON, validated on write
+- `extract_source.py` — the reverse: committed JSON → a `hymns/*.txt` source
+- `roundtrip_test.py` — extract + re-assemble every hymn, diff against what shipped
 - `render_satb.py` — 4-part JSON → WAV + MIDI
+- `hymns/` — the verified reads, one file per hymn, in version control
 - `requirements.txt` — Python deps
 
 ## Verified so far

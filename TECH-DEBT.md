@@ -8,19 +8,22 @@ Last reviewed: 2026-08-07
 
 ## Active
 
-### SATB assembler + drive scripts live only in the session scratchpad (reproducibility gap)
-- **Where:** the scratchpad — `asm.py` (pitch-list → SATB JSON + WAV/MIDI, with the
-  explicit-barline support for irregular measures), the per-hymn `drive_h*.py`, and the
-  `compare_*.py` / `harmony_*.py` reconciliation scripts. **None are in the repo.**
-- **What:** `tools/omr/` has the *validation/analysis* half (validate, ser, harmony_scan,
-  batch_crop) but not the *assembly* half. The shipped `hymn_satb/*.json` therefore can't
-  be regenerated from the repo alone.
-- **Why it's debt:** a future session (or Taylor) can't reproduce or extend the data
-  without re-deriving the assembler. It also means the README references tooling that
-  isn't present.
-- **Cost to fix:** small — migrate `asm.py` into `tools/omr/`, generalize the drive
-  scripts into one data-driven builder (read pitch/dur lists from a per-hymn file), commit.
-- **Trigger:** before transcribing hymns 11+ at any scale. Identified 2026-08-07.
+### Rests in the shipped hymn data carry `beat: 0` regardless of position
+- **Where:** `public/hymn_satb/{4,7,9}.json` — 50 rest entries across the three.
+- **What:** the original `asm.py` stamped every rest `beat: 0` whatever its real offset
+  in the bar (hymn 9 has a rest at onset 6.0, genuinely beat 2 of a 4/4 bar, written as
+  0). Found by the assembler round-trip, 2026-08-10. `assemble.py` writes the true beat,
+  so any hymn built from here on is correct; only these three predate the fix.
+- **Why it's low priority:** inert today. Nothing reads `beat` on a rest — `grader.js`
+  checks it only for sounding notes, and `App.jsx` passes it through untouched. It would
+  start to matter if anything measure-relative (rest placement in notation, a bar-level
+  scrub in the player) ever consumed it.
+- **Cost to fix:** trivial and mechanical — `python tools/omr/assemble.py
+  tools/omr/hymns/<id>.txt -o public/hymn_satb/<id>.json` for 4, 7 and 9, then re-run
+  the JS test suite. Deliberately not done as a side effect of building the assembler:
+  it rewrites shipped data on Taylor's production app for no behavioural gain.
+- **Trigger:** next time those three hymns are touched for another reason, or if `beat`
+  gains a consumer.
 
 ### Hymn 2 soprano F5-vs-Eb5 (m5/m11) unresolved — needs an ear-check
 - **Where:** `public/hymn_satb/2.json`, soprano, measures 5 and 11 (the repeat).
@@ -115,6 +118,20 @@ See Resolved.
 - **Trigger:** a Web Audio API change that breaks it.
 
 ## Resolved
+
+### SATB assembler lived only in the session scratchpad — 2026-08-10
+`asm.py` and its per-hymn drive scripts were never in the repo, so the shipped
+`hymn_satb/*.json` couldn't be regenerated from a clean checkout. Rebuilt as
+`tools/omr/assemble.py`, reading committed per-hymn source files (`tools/omr/hymns/*.txt`)
+instead of throwaway drive scripts — the failure mode that lost it. `extract_source.py`
+recovered the reads for all 12 verified hymns out of the committed JSON, and
+`roundtrip_test.py` proves the rebuild: every pitch, duration, onset and measure matches
+what shipped (6 byte-identical; the others differ only in the legacy rest-`beat` quirk
+above and first-batch field ordering). Two findings along the way: no hymn actually has
+irregular interior bars — the only non-meter measures are a pickup and its complementing
+final bar, so the explicit-barline support the old assembler was believed to need is
+optional (kept as a `measures:` override, unused) — and the rest-`beat` bug now tracked
+above.
 
 ### Octave-strict grading — 2026-07-17 (`070e215`)
 `grader.js` computed `Math.abs(detected - expected)` and matched on `< 1`, so a singer

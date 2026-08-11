@@ -1,0 +1,21 @@
+# hymn 3 — The Gospel of Truth
+# recovered from public/hymn_satb/3.json
+
+id: 3
+title: The Gospel of Truth
+key: Ab
+time: 2/2
+bpm: 120
+anacrusis: 0
+
+soprano.pitches: REST, G4, C5, C5, C5, Db5, C5, Bb4, Ab4, REST, G4, F4, G4, Ab4, Bb4, C5, D5, Eb5, REST, Eb4, F4, F4, Ab4, Bb4, Ab4, G4, Ab4, REST, Eb4, C5, C5, C5, Db5, C5, Bb4, Ab4, REST, G4, F4, G4, Ab4, Bb4, C5, D5, Eb5, REST, Eb4, F4, F4, Ab4, Bb4, Ab4, G4, Ab4, C5, Bb4, Ab4, Bb4, C5, Bb4, Ab4, Bb4, C5, Bb4, Ab4, Bb4, C5, Db5, C5, Bb4, Ab4, C5, Eb5, C5, Bb4, Ab4, G4, Ab4
+soprano.durs: 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 0.5, 0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 0.5, 0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2
+
+alto.pitches: REST, C4, G4, E4, F4, F4, G4, Eb4, Db4, C4, REST, C4, Db4, Eb4, Eb4, Eb4, Eb4, Ab4, G4, REST, Eb4, Db4, Db4, F4, F4, Eb4, Eb4, REST, C4, Eb4, E4, F4, F4, G4, Eb4, Db4, C4, REST, C4, Db4, G4, G4, G4, G4, Ab4, G4, REST, Eb4, Db4, Db4, F4, F4, Eb4, Eb4, Ab4, G4, F4, G4, Ab4, G4, F4, G4, G4, G4, F4, G4, G4, F4, G4, G4, Eb4, Ab4, Bb4, Ab4, F4, F4, Eb4, Eb4
+alto.durs: 1, 1, 1, 1, 1, 1, 1, 0.5, 0.5, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.5, 0.5, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2
+
+tenor.pitches: REST, Ab3, Ab3, G3, Ab3, Ab3, Ab3, G3, Ab3, REST, Ab3, Ab3, Bb3, Ab3, G3, Ab3, Bb3, Bb3, REST, Ab3, Ab3, Ab3, Db4, Db4, C4, Db4, C4, REST, Ab3, Ab3, G3, Ab3, Ab3, Ab3, G3, Ab3, REST, Ab3, Ab3, Bb3, Ab3, G3, Ab3, Bb3, Bb3, REST, Ab3, Ab3, Ab3, Db4, Db4, C4, Db4, C4, Eb4, Eb4, Db4, C4, Eb4, Eb4, Db4, C4, Bb3, Ab3, Db4, C4, Bb3, Ab3, Ab3, Ab3, G3, C4, Eb4, Eb4, Eb4, Db4, Db4, Bb3, Db4, C4
+tenor.durs: 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 0.5, 0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2
+
+bass.pitches: REST, Ab2, Ab2, C3, F3, Db3, Eb3, Eb3, Ab2, REST, Ab2, Db3, Db3, C3, Eb3, Ab3, C3, F3, Eb3, REST, C3, Db3, Db3, Db3, Bb2, Eb3, Ab2, REST, Ab2, Ab2, C3, F3, Db3, Eb3, Eb3, Ab2, REST, Ab2, Db3, Db3, C3, Eb3, Ab3, C3, F3, Eb3, REST, C3, Db3, Db3, Db3, Bb2, Eb3, Ab2, Ab3, Eb3, F3, Eb3, Ab3, Eb3, F3, G3, Ab3, Eb3, F3, G3, Ab3, Db3, Eb3, Eb3, Ab3, Ab3, G3, Ab3, Db3, Db3, Eb3, Ab2
+bass.durs: 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 0.5, 0.5, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 0.5, 0.5, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2

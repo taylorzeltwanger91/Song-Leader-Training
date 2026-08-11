@@ -1,0 +1,21 @@
+# hymn 79 — The Union of Hearts
+# recovered from public/hymn_satb/79.json
+
+id: 79
+title: The Union of Hearts
+key: Db
+time: 2/2
+bpm: 60
+anacrusis: 0
+
+soprano.pitches: REST, Db4, Db4, Eb4, F4, Gb4, Eb4, REST, Ab4, Ab4, Gb4, F4, Eb4, F4, Db4, F4, Ab4, Bb4, C5, Db5, Bb4, REST, Eb5, Eb5, Db5, C5, Bb4, C5, Ab4, Eb5, F5, Eb5, Db5, C5, Bb4, REST, Bb4, Ab4, Gb4, F4, Eb4, F4, REST, Ab4, Bb4, C5, Db5, Eb5, C5, REST, Db5, Eb5, F5, Gb5, Eb5, Db5
+soprano.durs: 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 2, 2
+
+alto.pitches: REST, Db4, Db4, C4, Db4, Eb4, C4, REST, Eb4, F4, Eb4, Db4, C4, Db4, Db4, Db4, Eb4, G4, Ab4, Db5, G4, REST, G4, Ab4, Db5, Ab4, G4, Ab4, Eb4, Ab4, Ab4, Gb4, F4, Ab4, Gb4, REST, Gb4, F4, Eb4, Db4, C4, Db4, REST, F4, Gb4, Ab4, Ab4, Bb4, Ab4, REST, Ab4, Ab4, Ab4, Bb4, Gb4, F4
+alto.durs: 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 2, 2
+
+tenor.pitches: REST, F3, F3, Ab3, Ab3, Bb3, Ab3, REST, C4, Db4, Bb3, Ab3, Ab3, Ab3, F3, Db4, C4, Eb4, Eb4, F4, Eb4, REST, Bb3, C4, F4, Eb4, Eb4, Eb4, C4, Db4, Db4, C4, Db4, Ab3, Db4, REST, Db4, Db4, Bb3, Ab3, Ab3, Ab3, REST, Db4, Db4, Eb4, F4, Eb4, Eb4, REST, Db4, C4, Db4, Db4, C4, Db4
+tenor.durs: 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 2, 2
+
+bass.pitches: REST, Db3, Db3, Ab2, Db3, Gb2, Ab2, REST, Ab2, Db3, Gb3, Ab3, Ab2, Db3, Db3, Db3, Ab3, Eb3, Ab3, Db3, Eb3, REST, Eb3, Ab3, Db3, Eb3, Eb3, Ab2, Ab2, Db3, Bb3, Ab3, Bb3, F3, Gb3, REST, Gb3, Db3, Gb3, Ab3, Ab2, Db3, REST, Db3, Gb3, Gb3, F3, Gb3, Ab3, REST, F3, Ab3, Db4, Gb3, Ab3, Db3
+bass.durs: 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 2, 2
