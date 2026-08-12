@@ -38,8 +38,22 @@ The batch cropper `batch_crop.py` runs steps 1+2 over a list of hymn ids and wri
 manifest + all per-system treble/bass crops — the automatable half, seconds for a batch.
 
 ### 3. Two independent vision reads  — the expensive step
-Read each staff with **two** models, shape-note-aware prompt (see
-`prompts/` conventions below). Read pitch **and** duration **and rests**. Voice map:
+
+Generate both staves' prompts from the verified key (step 2), then run them through two
+readers:
+
+```bash
+python make_prompts.py 11 --key G --time 2/2 --out ~/Downloads/ZionsHymns-Archive/hymn-011-<slug>/
+```
+
+That writes `GPT-PROMPT-treble.txt` / `-bass.txt` to paste into ChatGPT with the page
+images attached, and prints which pages to attach. The same text drives the Fable agent,
+pointed at the per-system crops instead. **The prompt shape, and the failure each rule
+prevents, is documented in [`prompts/vision-read.md`](prompts/vision-read.md)** — it is
+committed because the previous prompt set lived in a scratchpad folder and was lost
+with it. Don't trim the rules for brevity; each one is a scar.
+
+Read pitch **and** duration **and rests**. Voice map:
 
 | Voice | Staff | Position | Stem |
 |---|---|---|---|
@@ -184,6 +198,8 @@ not a replacement for it.**
 
 - `lib.py` — staff detection, key detection, cropping, pitch mapping (the CV core)
 - `validate_satb.py` — the structural gate
+- `make_prompts.py` — per-hymn vision-read prompts for both staves, from the verified key
+- `prompts/vision-read.md` — the prompt template + why each rule is in it
 - `assemble.py` — per-voice reads (`hymns/*.txt`) → the 4-part JSON, validated on write
 - `extract_source.py` — the reverse: committed JSON → a `hymns/*.txt` source
 - `roundtrip_test.py` — extract + re-assemble every hymn, diff against what shipped
