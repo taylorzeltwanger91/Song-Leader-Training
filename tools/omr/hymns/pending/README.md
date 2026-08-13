@@ -38,3 +38,17 @@ Open problems:
   `check_duplicates.py` now exists to catch.
 
 Never read: **24, 26, 27, 28, 29, 30**.
+
+## Known shared tunes in this range
+
+`check_duplicates.py` will flag these every run. They are **correct** — hymnals reuse one
+tune across hymns of matching meter.
+
+- **20 "Labor on" · 23 "Buried With Christ" · 24 "Communion Hymn"** — all D major, 4/2,
+  meter 3. 3. 7. 8. 7. 8. 9. 3. 3. Note-for-note identical in all four voices, confirmed by
+  independent measure-grouped reads of both staves for 20 and 24. Hymn 24's bass was read
+  with no knowledge of hymn 20's and came back byte-identical — an accidental but genuine
+  cross-validation of both.
+
+Before treating any future hit as a bug, open both pages and compare the printed meter
+line, key, time signature and music. See the shared-tune section in ../../README.md.
