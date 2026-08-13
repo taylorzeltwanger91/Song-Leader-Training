@@ -18,26 +18,37 @@ measuring the notehead against the staff lines, then move the reconciled source 
 
 ## Status of the 12–30 batch (2026-08-13)
 
-Arithmetic-verified on both staves, awaiting a second reader:
-**12, 13, 15, 16, 17, 18, 19, 21, 22, 25**
+Arithmetic-verified on both staves, awaiting a second reader — files present here:
+**12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 24, 25, 26**
 
-Open problems:
+Still outstanding:
 
-- **14** — the two Fable reads of the bass staff agree on 46 of 52 events and disagree on
-  six, all the *fa*-wedge vs half-rest ambiguity (see the README's trap section). Pixel
-  measurement resolved them as **C3 notes, not rests** (glyph at y=133.5; C3 space 131.5,
-  half-rest position ~116). Both runs also botched the flattened tenor duration list the
-  same way while producing a correct per-measure breakdown. Needs one clean read.
-- **20** — bass voice failed twice. First attempt: right total, wrong distribution across
-  barlines. Second: 54 pitches against 53 durations, while claiming programmatic
-  verification and listing fifteen fabricated per-measure sums. A third attempt using
-  measure-grouped output (one line per bar, each summing to the meter) was launched and
-  died on a session limit. The tenor voice verified correctly all three times.
-- **23** — both staves returned **hymn 20's music**, from crop files verified to be
-  different images of different pages. Discard entirely and re-read. This is what
-  `check_duplicates.py` now exists to catch.
+- **23** — tenor verified (52 events, 60 beats, 15 bars). Bass staff needs one
+  measure-grouped read; its flat-list attempt came back 54 pitches against 53 durations.
+  Note this hymn shares a tune with 20 and 24 (see below), so its verified tenor matches
+  theirs exactly — that is correct, not duplication.
+- **27** — treble verified (45/47 events, 48 beats, 12 bars). Bass staff running.
+- **28, 29, 30** — reads in progress or not yet started.
 
-Never read: **24, 26, 27, 28, 29, 30**.
+### How 14 and 20 were fixed — the format lesson
+
+Both resisted three attempts between them. Every failure was the same shape: the flat
+comma-separated duration list came back a different length from its pitch list, or with
+the beats in the wrong measures, while the reader asserted it had verified otherwise (one
+listed fifteen fabricated per-measure sums).
+
+**Asking for one line per measure, each with its own stated sum, and flattening it here
+fixed both on the next attempt** — and is 8-for-8 with zero arithmetic failures since,
+against roughly one voice in twelve failing under flat lists. The reading was never the
+problem; the serialization was. Both earlier hymn 14 attempts produced a *correct*
+per-measure breakdown alongside a broken flat list, and the corrected tenor is 60 events,
+exactly the 60 pitches those attempts had.
+
+Use measure-grouped output for the rest of the corpus.
+
+Hymn 14's six disputed bass glyphs (the *fa*-wedge vs half-rest trap) are settled as
+**C3 notes**: centroid 134.4 against a C3 space at 131.5 and a half-rest position at ~116,
+reproduced independently by two separate measurements.
 
 ## Known shared tunes in this range
 
