@@ -116,6 +116,69 @@ one staff rather than guessing from a wide crop.
 plausible-looking but harmonically-impossible bass. A treble-only consensus, which the
 batch defaulted to, would have shipped it silently. Both staves get two reads.
 
+## Checking a read — what the batch of 12-30 taught (2026-08-13)
+
+Roughly 45 staff reads in one night produced five distinct failure modes. Each one is
+cheap to check for and expensive to discover later, so check for all of them, every read.
+
+**A reader's own verification claim is not evidence.** Three separate reads asserted they
+had "verified programmatically" a tiling their own submitted data contradicts — one
+listed fifteen fabricated per-measure sums. The prose quality of a read is uncorrelated
+with its correctness; detailed, confident narration is generated alongside wrong data as
+readily as right. Run every check yourself.
+
+The five checks, in the order they catch things:
+
+1. **`len(pitches) == len(durs)`, per voice.** Two reads submitted a voice with one extra
+   duration. One of them *noticed*, called it a typo, and submitted anyway.
+2. **All four voices sum to the same total.**
+3. **The durations TILE.** Walk the list accumulating and confirm every bar closes exactly
+   on the meter with nothing left over. Hymn 20's bass had the right length *and* the
+   right total with the beats distributed into the wrong measures — a totals-only check
+   passes it, and every note after the error lands in the wrong bar.
+4. **Cross-hymn duplication.** Compare each read's pitch sequence against every other
+   hymn's. Hymn 23 came back 100% identical to hymn 20 — from verified-different crop
+   files — under a detailed narrative about hymn 23's own structure. **No arithmetic check
+   can catch this**; the data is perfectly self-consistent, just from the wrong hymn.
+5. **Notes vs. rests** — see the trap below. Also invisible to arithmetic, since a rest
+   and a note consume beats identically.
+
+### The *fa*-wedge / half-rest trap  ⚠️ systematic in this hymnal
+
+The Aiken **fa** shape is a filled wedge — a triangle — and an old-style **half rest** is
+also a filled triangular block. At this scan resolution they genuinely resemble each
+other. On hymn 14's bass staff two independent Fable reads split on six glyphs, one
+calling them C3 notes and the other calling them rests: the difference between the bass
+singing a phrase and sitting silent.
+
+**Resolve it by vertical position, not by shape.** A notehead sits where its pitch
+dictates; a half rest sits ON TOP OF the middle staff line. On hymn 14 the disputed glyph
+measured y=133.5 against a C3 space at y=131.5 and a half-rest position at ~y=116 — two
+pixels from a note, seventeen from a rest. They were notes. Measure; do not eyeball.
+
+### Other engraving hazards confirmed this batch
+
+- **Bleed-through from the adjacent system.** A mark shaped like an eighth flag near a
+  bass stem turned out to be ink from the staff below, pixel-verified as unattached. It
+  inflated hymn 16's bass by two beats. Verify a flag is physically connected to its stem.
+- **Mid-measure system breaks are common.** Many systems end with no barline and the bar
+  continues on the next line. Reads that "normalize" these lose or gain beats; the
+  likeliest place for a distribution error is exactly there.
+- **Pickup and final bar complement to one measure** in every pickup hymn seen so far
+  (1+3, 1+2). Useful as a *check*, never as something to force — hymns without a pickup
+  simply have a full final bar.
+- **The CV key counter is useless, not merely unreliable.** It over-counted all 19 hymns
+  in this batch (claimed 3 where there was 1, 6 where there were 2, 2 where there were
+  none). Read the signature by eye and tell the reader to ignore the manifest field.
+
+### Running readers in parallel
+
+Give each agent a working directory that is **not under a shared parent**. Hymn 23's two
+agents were told to use `/tmp/omr-work/hymn23-*/` while hymn 20's used
+`/tmp/omr-work/hymn20-*/`; both hymn 23 agents returned hymn 20's music. A shared parent
+is discoverable, and an agent that finds a neighbour's intermediates may transcribe them.
+Use unique, unguessable paths, and run the duplication check (4 above) regardless.
+
 ### 6. Assemble → render → ear-check  — `assemble.py` + `render_satb.py` + you
 
 Put the verified reads in a source file under `hymns/<id>.txt` (header + two lines per
