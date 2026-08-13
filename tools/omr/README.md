@@ -29,10 +29,13 @@ Count the accidentals in the signature. **Always verify the key; never assert it
 ⚠️ **The counter is a weak hint, not ground truth** (found batching hymns 1-4, 2026-07-27):
 it over-counted every hymn (1♭→4, 3♭→5, 2♭→4, 3♯→7) and cannot tell flats from sharps —
 it likely double-counts each glyph (stem + bulb) and catches stray ink. The reliable
-step is a **visual key-signature check**: crop each hymn's first treble key signature
-into one montage and read the keys by eye (seconds for a whole batch). Feed the verified
-key to the vision reads. `count_key_accidentals()` needs a rewrite (glyph-shape
-classification for flat vs sharp, dedup of split components) before it can be trusted.
+step is a **visual key-signature check** — but ⚠️ **crop and zoom each hymn's signature
+INDIVIDUALLY, one image per hymn.** A batch montage is tempting and it is how I misread
+hymn 29 as two sharps when it has one (see "Counting accidentals" below): a sharp glyph's
+two crossbars merge into a phantom second sharp at small scale. Feed the verified key to
+the vision reads *as a claim for them to check*, never as a fact.
+`count_key_accidentals()` needs a rewrite (glyph-shape classification for flat vs sharp,
+dedup of split components) before it can be trusted.
 
 The batch cropper `batch_crop.py` runs steps 1+2 over a list of hymn ids and writes a
 manifest + all per-system treble/bass crops — the automatable half, seconds for a batch.
