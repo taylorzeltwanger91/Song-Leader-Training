@@ -1,0 +1,25 @@
+# hymn 11 — The Union in Jesus' Death
+# dual-verified 2026-08-12: Fable + GPT-5.6, both staves, 0.00% SER (282/282 events agree).
+# Key read by eye (1 sharp = G); CV counter said 4 and was wrong, as usual.
+# Ties in system 8 are stored as separate re-articulated notes — the schema has no tie
+# field and a 4-beat note cannot sit in a 2-beat bar. Seven three-head chords keep the
+# outer heads (tenor B3 / bass G2); the middle G3 doubling head is not voiced.
+
+id: 11
+title: The Union in Jesus' Death
+key: G
+time: 2/2
+bpm: 120
+anacrusis: 0
+
+soprano.pitches: D4, D4, G4, G4, A4, A4, B4, A4, A4, G4, A4, A4, A4, B4, B4, A4, G4, D4, D4, G4, G4, A4, A4, B4, A4, A4, G4, A4, A4, A4, B4, B4, A4, G4, B4, A4, G4, G4, G4, A4, B4, B4, A4, A4, D5, D5, B4, A4, G4, G4, A4, B4, A4, A4, D5, C5, B4, B4, A4, A4, G4, G4, G4, G4, B4, B4, B4, A4, A4, G4
+soprano.durs: 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 1, 1, 2, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 1, 1, 2, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1, 1, 2
+
+alto.pitches: D4, D4, D4, D4, F#4, F#4, G4, F#4, F#4, D4, F#4, F#4, F#4, G4, F#4, F#4, D4, D4, D4, D4, D4, F#4, F#4, G4, F#4, F#4, D4, F#4, F#4, F#4, G4, F#4, F#4, D4, G4, D4, D4, D4, D4, F#4, G4, G4, F#4, F#4, G4, G4, G4, D4, D4, D4, F#4, G4, F#4, F#4, G4, G4, G4, G4, F#4, F#4, D4, E4, E4, D4, G4, G4, G4, F#4, F#4, D4
+alto.durs: 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 1, 1, 2, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 1, 1, 2, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1, 1, 2
+
+tenor.pitches: B3, B3, B3, B3, D4, D4, D4, D4, D4, C4, B3, D4, D4, D4, D4, D4, C4, B3, B3, B3, B3, B3, D4, D4, D4, D4, D4, C4, B3, D4, D4, D4, D4, D4, C4, B3, D4, C4, B3, B3, B3, D4, D4, D4, D4, D4, B3, B3, D4, C4, B3, B3, D4, D4, D4, D4, B3, E4, D4, D4, D4, C4, B3, C4, C4, B3, D4, D4, D4, D4, C4, B3
+tenor.durs: 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 2, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 2, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1, 1, 2
+
+bass.pitches: G3, G3, G3, G3, D3, D3, G3, D3, D3, G2, D3, D3, D3, G3, D3, D3, G2, G3, G3, G3, G3, D3, D3, G3, D3, D3, G2, D3, D3, D3, G3, D3, D3, G2, G3, G3, G3, G3, G3, D3, G3, G3, D3, D3, G3, G3, G3, G3, G3, G3, D3, G3, D3, D3, G3, C3, D3, D3, D3, D3, G2, C3, C3, G2, G3, G3, G3, D3, D3, G2
+bass.durs: 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 1, 1, 2, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 1, 1, 2, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1, 1, 2
