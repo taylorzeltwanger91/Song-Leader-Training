@@ -1,0 +1,29 @@
+# hymn 30 — The Seven Churches
+# STATUS: SINGLE READER (Fable) ONLY — arithmetic-verified + duplication-checked,
+# NOT dual-verified. Do NOT assemble into public/hymn_satb/ until a second read agrees.
+# Read in MEASURE-GROUPED format and flattened here.
+# 1-beat pickup + fifteen 3-beat bars + 2-beat final = 48 beats. Second page is lyrics
+# only (verses 5-18 in two columns); all music is in the five systems.
+#
+# TWO ITEMS FOR THE EAR-CHECK — conventions, not readings:
+#  * alto G#4 in m5 and soprano C#5 in m7 are each written ONCE and carried to a later
+#    note in the same measure by modern accidental convention. The A7->D cadence supports
+#    it. If the app applies accidentals to one note only, those become G4 and C5.
+#  * m16's final chord prints THREE open noteheads on one stem (B3, G3, G2). Outer voices
+#    assigned tenor=B3 / bass=G2; the middle G3 is an unassigned divisi doubling and is
+#    NOT voiced here — same policy question as hymn 11's three-head chords.
+id: 30
+title: The Seven Churches
+key: G
+time: 3/4
+bpm: 120
+anacrusis: 1
+
+soprano.pitches: D4, G4, B4, C5, B4, A4, G4, D4, G4, B4, D5, E5, D5, C5, B4, B4, B4, C5, B4, C5, B4, C5, A4, B4, C5, D5, C#5, D5, C#5, D5, D5, C5, B4, C5, B4, A4, G4, D4, G4, B4, D5, E5, D5, C5, B4, B4, B4, B4, C5, D5, E5, C5, B4, A4, D5, D5, B4, A4, C5, B4, A4, G4
+soprano.durs: 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 2, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 2, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 0.5, 0.5, 1, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 2
+alto.pitches: D4, D4, G4, G4, F#4, F#4, D4, D4, D4, G4, G4, G4, F#4, A4, G4, G4, G4, A4, G#4, A4, G#4, A4, F#4, G4, F#4, G4, G4, F#4, G4, F#4, F#4, F#4, D4, E4, D4, C4, B3, B3, D4, G4, G4, G4, F#4, F#4, G4, G4, D4, D4, E4, F4, G4, E4, G4, A4, B4, G4, G4, F#4, A4, G4, F#4, D4
+alto.durs: 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 2, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 2, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 0.5, 0.5, 1, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 2
+tenor.pitches: B3, B3, D4, E4, D4, C4, B3, B3, B3, D4, B3, B3, A3, D4, D4, D4, D4, D4, D4, D4, D4, D4, D4, D4, A3, B3, A#3, A3, A3, A3, A3, A3, G3, G3, G3, G3, D3, G3, B3, B3, B3, B3, A3, D4, D4, D4, G3, G3, G3, G3, C4, C4, D4, B3, D4, D4, E4, D4, C4, B3
+tenor.durs: 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 2, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 2, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 2, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 2
+bass.pitches: G3, G3, G3, G3, D3, D3, G2, G2, G3, G3, G3, G3, D3, D3, G3, G2, G2, D3, D3, D3, D3, D3, D3, D3, D3, G3, G3, A3, A3, D3, D3, D3, G2, G2, G2, G2, G2, G2, G3, G3, G3, G3, D3, D3, G3, G3, G2, G2, C3, B2, C3, C3, G3, G3, G3, D3, D3, D3, D3, G2
+bass.durs: 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 2, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 2, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 2, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 2
