@@ -20,12 +20,23 @@ def crop_hymn(sheet_dir, hymn, out_dir):
     """Crop one hymn's pages into per-system treble/bass images. Returns a record."""
     systems = []          # flat list across all pages: {system, staff, file}
     key_counts = []
+    lyric_pages = []
     global_system = 0
     for img_name in hymn['images']:
         img = lib.load_gray(os.path.join(sheet_dir, img_name))
         if img is None:
             continue
-        staves = lib.detect_staves(img)
+        # Longer hymns carry their extra verses on a music-free page (hymns 18, 19, 21,
+        # 27 and 30 all do). detect_staves finds nothing there and used to raise, taking
+        # the whole hymn down with it — a lyrics page is normal, so skip and record it.
+        try:
+            staves = lib.detect_staves(img)
+        except IndexError:
+            lyric_pages.append(img_name)
+            continue
+        if len(staves) < 2:
+            lyric_pages.append(img_name)
+            continue
         n_systems = len(staves) // 2
         for s in range(n_systems):
             global_system += 1
@@ -44,6 +55,7 @@ def crop_hymn(sheet_dir, hymn, out_dir):
         'pages': hymn['pages'],
         'n_systems': global_system,
         'key_accidentals': key_counts[0] if key_counts else None,
+        'lyric_pages': lyric_pages,
         'crops': systems,
     }
 
@@ -59,7 +71,9 @@ def main():
         rec = crop_hymn(sheet_dir, index[hid], out_dir)
         manifest.append(rec)
         print(f"hymn {rec['id']:>3} '{rec['title']}': {rec['n_systems']} systems, "
-              f"{rec['key_accidentals']} key accidentals, {len(rec['crops'])} crops")
+              f"{rec['key_accidentals']} key accidentals, {len(rec['crops'])} crops"
+              + (f", {len(rec['lyric_pages'])} lyrics-only page(s) skipped"
+                 if rec['lyric_pages'] else ""))
 
     json.dump(manifest, open(os.path.join(out_dir, 'manifest.json'), 'w'), indent=1)
     print(f"\nmanifest: {os.path.join(out_dir, 'manifest.json')}")
