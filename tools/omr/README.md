@@ -171,6 +171,19 @@ pixels from a note, seventeen from a rest. They were notes. Measure; do not eyeb
   in this batch (claimed 3 where there was 1, 6 where there were 2, 2 where there were
   none). Read the signature by eye and tell the reader to ignore the manifest field.
 
+### ⚠️ Counting accidentals: a single sharp looks like two at low zoom
+
+A sharp glyph has **two thick horizontal crossbars**. Shrink it and those bars read as two
+separate sharps. On 2026-08-13 I built one montage of all 19 key signatures, counted by
+eye, and called hymn 29 D major (2 sharps). It is **G major, one sharp** — both readers
+overrode me independently and proved it twice: the single glyph centred on the F line, and
+an explicit sharp before C4 in m12, which would be redundant if C# were in the signature.
+
+**Zoom each key signature individually — a batch montage is not enough resolution.** And
+keep telling the readers to VERIFY the key rather than accept it: that instruction is the
+only reason this got caught, and it is why the prompt states the key as a claim to check
+instead of a fact to apply.
+
 ### ⚠️ SHARED TUNES — read this before calling a duplicate a bug
 
 **Hymnals reuse one tune across several hymns of the same meter. Two hymns having

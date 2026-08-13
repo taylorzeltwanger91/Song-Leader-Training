@@ -1,0 +1,24 @@
+# hymn 29 — The Mediator
+# STATUS: SINGLE READER (Fable) ONLY — arithmetic-verified + duplication-checked,
+# NOT dual-verified. Do NOT assemble into public/hymn_satb/ until a second read agrees.
+# KEY CORRECTION: I read this as D major (2 sharps) from a low-zoom montage and was
+# WRONG — it is G MAJOR, one sharp. Both readers overrode me independently and proved
+# it twice: the signature shows a single sharp on the F line, and m12 carries an
+# explicit sharp before C4, which would be redundant if C# were in the signature.
+# A single sharp glyph has two thick crossbars and reads as two sharps at small scale.
+# 16 bars, no pickup, 64 beats.
+id: 29
+title: The Mediator
+key: G
+time: 4/2
+bpm: 120
+anacrusis: 0
+
+soprano.pitches: B4, B4, C5, D5, D5, C5, B4, A4, G4, G4, A4, B4, B4, A4, A4, B4, B4, C5, D5, D5, C5, B4, A4, G4, G4, A4, B4, A4, G4, G4, A4, A4, B4, G4, A4, B4, C5, B4, G4, A4, B4, C5, B4, A4, G4, A4, F#4, D4, B4, B4, C5, D5, D5, C5, B4, A4, G4, G4, A4, B4, A4, G4, G4
+soprano.durs: 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.5, 0.5, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.5, 0.5, 2, 1, 1, 1, 1, 1, 0.5, 0.5, 1, 1, 1, 0.5, 0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.5, 0.5, 2
+alto.pitches: D4, D4, D4, D4, D4, D4, D4, D4, D4, D4, D4, D4, D4, D4, D4, D4, D4, E4, F4, F4, E4, E4, E4, D4, D4, F#4, G4, F#4, D4, D4, D4, D4, D4, G4, F#4, D4, D4, D4, F#4, G4, F#4, F#4, D#4, E4, C#4, D4, D4, D4, D4, E4, F4, F4, E4, E4, D4, D4, F#4, G4, F#4, D4, D4
+alto.durs: 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.5, 0.5, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.5, 0.5, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.5, 0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1.5, 0.5, 2
+tenor.pitches: G3, G3, A3, B3, B3, A3, G3, F#3, G3, G3, F#3, G3, G3, F#3, F#3, G3, G3, G3, A3, B3, B3, C4, D4, C4, B3, B3, C4, D4, C4, B3, B3, F#3, F#3, G3, B3, D4, G3, A3, G3, B3, D4, B3, A3, B3, B3, B3, A3, A3, F#3, G3, G3, G3, A3, B3, B3, C4, D4, C4, B3, B3, C4, D4, C4, B3, B3
+tenor.durs: 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.5, 0.5, 2, 1, 1, 1, 0.5, 0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1.5, 0.5, 2, 1, 1, 1, 1, 1, 0.5, 0.5, 1, 1, 1, 0.5, 0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.5, 0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1.5, 0.5, 2
+bass.pitches: G3, G3, G3, G3, D3, D3, D3, C3, B2, B2, A2, G2, D3, D3, D3, G3, G3, G3, G3, C3, C3, C3, C3, D3, D3, D3, D3, D3, G2, G2, D3, D3, D3, D3, D3, D3, D3, D3, D3, D3, D#3, B2, E3, A2, D3, D3, G2, G3, G3, G3, C3, C3, C3, D3, D3, D3, D3, D3, G2, G2
+bass.durs: 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.5, 0.5, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.5, 0.5, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1.5, 0.5, 2
