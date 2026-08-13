@@ -136,10 +136,10 @@ The five checks, in the order they catch things:
    on the meter with nothing left over. Hymn 20's bass had the right length *and* the
    right total with the beats distributed into the wrong measures — a totals-only check
    passes it, and every note after the error lands in the wrong bar.
-4. **Cross-hymn duplication.** Compare each read's pitch sequence against every other
-   hymn's. Hymn 23 came back 100% identical to hymn 20 — from verified-different crop
-   files — under a detailed narrative about hymn 23's own structure. **No arithmetic check
-   can catch this**; the data is perfectly self-consistent, just from the wrong hymn.
+4. **Cross-hymn duplication — but read the caveat below before acting on a hit.** Compare
+   each read's pitch sequence against every other hymn's. A read that is genuinely the
+   *wrong hymn* is perfectly self-consistent and passes every arithmetic check, so nothing
+   else catches it.
 5. **Notes vs. rests** — see the trap below. Also invisible to arithmetic, since a rest
    and a note consume beats identically.
 
@@ -171,13 +171,39 @@ pixels from a note, seventeen from a rest. They were notes. Measure; do not eyeb
   in this batch (claimed 3 where there was 1, 6 where there were 2, 2 where there were
   none). Read the signature by eye and tell the reader to ignore the manifest field.
 
+### ⚠️ SHARED TUNES — read this before calling a duplicate a bug
+
+**Hymnals reuse one tune across several hymns of the same meter. Two hymns having
+identical notes is normal, not an error.**
+
+Hymn 20 ("Labor on") and hymn 23 ("Buried With Christ") are both D major, 4/2, and both
+print the meter **3. 3. 7. 8. 7. 8. 9. 3. 3.** — and they are the *same tune*, note for
+note, with different words. Their reads are 100% identical because the music is identical.
+
+I got this badly wrong on 2026-08-13: I read the identical output as cross-contamination
+between parallel agents, accused three correct reads of fabricating data, discarded valid
+transcriptions, and burned two full re-reads chasing a bug that did not exist. The tell
+was printed at the top of both pages the whole time.
+
+**So when `check_duplicates.py` flags a pair, that is a prompt to LOOK, not a verdict.**
+Open both pages and compare:
+
+- **Same printed meter line + same key + same time signature + same music** → a shared
+  tune. Both reads are fine. Expect near-100% similarity and keep both.
+- **Different meter/key/time, or different music** → one read is genuinely the wrong hymn.
+  Re-read from the source crops.
+
+The system count is *not* a reliable discriminator: hymn 20 sets its tune in 5 systems and
+hymn 23 in 6, because longer words need more horizontal room. Same music, different
+layout.
+
 ### Running readers in parallel
 
-Give each agent a working directory that is **not under a shared parent**. Hymn 23's two
-agents were told to use `/tmp/omr-work/hymn23-*/` while hymn 20's used
-`/tmp/omr-work/hymn20-*/`; both hymn 23 agents returned hymn 20's music. A shared parent
-is discoverable, and an agent that finds a neighbour's intermediates may transcribe them.
-Use unique, unguessable paths, and run the duplication check (4 above) regardless.
+Give each agent its own working directory and unique output paths so concurrent runs can't
+overwrite each other's intermediates — one early run did have its annotated images
+clobbered by a neighbour using the same generic filenames, and re-derived from source to
+recover. That is a real (if mild) hazard. It is NOT, however, an explanation for two hymns
+having the same notes; see the shared-tune section above before reaching for it.
 
 ### 6. Assemble → render → ear-check  — `assemble.py` + `render_satb.py` + you
 
