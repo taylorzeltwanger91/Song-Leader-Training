@@ -1,6 +1,8 @@
 # hymn 19 — The Incomparable
-# STATUS: SINGLE READER (Fable) ONLY — arithmetic-verified + duplication-checked,
-# NOT dual-verified. Do NOT assemble into public/hymn_satb/ until a second read agrees.
+# STATUS: DUAL-VERIFIED — Fable + GPT-5.6, both staves, 0.00% SER (149/149 events).
+# GPT's read initially differed on one bass rhythmic grouping (sys3 m4); enlarging the
+# score confirmed F#3 is a whole note and the apparent C#3 belongs to the next measure,
+# resolving in favour of the Fable reading. Zero remaining differences.
 id: 19
 title: The Incomparable
 key: A
