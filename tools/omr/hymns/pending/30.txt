@@ -1,4 +1,11 @@
 # hymn 30 — The Seven Churches
+# CORRECTION 2026-08-18: SOPRANO m14 beat 1.5 was A4, corrected to C5. Found by the
+# verification pass, confirmed by pixel: the upper notehead of that beamed pair is a
+# filled fa-wedge filling the C5 space (fa = C in G major, so shape and position agree),
+# over a cup on the A4 line which is the alto. The read had given the soprano the ALTO's
+# pitch — the stacked-pair failure mode. The corrected line is a stepwise B4-C5-D5 ascent
+# under the printed slur. Harmony could not adjudicate this (2 dissonances either way);
+# only looking at the page could.
 # STATUS: SINGLE READER (Fable) ONLY — arithmetic-verified + duplication-checked,
 # NOT dual-verified. Do NOT assemble into public/hymn_satb/ until a second read agrees.
 # Read in MEASURE-GROUPED format and flattened here.
@@ -20,7 +27,7 @@ time: 3/4
 bpm: 120
 anacrusis: 1
 
-soprano.pitches: D4, G4, B4, C5, B4, A4, G4, D4, G4, B4, D5, E5, D5, C5, B4, B4, B4, C5, B4, C5, B4, C5, A4, B4, C5, D5, C#5, D5, C#5, D5, D5, C5, B4, C5, B4, A4, G4, D4, G4, B4, D5, E5, D5, C5, B4, B4, B4, B4, C5, D5, E5, C5, B4, A4, D5, D5, B4, A4, C5, B4, A4, G4
+soprano.pitches: D4, G4, B4, C5, B4, A4, G4, D4, G4, B4, D5, E5, D5, C5, B4, B4, B4, C5, B4, C5, B4, C5, A4, B4, C5, D5, C#5, D5, C#5, D5, D5, C5, B4, C5, B4, A4, G4, D4, G4, B4, D5, E5, D5, C5, B4, B4, B4, B4, C5, D5, E5, C5, B4, C5, D5, D5, B4, A4, C5, B4, A4, G4
 soprano.durs: 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 2, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 2, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 0.5, 0.5, 1, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 2
 alto.pitches: D4, D4, G4, G4, F#4, F#4, D4, D4, D4, G4, G4, G4, F#4, A4, G4, G4, G4, A4, G#4, A4, G#4, A4, F#4, G4, F#4, G4, G4, F#4, G4, F#4, F#4, F#4, D4, E4, D4, C4, B3, B3, D4, G4, G4, G4, F#4, F#4, G4, G4, D4, D4, E4, F4, G4, E4, G4, A4, B4, G4, G4, F#4, A4, G4, F#4, D4
 alto.durs: 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 2, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 2, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 0.5, 0.5, 1, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 2

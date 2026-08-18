@@ -70,12 +70,18 @@ All 14 pending hymns (28 staves) were re-checked by handing a reader the existin
 transcription measure by measure and asking only "which of these does the page
 contradict?" — see `make_verify_prompt.py` and `show_measures.py --claim`.
 
-**One real transcription error found**, and it is the whole argument for the method:
+**Two real transcription errors found**, and they are the whole argument for the method.
+Both were invisible to every other check: durations unchanged so the arithmetic passed,
+and harmony tied exactly either way, because a wrong note that is still a chord tone
+produces no dissonance.
 
-- **hymn 22, bass, m9 beat 3 — read E3, page shows C#3.** Corrected. It survived every
-  other check we run: durations were unchanged so the arithmetic passed, harmony tied at
-  exactly 10 dissonances with either note, and duplication checking is irrelevant to it.
-  Confirmed by pixel — a filled ti-cone, flat top at D3, point toward B2, centred in the
+- **hymn 30, SOPRANO, m14 beat 1.5 — read A4, page shows C5.** The upper head of that
+  beamed pair is a filled fa-wedge filling the C5 space (fa = C in G major, so shape and
+  staff position agree), over a cup on the A4 line which is the alto. The read had given
+  the soprano the ALTO's pitch — the stacked-pair failure mode. Corrected; the line is a
+  stepwise B4-C5-D5 ascent under the printed slur. **This one is in the soprano**, the part
+  the app exists to teach.
+  Corrected. Harmony tied at exactly 10 dissonances with either note. Confirmed by pixel — a filled ti-cone, flat top at D3, point toward B2, centred in the
   C3 space (ti = C# in D major), with nothing on the E3 line.
 
 **Two flags were defects in the rendering, not the data** — both times the verifier was
