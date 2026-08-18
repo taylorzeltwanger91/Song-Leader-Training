@@ -3,6 +3,7 @@
 # NOT dual-verified. Do NOT assemble into public/hymn_satb/ until a second read agrees.
 # Read in MEASURE-GROUPED format and flattened here. 12 bars, no pickup, 48 beats.
 # Second page of this hymn is lyrics only; all music is in the four systems.
+# VERIFICATION PASS 2026-08-18 (treble; bass running): clean so far — the alto G4 under C#5 at m3/m7, flagged uncertain by the original reader, confirmed directly by shape and position
 id: 27
 title: On to the Combat
 key: G

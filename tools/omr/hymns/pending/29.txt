@@ -7,6 +7,7 @@
 # explicit sharp before C4, which would be redundant if C# were in the signature.
 # A single sharp glyph has two thick crossbars and reads as two sharps at small scale.
 # 16 bars, no pickup, 64 beats.
+# VERIFICATION PASS 2026-08-18 (both staves): clean — key confirmed G major by a third reader, correcting my montage misread
 id: 29
 title: The Mediator
 key: G

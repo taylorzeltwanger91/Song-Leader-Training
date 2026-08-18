@@ -1,6 +1,7 @@
 # hymn 15 — The Faithful Shepherd
 # STATUS: SINGLE READER (Fable) ONLY — arithmetic-verified + duplication-checked,
 # NOT dual-verified. Do NOT assemble into public/hymn_satb/ until a second read agrees.
+# VERIFICATION PASS 2026-08-18 (both staves): clean
 id: 15
 title: The Faithful Shepherd
 key: Eb

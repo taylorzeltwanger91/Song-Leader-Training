@@ -7,6 +7,7 @@
 # either way. It is the first real transcription error the verification pass has caught.
 # STATUS: SINGLE READER (Fable) ONLY — arithmetic-verified + duplication-checked,
 # NOT dual-verified. Do NOT assemble into public/hymn_satb/ until a second read agrees.
+# VERIFICATION PASS 2026-08-18 (both staves): ONE REAL ERROR FOUND AND FIXED: bass m9 beat 3 was E3, is C#3
 id: 22
 title: The Incarnation of Christ
 key: D

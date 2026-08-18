@@ -63,3 +63,44 @@ tune across hymns of matching meter.
 
 Before treating any future hit as a bug, open both pages and compare the printed meter
 line, key, time signature and music. See the shared-tune section in ../../README.md.
+
+## Verification pass — 2026-08-18
+
+All 14 pending hymns (28 staves) were re-checked by handing a reader the existing
+transcription measure by measure and asking only "which of these does the page
+contradict?" — see `make_verify_prompt.py` and `show_measures.py --claim`.
+
+**One real transcription error found**, and it is the whole argument for the method:
+
+- **hymn 22, bass, m9 beat 3 — read E3, page shows C#3.** Corrected. It survived every
+  other check we run: durations were unchanged so the arithmetic passed, harmony tied at
+  exactly 10 dissonances with either note, and duplication checking is irrelevant to it.
+  Confirmed by pixel — a filled ti-cone, flat top at D3, point toward B2, centred in the
+  C3 space (ti = C# in D major), with nothing on the E3 line.
+
+**Two flags were defects in the rendering, not the data** — both times the verifier was
+right that the page contradicted the claim it was given:
+
+- hymn 18 alto: F#4 rendered as Gb4 (`'C'` was in the FLATS set; fixed).
+- hymn 28 alto: E#4 rendered as F4 (`show_measures.py` has no enharmonic spelling; same
+  MIDI, cosmetic only).
+
+**The method is calibrated in both directions**, which matters more than the single catch:
+
+- *Positive control*: a single note was deliberately altered (soprano D5 -> B5) in a claim
+  the pass had already cleared. It flagged exactly that note — with the shape, the staff
+  position, a parallel-phrase cross-check, and a negative check that nothing sat where B5
+  would be — and nothing else.
+- *Negative control*: hymn 25, whose "four bad measures" were a hand-copied claim of mine,
+  returns clean on both staves once the claim is piped.
+- *Cost*: 50-133k tokens and 2-12 minutes per staff, roughly a third of a full read.
+
+Previously-uncertain calls confirmed by the pass: hymn 27's alto G4 under C#5 (the seventh
+of an A7), hymn 16's phantom eighth flag as unattached bleed-through, hymn 28's stitched
+measure 8 across a two-agent split, hymn 29's key as G major, and hymn 30's three-notehead
+divisi chord as real ink.
+
+**This still is not a second independent reading.** It is one reader checking another
+reader's work on the same images, and the residual risk is a wrong note that both passes
+read the same way. What it does is make the remaining human/GPT budget worth far more,
+because it is spent on data already scrubbed rather than on generating disputes.

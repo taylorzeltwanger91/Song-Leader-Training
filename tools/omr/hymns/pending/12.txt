@@ -1,6 +1,7 @@
 # hymn 12 — Lord Jesus, Thou Art King
 # STATUS: SINGLE READER (Fable) ONLY — arithmetic-verified, NOT dual-verified.
 # Do NOT assemble into public/hymn_satb/ until a second independent read agrees.
+# VERIFICATION PASS 2026-08-18 (both staves): clean
 id: 12
 title: Lord Jesus, Thou Art King
 key: G

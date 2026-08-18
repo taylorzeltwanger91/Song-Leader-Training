@@ -12,6 +12,7 @@
 #  * m16's final chord prints THREE open noteheads on one stem (B3, G3, G2). Outer voices
 #    assigned tenor=B3 / bass=G2; the middle G3 is an unassigned divisi doubling and is
 #    NOT voiced here — same policy question as hymn 11's three-head chords.
+# VERIFICATION PASS 2026-08-18 (running): —
 id: 30
 title: The Seven Churches
 key: G

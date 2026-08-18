@@ -3,6 +3,7 @@
 # NOT dual-verified. Do NOT assemble into public/hymn_satb/ until a second read agrees.
 # Bass staff read in MEASURE-GROUPED format after flat-list attempts failed twice;
 # flattened here from per-measure lines that each summed exactly to the meter.
+# VERIFICATION PASS 2026-08-18 (both staves): clean
 id: 14
 title: The Shepherd and His Flock
 key: G

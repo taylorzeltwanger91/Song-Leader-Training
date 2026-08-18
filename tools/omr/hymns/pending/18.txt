@@ -1,6 +1,7 @@
 # hymn 18 — Jesus, the Truest Friend
 # STATUS: SINGLE READER (Fable) ONLY — arithmetic-verified + duplication-checked,
 # NOT dual-verified. Do NOT assemble into public/hymn_satb/ until a second read agrees.
+# VERIFICATION PASS 2026-08-18 (both staves): clean — the only flags were a renderer bug of mine (F#4 shown as Gb4), not the data
 id: 18
 title: Jesus, the Truest Friend
 key: C

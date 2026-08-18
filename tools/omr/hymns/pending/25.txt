@@ -1,6 +1,7 @@
 # hymn 25 — The Lord
 # STATUS: SINGLE READER (Fable) ONLY — arithmetic-verified + duplication-checked,
 # NOT dual-verified. Do NOT assemble into public/hymn_satb/ until a second read agrees.
+# VERIFICATION PASS 2026-08-18 (both staves): clean — this is the negative control; its 'four bad measures' on 2026-08-18 were my hand-copied claim, not the data
 id: 25
 title: The Lord
 key: A

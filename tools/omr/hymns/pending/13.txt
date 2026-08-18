@@ -1,6 +1,7 @@
 # hymn 13 — Praise and Thanks for God
 # STATUS: SINGLE READER (Fable) ONLY — arithmetic-verified, NOT dual-verified.
 # Do NOT assemble into public/hymn_satb/ until a second independent read agrees.
+# VERIFICATION PASS 2026-08-18 (both staves): clean
 id: 13
 title: Praise and Thanks for God
 key: D

@@ -13,6 +13,7 @@
 #    cancelled by a natural later in the same bar. Unusual but that is what is printed.
 #  * alto G-natural in m13; bass G-natural in m2 and m6 (natural before a ti-cone).
 #  * bass D#3 in m3 and m7.
+# VERIFICATION PASS 2026-08-18 (treble; bass running): clean so far — the stitched m8 across the two-agent split confirmed; one renderer-only spelling nit (E#4 shown as F4)
 id: 28
 title: Jesus, Our Head
 key: A
