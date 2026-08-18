@@ -1,6 +1,15 @@
 # hymn 17 — Joy in the Saviour
-# STATUS: SINGLE READER (Fable) ONLY — arithmetic-verified + duplication-checked,
-# NOT dual-verified. Do NOT assemble into public/hymn_satb/ until a second read agrees.
+# STATUS: DUAL-READ + ADJUDICATED — Fable vs GPT-5.6, both staves. GPT disagreed on
+# 17 of 182 events (9.34%), all stacked-column / voice-assignment errors. Every one
+# adjudicated in Fable's favour:
+#   HARMONY: Fable 0 dissonances / 102 tested beats — a flawless four-part reading.
+#     GPT 8/102, all on disputed notes. The recurring case: at three parallel spots
+#     GPT's bass F#3 makes G/E/A/F# (no triad) where Fable's C#3 makes A-C#-E-G, a
+#     clean dominant seventh resolving to D.
+#   PIXEL (for the two octave errors harmony cannot see): at m12 beat 1 the page shows
+#     TWO SIDE-BY-SIDE OVALS BOTH ON A3 — the tenor/bass unison — with nothing at A2.
+#     GPT's A2 is the next column over. Fable's G#3 at m8 b2 is likewise the middle of
+#     a chromatic passing figure E3-G#3-A3; GPT's G#2 would be an octave leap and back.
 id: 17
 title: Joy in the Saviour
 key: D
