@@ -1,12 +1,9 @@
-# hymn 24 — Communion Hymn
-# STATUS: SINGLE READER (Fable) ONLY — arithmetic-verified + duplication-checked,
-# NOT dual-verified. Do NOT assemble into public/hymn_satb/ until a second read agrees.
-# Read in MEASURE-GROUPED format (one line per bar, each summing to the meter) and
-# flattened here — the format that fixed the serialization failures on hymns 14 and 20.
-# NOTE: hymns 20, 23 and 24 SHARE A TUNE (all D major 4/2, meter 3.3.7.8.7.8.9.3.3).
-# Their note data is legitimately identical — this is not duplication.
-id: 24
-title: Communion Hymn
+# hymn 20 — Labor on
+# STATUS: DUAL-READ + ADJUDICATED — Fable (x3 independent reads of this tune, hymns\n# 20/23/24 by different agents) vs GPT-5.6 (hymn 20 only). GPT disagreed on 24 of 223\n# events (10.8%), ALL in stacked tenor/bass columns; its own notes flagged them\n# ("the lower noteheads overlap stems"). Adjudicated three ways, all favouring Fable:\n#  1. The three independent Fable reads agree event-for-event on every disputed note.\n#  2. Pixel measurement: the disputed tenor note is a SQUARE centred on E4 (la=E in D,\n#     so shape and staff position agree); GPT's B3 is three diatonic steps lower with\n#     nothing there. At m3 the column is a cone at C4 (ti=C#) over an oval on A3 (sol=A).\n#  3. Harmony: Fable 2 dissonances/118 beats, GPT 9/118 — and all 7 extra dissonances\n#     fall on disputed notes (m5 b2 and b4 give A/E/B/F# and C#/G/B/A, no triad).\n# This is step 5 of the README pipeline (harmony first, then shape geometry) working as\n# designed — the same method that caught hymn 2's fabricated bass.
+# Bass staff read in MEASURE-GROUPED format after flat-list attempts failed twice;
+# flattened here from per-measure lines that each summed exactly to the meter.
+id: 20
+title: Labor on
 key: D
 time: 4/2
 bpm: 120
