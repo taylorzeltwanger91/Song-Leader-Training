@@ -326,3 +326,26 @@ tenor m16 fixed to C#4 (harmony + diamond shape agreed). **Open, deferred to ear
 a repeated soprano `F5`-vs-`Eb5` at hymn 2 m5/m11 (harmony leans Eb5 but it may be a real
 appoggiatura — audibly obvious when sung), plus a few inner-voice harmonic ties
 (root-vs-third doublings) left at the GPT reading. Soprano on 1/3/4 is not in dispute.
+
+## ⚠️ Never hand-copy a machine-generated listing into a prompt
+
+On 2026-08-18 I ran a verification pass on hymn 25 — hand the reader the existing
+transcription measure by measure, ask only "which of these does the page contradict?"
+The pass came back with four bad measures across all four voices, found independently
+by two agents that never saw each other's work. Compelling, and completely wrong.
+
+The four "errors" were in the claim I typed into the prompts. `show_measures.py` printed
+0-based labels; I converted them to 1-based by hand while retyping the content, dropped
+two bass measures, shifted the rest by one, and mangled several durations. The verifiers
+were right — the page really did contradict what I sent them. What I sent them just
+wasn't the data.
+
+I had already diagnosed exactly this failure in the readers ("the reading was never the
+problem; the serialization was" — hymns 14 and 20) and then committed it twice myself in
+one session.
+
+**So: `show_measures.py --claim` emits pipe-ready measure lines, 1-based. Pipe it into
+the prompt. Never retype it.** And when a verification pass reports errors, diff its
+proposed corrections against the source data *before* believing them — if the
+"corrections" are identical to what the source already says, the claim was corrupted,
+not the data.
