@@ -1,4 +1,10 @@
 # hymn 22 — The Incarnation of Christ
+# CORRECTION 2026-08-18: bass m9 beat 3 was E3, corrected to C#3. Found by a
+# verification pass and confirmed by pixel: the glyph is a filled ti-cone whose flat top
+# sits at D3 and point reaches toward B2, centring it in the C3 space (ti = C# in D
+# major). Nothing sits on the E3 line there. This error passed every other check —
+# durations unchanged so the arithmetic was fine, and harmony tied at 10 dissonances
+# either way. It is the first real transcription error the verification pass has caught.
 # STATUS: SINGLE READER (Fable) ONLY — arithmetic-verified + duplication-checked,
 # NOT dual-verified. Do NOT assemble into public/hymn_satb/ until a second read agrees.
 id: 22
@@ -14,5 +20,5 @@ alto.pitches: D4, F#4, E4, D4, C#4, D4, A4, G4, F#4, REST, E4, C#4, D4, E4, C#4,
 alto.durs: 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 0.5, 0.5, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 2, 1, 2, 1, 1.5, 0.5, 0.5, 0.5, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 3
 tenor.pitches: A3, A3, A3, A3, D4, D4, REST, A3, A3, A3, A3, A3, G3, A3, A3, A3, REST, A3, A3, A3, A3, A3, D4, D4, C#4, D4, REST, A3, E4, D4, F#4, E4, D4, C#4, REST, E4, E4, F#4, E4, E4, E4, D4, D4, REST, A3, A3, A3, A3, G3, G3, B3, B3, A3, REST, A3, D4, A3, D4, B3, A3, A3, A3
 tenor.durs: 2, 1, 3, 2, 1, 2, 1, 2, 1, 2, 1, 1, 0.5, 0.5, 1, 2, 1, 2, 1, 2, 1, 2, 1, 0.5, 0.5, 1, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 2, 1, 2, 1, 1.5, 0.5, 0.5, 0.5, 2, 1, 2, 1, 2, 1, 1, 1, 1, 3
-bass.pitches: D3, C#3, D3, A3, G3, F#3, F#3, G3, D3, REST, C#3, A2, D3, C#3, A2, D3, F#3, G3, F#3, E3, D3, A3, REST, D3, E3, D3, A3, G3, F#3, F#3, G3, D3, REST, C#3, B2, A2, D3, C#3, B2, E3, E3, A2, REST, A3, A3, F#3, G#3, A3, A3, D3, D3, REST, D3, E3, F#3, D3, G3, G3, G2, G2, A2, REST, D3, D3, D3, E3, F#3, G3, A3, A2, D3
+bass.pitches: D3, C#3, D3, A3, G3, F#3, F#3, G3, D3, REST, C#3, A2, D3, C#3, A2, D3, F#3, G3, F#3, E3, D3, A3, REST, D3, C#3, D3, A3, G3, F#3, F#3, G3, D3, REST, C#3, B2, A2, D3, C#3, B2, E3, E3, A2, REST, A3, A3, F#3, G#3, A3, A3, D3, D3, REST, D3, E3, F#3, D3, G3, G3, G2, G2, A2, REST, D3, D3, D3, E3, F#3, G3, A3, A2, D3
 bass.durs: 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.5, 0.5, 0.5, 0.5, 2, 1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 2, 1, 2, 1, 1.5, 0.5, 0.5, 0.5, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 3

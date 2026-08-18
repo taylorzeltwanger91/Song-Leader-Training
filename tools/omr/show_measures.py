@@ -16,7 +16,12 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 VOICES = {'treble': ['soprano', 'alto'], 'bass': ['tenor', 'bass'],
           'all': ['soprano', 'alto', 'tenor', 'bass']}
 NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
-FLATS = {'F': 1, 'Bb': 1, 'Eb': 1, 'Ab': 1, 'Db': 1, 'Gb': 1, 'C': 0}
+# Keys whose signature actually contains flats. C is NOT one of them — it was in this
+# set as a dict key with value 0, and `key in FLATS` is a membership test, so C major
+# rendered its accidentals as flats. A verification pass caught it on hymn 18 (claim said
+# Gb4, page shows a sharp before an fa-shape in the F space). Same pitch, wrong spelling,
+# and it wasted a verifier's attention on a defect in this file.
+FLATS = {'F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb', 'Cb'}
 FLATNAMES = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
 
 
