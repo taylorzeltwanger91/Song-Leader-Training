@@ -17,10 +17,17 @@ Missing a planted error means the run cannot be trusted to have found a real one
 
 | Reader | Format | Hymns | Canaries | Coverage | False pos | Evidence rows |
 |---|---|---|---|---|---|---|
-| Fable | forced-response | 22, 25, 29, 30 | **12/12** | 64/64 | 0 | 64/64 |
+| Fable | forced-response | 12, 22, 25, 29, 30 | **15/15** | 80/80 | 0 | 80/80 |
 | GPT-5.6 | exceptions-only | 30 | **0/3** | n/a | 0 | 4 |
 
 Hymn 30 is a direct head-to-head: same page, same three planted soprano/tenor errors.
+
+Across all five runs Fable never once returned a bare "AGREE" — every row carried an
+observed shape and staff position, which is the answer the format exists to force. On
+three separate canaries it also named the *mechanism* of the planted error unprompted:
+"G3 is the bass voice's do, not the tenor"; "the B4 half is the soprano note of that
+stack"; "not on the D3 line, not a do triangle". That is the voice-assignment confusion
+which produced both real errors found in this corpus.
 
 ### The confound, stated plainly
 
