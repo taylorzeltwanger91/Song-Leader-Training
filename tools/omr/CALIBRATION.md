@@ -19,6 +19,7 @@ Missing a planted error means the run cannot be trusted to have found a real one
 |---|---|---|---|---|---|---|
 | Fable | forced-response | 12, 22, 25, 29, 30 | **15/15** | 80/80 | 0 | 80/80 |
 | GPT-5.6 | exceptions-only | 30 | **0/3** | n/a | 0 | 4 |
+| GPT-5.6 | **forced-response** | 25 | **3/3** | 16/16 | 0 | 16/16 |
 
 Hymn 30 is a direct head-to-head: same page, same three planted soprano/tenor errors.
 
@@ -29,7 +30,26 @@ three separate canaries it also named the *mechanism* of the planted error unpro
 stack"; "not on the D3 line, not a do triangle". That is the voice-assignment confusion
 which produced both real errors found in this corpus.
 
-### The confound, stated plainly
+### The confound, RESOLVED — 2026-08-20
+
+GPT-5.6 was given the identical 16-event forced-response audit Fable had scored 3/3 on
+(hymn 25, same events, same three planted errors) and scored **3/3, 16/16 coverage, zero
+false positives, evidence on every row.**
+
+So the hymn 30 failure was the FORMAT, not the reader. Exceptions-only reporting lets a
+reader silently choose what to examine — that run claimed "events examined: 244" while
+finding none of three planted errors. Given a list it must answer row by row, the same
+model finds all of them.
+
+Stronger still: GPT's 16 rows were **identical to Fable's** — same verdicts, same three
+corrections, same pitches, 16/16. Two independent readers, same page, same task, complete
+agreement. That is dual-verification on those events, which is the thing the whole
+pipeline has been trying to buy.
+
+**Implication:** the forced-response audit is the cheap unit of independent verification.
+One paste per hymn, ~16 events, measured sensitivity, and it works on both readers.
+
+### The original confound, for the record
 
 The two readers ran **different formats**, so this does not establish that Fable reads
 better than GPT-5.6. It is equally consistent with the exceptions-only format being the
