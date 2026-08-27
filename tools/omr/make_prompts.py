@@ -94,17 +94,29 @@ key: <what you actually see>
 time: <what you actually see>
 anacrusis: <beats in the pickup bar before the first full measure, or 0 if the hymn starts on a downbeat>
 
-{s['top'].lower()}.pitches: <comma-separated, e.g. {s['rng']}, REST>
-{s['top'].lower()}.durs: <comma-separated, same count as pitches>
-{s['bottom'].lower()}.pitches: ...
-{s['bottom'].lower()}.durs: ...
+{s['top'].lower()}:
+  m1: <pitch>/<dur>, <pitch>/<dur>, ... = <sum of the durations on this line>
+  m2: ...
+  <one line per measure, in order, through the last measure of the hymn>
+{s['bottom'].lower()}:
+  m1: ...
 
 notes: <anything uncertain — measure number and what you were torn between>
+
+FORMAT — ONE LINE PER MEASURE, and every line states its own sum. This is not
+cosmetic. Flat comma-separated lists spanning the whole voice fail at roughly one
+voice in twelve here: the pitch list comes back a different length from the duration
+list, or the beats land in the wrong bars, and the error is invisible until it is
+assembled. Per-measure lines with stated sums have not failed once in this corpus.
+Write each measure's notes, add its durations, and put that total after the `=`.
+If a bar is genuinely short (a phrase cadence), state its real sum — do NOT pad it.
+If there is a pickup, call it `m0` and give it its own line.
 
 RULES THAT MATTER:
 - Pitch names are letter + accidental + octave, middle C = C4. Spell per the key.
 - INCLUDE RESTS as the literal word REST in the pitch list, with their duration. A missing rest corrupts every onset after it.
-- The two voices MUST total the same number of beats. Check this before you answer and fix it if they don't.
+- The two voices MUST total the same number of beats, and must have the same
+  number of measures. Check both before you answer and fix them if they don't.
 - Count measures per system and report the total. If a system seems to have a short or irregular bar, say so explicitly rather than silently normalizing it — phrase-cadence short bars are real in this hymnal.
 - If the shape and the staff position disagree on a note, report both and flag it in `notes`. Do not silently pick one.
 {s['extra']}- Work system by system and re-examine anything ambiguous by looking again at that image.

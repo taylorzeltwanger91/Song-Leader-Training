@@ -42,6 +42,13 @@ def main():
     ap.add_argument('--out', required=True)
     ap.add_argument('--key', required=True)
     ap.add_argument('--seed', type=int, default=None)
+    ap.add_argument('--crops', action='store_true',
+                    help='point at the per-system crops on disk rather than telling the '
+                         'reader to attach full pages. Use this when the reader can open '
+                         'files itself: the crops are single isolated staves upscaled '
+                         '1.7x, which is a much easier read than a whole page at once, '
+                         'and it is the input Fable gets — so the two readers are then '
+                         'actually comparable.')
     a = ap.parse_args()
     rng = random.Random(a.seed if a.seed is not None else a.hymn * 104729)
 
@@ -87,6 +94,24 @@ def main():
 
     idx = json.load(open(os.path.join(HERE, '..', '..', 'public', 'hymn_index.json')))
     pages = next(h for h in idx if int(h['id']) == a.hymn)['images']
+    if a.crops:
+        import glob as _g
+        arch = os.path.expanduser('~/Downloads/ZionsHymns-Archive')
+        d = _g.glob(f'{arch}/hymn-{a.hymn:03d}-*')[0]
+        k = lambda p: int(re.search(r'sys(\d+)', p).group(1))
+        tre = sorted(_g.glob(f'{d}/crops/hymn{a.hymn}-treble-sys*.png'), key=k)
+        bas = sorted(_g.glob(f'{d}/crops/hymn{a.hymn}-bass-sys*.png'), key=k)
+        srcline = ("READ THESE IMAGE FILES FROM DISK — per-system crops, in order. Each is a\n"
+                   "single staff, upscaled, which is far easier to read than a whole page.\n\n"
+                   "TREBLE staff (soprano = stems up, alto = stems down):\n  "
+                   + "\n  ".join(tre) +
+                   "\n\nBASS staff (tenor = stems up, bass = stems down):\n  "
+                   + "\n  ".join(bas) +
+                   f"\n\n(Full pages, if you want them for context: "
+                   + ", ".join(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                            '..', '..', 'public', 'sheet_music', p) for p in pages) + ")")
+    else:
+        srcline = "ATTACH: " + ", ".join(pages)
     beats = int(meta['time'].split('/')[0])
     unit = {'2': 'HALF', '4': 'QUARTER', '8': 'EIGHTH'}[meta['time'].split('/')[1]]
 
@@ -96,7 +121,7 @@ Some of these claims are deliberately wrong. I know which. Do not assume the lis
 
 HYMN {a.hymn}, "{meta['title']}" — Zion's Hymns (2021), Aiken 7-shape.
 Key {meta['key']}, meter {meta['time']} (one beat = one {unit} note; a full bar is {beats} beats).
-ATTACH: {', '.join(pages)}
+{srcline}
 Voices: soprano = treble staff stems up · alto = treble stems down · tenor = bass staff stems up · bass = bass stems down.
 Measure numbers are 1-based and continuous across systems. Event numbers count noteheads left to right within that measure for that voice.
 
