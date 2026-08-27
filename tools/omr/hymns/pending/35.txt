@@ -1,0 +1,18 @@
+# hymn 35 — The Spiritual Conflict
+# STATUS: SINGLE READER (Fable) ONLY — arithmetic-verified, NOT dual-verified.
+# Do NOT assemble into public/hymn_satb/ until a second independent read agrees.
+id: 35
+title: The Spiritual Conflict
+key: F
+time: 4/4
+bpm: 120
+anacrusis: 0
+
+soprano.pitches: A4, A4, G4, F4, F4, G4, G4, A4, G4, F4, C5, C5, Bb4, A4, A4, G4, F4, G4, A4, F4, A4, A4, G4, F4, F4, G4, G4, A4, G4, F4, C5, C5, Bb4, A4, A4, G4, F4, G4, A4, F4, A4, A4, Bb4, C5, C5, D5, D5, C5, Bb4, A4, A4, A4, Bb4, C5, C5, D5, D5, C5, A4, A4, G4, F4, F4, G4, G4, A4, G4, F4, C5, C5, Bb4, A4, A4, G4, F4, G4, A4, F4
+soprano.durs: 1, 0.5, 0.5, 1, 1, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 0.5, 0.5, 2, 1, 0.5, 0.5, 1, 1, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 0.5, 0.5, 2, 1, 0.5, 0.5, 1, 1, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 1, 1, 2, 1, 0.5, 0.5, 1, 1, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 0.5, 0.5, 2
+alto.pitches: F4, F4, C4, D4, E4, E4, F4, F4, A4, A4, G4, F4, F4, E4, E4, F4, F4, F4, C4, D4, E4, E4, F4, F4, A4, A4, G4, F4, F4, E4, E4, F4, F4, F4, G4, A4, A4, F4, F4, A4, G4, F4, F4, F4, G4, A4, F4, F4, F4, F4, F4, F4, C4, D4, E4, E4, F4, F4, A4, A4, G4, F4, F4, E4, E4, F4
+alto.durs: 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.5, 0.5, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.5, 0.5, 1, 1, 1, 1, 2, 1, 0.5, 0.5, 1, 1, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.5, 0.5, 1, 1, 1, 1, 2
+tenor.pitches: C4, C4, Bb3, A3, A3, C4, C4, C4, Bb3, A3, C4, C4, C4, C4, Bb3, A3, Bb3, C4, A3, C4, C4, Bb3, A3, A3, C4, C4, C4, Bb3, A3, C4, C4, C4, C4, Bb3, A3, Bb3, C4, A3, C4, C4, C4, C4, Bb3, Bb3, C4, C4, C4, C4, Bb3, A3, A3, Bb3, Bb3, A3, C4, C4, Bb3, A3, A3, C4, C4, C4, Bb3, A3, C4, C4, C4, C4, Bb3, A3, Bb3, C4, A3
+tenor.durs: 1, 0.5, 0.5, 1, 1, 1, 1, 0.5, 0.5, 1, 1, 1, 1, 1, 0.5, 0.5, 0.5, 0.5, 2, 1, 0.5, 0.5, 1, 1, 1, 1, 0.5, 0.5, 1, 1, 1, 1, 1, 0.5, 0.5, 0.5, 0.5, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.5, 0.5, 1, 1, 1, 1, 2, 1, 0.5, 0.5, 1, 1, 1, 1, 0.5, 0.5, 1, 1, 1, 1, 1, 0.5, 0.5, 0.5, 0.5, 2
+bass.pitches: F3, F3, F3, D3, C3, C3, F3, F3, F3, F3, F3, F3, C3, C3, F3, F3, F3, F3, D3, C3, C3, F3, F3, F3, F3, F3, F3, C3, C3, F3, F3, F3, F3, F3, Bb2, Bb2, F3, F3, F3, F3, F3, F3, Bb2, C3, D3, E3, F3, F3, F3, F3, D3, C3, C3, F3, F3, F3, F3, F3, F3, C3, C3, F3
+bass.durs: 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.5, 0.5, 0.5, 0.5, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2

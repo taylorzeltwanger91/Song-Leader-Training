@@ -1,0 +1,18 @@
+# hymn 34 — The New Birth From Above
+# STATUS: SINGLE READER (Fable) ONLY — arithmetic-verified, NOT dual-verified.
+# Do NOT assemble into public/hymn_satb/ until a second independent read agrees.
+id: 34
+title: The New Birth From Above
+key: Ab
+time: 4/4
+bpm: 120
+anacrusis: 0
+
+soprano.pitches: Ab4, Ab4, Ab4, Ab4, C5, Bb4, Bb4, Ab4, Ab4, Bb4, Bb4, Bb4, Bb4, Db5, C5, Bb4, Ab4, Ab4, Ab4, Ab4, C5, Bb4, Bb4, Ab4, Ab4, Bb4, Bb4, Bb4, Db5, C5, Bb4, Ab4, G4, Ab4, Bb4, Bb4, Bb4, Bb4, Bb4, Ab4, Ab4, G4, G4, C5, C5, C5, C5, Db5, C5, Bb4, Ab4, Ab4, Ab4, Ab4, C5, Bb4, Bb4, Ab4, Ab4, Bb4, Bb4, Bb4, Db5, C5, Bb4, Ab4, G4, Ab4
+soprano.durs: 1.5, 0.5, 1, 1, 1.5, 0.5, 0.5, 0.5, 1, 1.5, 0.5, 1, 1, 1.5, 0.5, 2, 1.5, 0.5, 1, 1, 1.5, 0.5, 0.5, 0.5, 1, 1, 1, 0.5, 0.5, 0.5, 0.5, 1, 1, 2, 1.5, 0.5, 1, 1, 1.5, 0.5, 0.5, 0.5, 1, 1.5, 0.5, 1, 1, 1.5, 0.5, 2, 1.5, 0.5, 1, 1, 1.5, 0.5, 0.5, 0.5, 1, 1, 1, 0.5, 0.5, 0.5, 0.5, 1, 1, 2
+alto.pitches: C4, C4, Eb4, C4, Eb4, Eb4, Eb4, Eb4, Eb4, Eb4, Eb4, Eb4, Eb4, Eb4, Eb4, Db4, C4, Db4, C4, C4, Eb4, Eb4, Eb4, Eb4, Eb4, D4, Eb4, Eb4, F4, Eb4, Db4, C4, Eb4, Eb4, Db4, Db4, C4, C4, Db4, Db4, C4, Eb4, Eb4, Eb4, Eb4, Eb4, Eb4, Db4, C4, Db4, C4, C4, Eb4, Eb4, Eb4, Eb4, Eb4, D4, Eb4, Eb4, F4, Eb4, Db4, C4
+alto.durs: 1.5, 0.5, 1, 1, 1.5, 0.5, 1, 1, 1.5, 0.5, 1, 1, 1.5, 0.5, 1, 1, 1.5, 0.5, 1, 1, 1.5, 0.5, 1, 1, 1, 1, 1, 0.5, 0.5, 1, 1, 2, 1.5, 0.5, 1, 1, 1.5, 0.5, 1, 1, 1.5, 0.5, 1, 1, 1.5, 0.5, 1, 1, 1.5, 0.5, 1, 1, 1.5, 0.5, 1, 1, 1, 1, 1, 0.5, 0.5, 1, 1, 2
+tenor.pitches: Eb3, Eb3, Ab3, Ab3, Ab3, Db4, Db4, C4, C4, G3, G3, G3, G3, Bb3, Ab3, G3, Ab3, F3, Eb3, Ab3, Ab3, Db4, Db4, C4, C4, G3, Ab3, G3, Bb3, Ab3, Db4, C4, Bb3, Ab3, G3, G3, G3, G3, Ab3, Ab3, Bb3, Bb3, Ab3, Ab3, Ab3, Ab3, Bb3, Ab3, G3, Ab3, F3, Eb3, Ab3, Ab3, Db4, Db4, C4, C4, G3, Ab3, G3, Bb3, Ab3, Db4, C4, Bb3, Ab3
+tenor.durs: 1.5, 0.5, 1, 1, 1.5, 0.5, 0.5, 0.5, 1, 1.5, 0.5, 1, 1, 1.5, 0.5, 2, 1.5, 0.5, 1, 1, 1.5, 0.5, 0.5, 0.5, 1, 1, 1, 0.5, 0.5, 0.5, 0.5, 1, 1, 2, 1.5, 0.5, 1, 1, 1.5, 0.5, 1, 1, 1.5, 0.5, 1, 1, 1.5, 0.5, 2, 1.5, 0.5, 1, 1, 1.5, 0.5, 0.5, 0.5, 1, 1, 1, 0.5, 0.5, 0.5, 0.5, 1, 1, 2
+bass.pitches: Ab2, Ab2, C3, Eb3, Ab3, Eb3, Eb3, Ab2, Eb3, Eb3, Eb3, Eb3, G3, Ab3, Eb3, Ab2, Ab2, Ab2, Ab2, Eb3, Eb3, Ab2, Ab2, Eb3, F3, G3, Ab3, Db3, Eb3, Eb3, Ab2, Eb3, Eb3, Eb3, Eb3, Eb3, Eb3, Eb3, Eb3, Ab3, Ab3, Ab3, Ab3, G3, Ab3, Eb3, Ab2, Ab2, Ab2, Ab2, Eb3, Eb3, Ab2, Ab2, Eb3, F3, G3, Ab3, Db3, Eb3, Eb3, Ab2
+bass.durs: 1.5, 0.5, 1, 1, 1.5, 0.5, 1, 1, 1.5, 0.5, 1, 1, 1.5, 0.5, 2, 1.5, 0.5, 1, 1, 1.5, 0.5, 1, 1, 1, 1, 1, 0.5, 0.5, 1, 1, 2, 1.5, 0.5, 1, 1, 1.5, 0.5, 1, 1, 1.5, 0.5, 1, 1, 1.5, 0.5, 2, 1.5, 0.5, 1, 1, 1.5, 0.5, 1, 1, 1, 1, 1, 0.5, 0.5, 1, 1, 2

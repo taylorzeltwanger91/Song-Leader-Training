@@ -1,0 +1,18 @@
+# hymn 32 — Who Shall Abide?
+# STATUS: SINGLE READER (Fable) ONLY — arithmetic-verified, NOT dual-verified.
+# Do NOT assemble into public/hymn_satb/ until a second independent read agrees.
+id: 32
+title: Who Shall Abide?
+key: D
+time: 4/4
+bpm: 120
+anacrusis: 0
+
+soprano.pitches: D5, C#5, C#5, B4, A4, A4, A4, A4, B4, D5, D5, D5, C#5, C#5, D5, D5, C#5, C#5, B4, A4, A4, A4, A4, B4, D5, D5, D5, C#5, C#5, D5, D4, F#4, A4, F#4, G4, F#4, E4, E4, D4, D5, C#5, D5, E5, C#5, A4, C#5, E5, D5, D5, F#5, D5, C#5, B4, A4, G4, F#4, D4, E4, F#4, E4, G4, F#4, E4, D4
+soprano.durs: 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 2, 2, 0.5, 0.5, 1, 1, 1, 1, 0.5, 0.5, 1, 1, 1, 1, 1, 1, 1, 1, 2, 0.5, 0.5, 1, 1, 1, 2, 2, 4
+alto.pitches: F#4, A4, A4, B4, E4, G4, F#4, F#4, B4, G4, F#4, F#4, E4, F#4, G4, F#4, F#4, A4, A4, B4, E4, G4, F#4, F#4, B4, G4, F#4, F#4, E4, F#4, G4, F#4, D4, D4, E4, D4, E4, D4, D4, C#4, D4, F#4, E4, F#4, G4, G4, G4, G4, F#4, F#4, A4, A4, A4, B4, E4, E4, D4, D4, D4, D4, E4, D4, C#4, D4
+alto.durs: 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.5, 0.5, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 2, 2, 0.5, 0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 2, 4
+tenor.pitches: A3, D4, D4, D4, C#4, E4, D4, D4, D4, B3, A3, A3, A3, A3, A3, A3, D4, D4, D4, C#4, E4, D4, D4, D4, B3, A3, A3, A3, A3, A3, F#3, A3, C#4, B3, B3, A3, A3, G3, F#3, A3, A3, C#4, E4, E4, E4, C#4, D4, A3, D4, D4, D4, D4, C#4, C#4, A3, F#3, G3, A3, B3, B3, A3, F#3, G3, F#3
+tenor.durs: 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 2, 2, 1, 1, 1, 1, 1, 0.5, 0.5, 1, 1, 1, 1, 1, 1, 1, 1, 2, 0.5, 0.5, 1, 1, 1, 1, 1, 2, 4
+bass.pitches: D3, D3, F#3, G3, A2, A2, D3, D3, G3, G3, A3, A3, A2, A2, D3, D3, D3, F#3, G3, A2, A2, D3, D3, G3, G3, A3, A3, A2, A2, D3, D3, D3, A2, B2, G2, A2, A2, A2, D3, D3, D3, A2, A2, A2, A2, D3, D3, D3, F#3, G3, G3, A2, A2, D3, D3, D3, G2, G2, A2, A2, D3
+bass.durs: 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 2, 4

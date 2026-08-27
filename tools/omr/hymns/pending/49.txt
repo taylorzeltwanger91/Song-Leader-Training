@@ -1,0 +1,19 @@
+# hymn 49 — Evening Hymn
+# STATUS: SINGLE READER (Fable) ONLY — arithmetic-verified, NOT dual-verified.
+# Do NOT assemble into public/hymn_satb/ until a second independent read agrees.
+id: 49
+title: Evening Hymn
+key: G
+time: 3/2
+bpm: 120
+anacrusis: 1
+# measures: 3,3,3,3,3,3,3,3,3,3,3,2
+
+soprano.pitches: G4, A4, B4, B4, A4, G4, A4, A4, G4, A4, B4, D5, C5, B4, A4, A4, B4, C5, E5, D5, C5, B4, D5, B4, B4, A4, D5, D5, C5, B4, A4, B4, C5, E5, D5, C5, B4, D5, B4, B4, A4, D5, C5, A4, G4
+soprano.durs: 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 2, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 2, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 2
+alto.pitches: D4, F#4, G4, G4, F#4, E4, F#4, F#4, E4, F#4, G4, B4, A4, G4, F#4, F#4, G4, A4, C5, B4, A4, G4, G4, G4, G4, F#4, F#4, F#4, F#4, G4, F#4, G4, A4, C5, B4, A4, G4, G4, G4, G4, F#4, F#4, F#4, F#4, D4
+alto.durs: 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 2, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 2, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 2
+tenor.pitches: B3, D4, D4, D4, D4, B3, D4, C4, B3, D4, D4, D4, D4, D4, D4, D4, D4, D4, D4, D4, D4, D4, B3, D4, D4, D4, A3, A3, D4, D4, D4, D4, D4, D4, D4, D4, D4, B3, D4, D4, D4, A3, A3, C4, B3
+tenor.durs: 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 2, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 2, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 2
+bass.pitches: G3, D3, G3, G3, D3, E3, D3, D3, E3, D3, G3, G3, F#3, G3, D3, D3, D3, F#3, D3, G3, F#3, G3, G3, G3, G3, D3, D3, D3, D3, G3, D3, D3, F#3, D3, G3, F#3, G3, G3, G3, G3, D3, D3, D3, D3, G2
+bass.durs: 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 2, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 2, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 2

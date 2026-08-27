@@ -1,0 +1,18 @@
+# hymn 48 — Morning Hymn U
+# STATUS: SINGLE READER (Fable) ONLY — arithmetic-verified, NOT dual-verified.
+# Do NOT assemble into public/hymn_satb/ until a second independent read agrees.
+id: 48
+title: Morning Hymn U
+key: C
+time: 4/2
+bpm: 120
+anacrusis: 0
+
+soprano.pitches: C5, B4, C5, G4, A4, G4, F4, E4, C4, G4, C5, B4, D5, C5, B4, A4, G4, C5, G4, A4, C5, F5, E5, E5, D5, D5, C5, D5, E5, F5, D5, E5, D5, C5
+soprano.durs: 1, 1, 1, 1, 1, 0.5, 0.5, 1, 1, 1, 1, 1, 1, 0.5, 0.5, 1, 2, 1, 1, 1, 1, 1, 1, 0.5, 0.5, 1, 1, 1, 1, 0.5, 0.5, 1, 1, 2
+alto.pitches: G4, G4, G4, G4, F4, D4, C4, C4, E4, F#4, G4, G4, G4, F#4, G4, G4, E4, F4, G4, G4, G4, G4, G4, G4, G4, G4, A4, G4, G4, E4
+alto.durs: 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2
+tenor.pitches: E4, D4, E4, C4, C4, B3, G3, E3, C4, C4, D4, D4, E4, D4, B3, C4, C4, C4, C4, B3, C4, C4, B3, C4, B3, C4, A3, C4, B3, C4
+tenor.durs: 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2
+bass.pitches: C3, G3, C3, E3, F3, G3, C3, C3, C3, A2, G2, B2, C3, D3, G2, E3, C3, F3, E3, D3, C3, G3, G3, E3, G3, C3, F3, G3, G3, C3
+bass.durs: 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2

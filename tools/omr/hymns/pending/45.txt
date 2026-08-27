@@ -1,0 +1,19 @@
+# hymn 45 — Repentance
+# STATUS: SINGLE READER (Fable) ONLY — arithmetic-verified, NOT dual-verified.
+# Do NOT assemble into public/hymn_satb/ until a second independent read agrees.
+id: 45
+title: Repentance
+key: G
+time: 4/4
+bpm: 120
+anacrusis: 1
+# measures: 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,3
+
+soprano.pitches: D4, G4, G4, B4, A4, G4, C5, A4, G4, G4, A4, G4, E4, E4, D4, D4, G4, G4, B4, A4, G4, C5, C5, B4, B4, A4, G4, A4, G4, G4, G4, A4, A4, A4, G4, A4, B4, B4, D5, B4, B4, A4, G4, A4, D4, B4, B4, D5, B4, G4, E4, E4, D4, A4, A4, B4, A4, G4
+soprano.durs: 1, 1, 1, 0.5, 0.5, 1, 3, 1, 1, 1, 0.5, 0.5, 1, 2, 1, 1, 1, 1, 0.5, 0.5, 1, 3, 1, 1, 1, 0.5, 0.5, 1, 2, 1, 1, 1, 1, 0.5, 0.5, 1, 3, 1, 1, 1, 0.5, 0.5, 1, 3, 1, 1, 1, 0.5, 0.5, 1, 3, 1, 1, 1, 1, 0.5, 0.5, 3
+alto.pitches: B3, D4, D4, D4, D4, E4, E4, D4, B3, C4, C4, C4, B3, B3, D4, D4, D4, D4, E4, E4, G4, G4, F#4, F#4, D4, D4, D4, F#4, F#4, F#4, F#4, G4, G4, G4, G4, G4, D4, F#4, D4, D4, D4, D4, D4, C4, C4, B3, D4, F#4, F#4, D4
+alto.durs: 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 3
+tenor.pitches: G3, B3, B3, G3, G3, G3, A3, B3, G3, F#3, E3, F#3, G3, G3, G3, B3, B3, G3, G3, G3, A3, D4, D4, C4, C4, B3, B3, B3, D4, D4, D4, D4, D4, D4, B3, D4, D4, C4, B3, D4, F#3, G3, G3, G3, G3, G3, G3, G3, C4, C4, D4, C4, B3
+tenor.durs: 1, 1, 1, 1, 1, 3, 1, 1, 1, 0.5, 0.5, 1, 2, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 0.5, 0.5, 1, 3, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 0.5, 0.5, 3
+bass.pitches: G2, G2, G2, G2, B2, C3, C3, D3, D3, D3, D3, G2, G2, G2, G2, G2, G2, B2, C3, C3, D3, D3, D3, D3, G2, G2, G3, D3, D3, D3, D3, G3, G3, G3, G3, G3, G3, D3, D3, G2, G2, B2, B2, C3, C3, D3, D3, D3, D3, G2
+bass.durs: 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 3
