@@ -454,6 +454,10 @@ export default function App() {
   const [playingWhich,setPlayingWhich]=useState(null);
   const melodyTimers=useRef([]);
   const melodyOscs=useRef([]);
+  // Playback generation. Bumped by every start and every stop, so an async play that
+  // was superseded while awaiting the soundfont can tell it no longer owns the audio
+  // and bail instead of scheduling over whatever is sounding now.
+  const playGen=useRef(0);
   const genNotesRef=useRef(null); // Ref to avoid closure issues with stop button
 
   // Audio recording state
@@ -713,6 +717,9 @@ export default function App() {
   }, [genNotes, genTS, genBPM, loadInstrument]);
 
   const stopMelody = useCallback(() => {
+    // Invalidate any play still awaiting the soundfont, so it doesn't schedule
+    // after the user has already asked for silence.
+    playGen.current += 1;
     // Stop any oscillators (legacy)
     melodyOscs.current.forEach(o => { try{o.stop();}catch(e){} });
     melodyOscs.current = [];
@@ -732,14 +739,25 @@ export default function App() {
   // sound (the default listen) or a single voice name to hear that line on its own.
   const playVoices = useCallback(async (which = 'all') => {
     if (!hymnMelody?.voices) return;
+
+    // Claim this playback and silence whatever is currently sounding, BEFORE the await.
+    // Switching straight from "Play Hymn" to "Hear this part" used to leave the old
+    // notes ringing, because clearing the completion timers does not stop notes the
+    // soundfont has already scheduled.
+    const gen = ++playGen.current;
+    melodyTimers.current.forEach(t => clearTimeout(t));
+    melodyTimers.current = [];
+    if (instrumentRef.current) { try { instrumentRef.current.stop(); } catch (e) {} }
+    setMelodyPlaying(true);
+    setPlayingWhich(which);
+
     try {
       const instrument = await loadInstrument();
-      if (!instrument) return;
+      // The soundfont fetch is slow on a cold CDN, and tapping Play twice is the
+      // natural thing to do when nothing happens yet. Only the newest tap may
+      // schedule; earlier ones (and any play the user has since stopped) bail here.
+      if (!instrument || playGen.current !== gen) return;
       const ctx = actx.current;
-      setMelodyPlaying(true);
-      setPlayingWhich(which);
-      melodyTimers.current.forEach(t => clearTimeout(t));
-      melodyTimers.current = [];
 
       const { events, duration, gain } = buildSchedule(hymnMelody.voices, {
         which,
@@ -750,10 +768,15 @@ export default function App() {
       events.forEach(e => instrument.play(e.midi, start + e.at, { duration: e.dur, gain }));
 
       melodyTimers.current.push(setTimeout(() => {
+        // Tied to this generation: a stale timer must not report "stopped" while a
+        // newer playback is still sounding.
+        if (playGen.current !== gen) return;
         setMelodyPlaying(false);
         setPlayingWhich(null);
       }, duration * 1000 + 200));
-    } catch (e) { setMelodyPlaying(false); setPlayingWhich(null); }
+    } catch (e) {
+      if (playGen.current === gen) { setMelodyPlaying(false); setPlayingWhich(null); }
+    }
   }, [hymnMelody, hymnTempo, loadInstrument]);
 
   const doGenerate = useCallback(() => {
