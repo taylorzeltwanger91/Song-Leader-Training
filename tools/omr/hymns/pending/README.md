@@ -1,4 +1,24 @@
-# Pending reads — SINGLE READER, NOT VERIFIED
+# Pending reads
+
+Two different things live here now — check the STATUS line in each file.
+
+## Hymns 31-50 — DUAL-VERIFIED, waiting on the ear-check (2026-08-27)
+
+`{31..45,47,48,49,50}.txt`. Every staff read TWICE by independent blind Fable agents,
+scored, adjudicated against the page, validated and rendered. These are **not**
+single-reader. They stay here only because the last verifier has not run:
+
+**Two blind reads come from the SAME MODEL.** They can agree wrongly, and nothing in
+comparing them reveals it. The audio (`_4part.wav`, `_4part.mid`, `_soprano.wav` in each
+`~/Downloads/ZionsHymns-Archive/hymn-NNN-*/`) is the only remaining independent check.
+Listen first to the four corrected notes — hymn 49 sop m11, hymn 32 bass m13, hymn 42/44
+sop m5, hymn 40 bass m10 — then promote to `../` and assemble into `public/hymn_satb/`.
+
+## Hymns 12-30 — SINGLE READER, not verified
+
+Everything below applies to those files only.
+
+---
 
 Reads in this directory came from **one reader (Fable)** and have passed only the
 mechanical checks: pitch/duration list lengths match, all four voices total the same

@@ -65,13 +65,28 @@ Read pitch **and** duration **and rests**. Voice map:
 | Tenor | bass | top | up |
 | Bass | bass | bottom | down |
 
-**Readers, measured across 3 hymns:**
+**Readers — measured, and the answer changed on 2026-08-27.**
 
-| Reader | Speed | Shape-note accuracy | Automatable | Cost |
+> **The second reader is now a second INDEPENDENT FABLE PASS, not GPT.** GPT-5.5 via Codex
+> was measured twice on this corpus and failed both jobs: **38–42% SER** as a transcriber
+> (36 dissonances against Fable's 5 on the same hymn), and **5.3% canary recall** across 19
+> forced-response audits as a verifier. See `CALIBRATION.md`. Do not rebuild either leg
+> without re-measuring over many runs.
+
+| Reader | Speed | Shape-note accuracy | Automatable | Verdict |
 |---|---|---|---|---|
-| **Fable** (Agent tool) | slow (~15 min, 100–200k tok) | best | yes | API tokens |
-| **GPT-5.6** (ChatGPT web, paste) | medium | strong | no (manual paste) | $20/mo ChatGPT plan |
-| **Codex-5.5** (`codex exec -i`) | fast (~1 min) | weakest; distractible | yes | $20/mo ChatGPT plan |
+| **Fable** (Agent tool) | slow (~10–25 min, 100–200k tok) | best | yes | **use, twice** |
+| **GPT-5.5** (Codex, `-i` crops) | medium | 38–42% SER; 5.3% audit recall | yes | **rejected** |
+| **Codex-5.5** (unleashed) | fast | weakest; distractible | yes | rejected |
+
+Over a full 19-hymn batch read twice on both staves (38 staves, ~4,600 events), two blind
+Fable passes agreed outright on 13/19 trebles and 15/19 basses, and the disagreements
+surfaced **four real errors** — about one per ten staves. That is the measured rate; budget
+for it.
+
+**Two Fable passes are the SAME MODEL.** They diverge often enough to be worth running, but
+they can also agree wrongly and nothing in comparing them will reveal it. That residual is
+why step 6's ear-check is not optional.
 
 Notes learned the hard way:
 - **Codex must run with web/shell tools DISABLED.** On hymn 79 it ran 80 web searches
@@ -91,6 +106,15 @@ caught Fable undercounting hymn 5 by a measure and confirmed hymn 79's four voic
 66 beats.
 
 ### 5. Resolve disagreements  — harmony first, then shape-note pixel geometry
+
+> **What harmony can and cannot do (measured 2026-08-27).** It catches a read that is wrong
+> in BULK — 36 dissonances against 5 is how a bad transcription was rejected. It does NOT
+> catch individual wrong notes: **all four real errors found across 38 staves were
+> harmonically SILENT**, scoring identically before and after correction, because a wrong
+> note that is still a chord tone produces no dissonance. It is also blind to
+> voice-assignment and duration disputes, since a shared notehead read either way yields the
+> same chord. When two readings score the same, that means the tool cannot see this class of
+> error — not that either reading is fine. Go to pixel measurement.
 Two tiebreaks, cheapest first:
 
 **5a. Harmony adjudication (crop-free, do this first).** Once three of the four voices
@@ -326,6 +350,17 @@ tenor m16 fixed to C#4 (harmony + diamond shape agreed). **Open, deferred to ear
 a repeated soprano `F5`-vs-`Eb5` at hymn 2 m5/m11 (harmony leans Eb5 but it may be a real
 appoggiatura — audibly obvious when sung), plus a few inner-voice harmonic ties
 (root-vs-third doublings) left at the GPT reading. Soprano on 1/3/4 is not in dispute.
+
+**Batch 31-50** (2026-08-27) — sources in `hymns/pending/{31..45,47..50}.txt`, 19 hymns
+(46 is missing from `hymn_index.json` — see TECH-DEBT). **Every staff read twice by
+independent blind Fable agents**; 13/19 trebles and 15/19 basses came back note-for-note
+identical. Four real errors found and fixed — hymn 49 sop m11 and hymn 32 bass m13 (both a
+repeated phrase assumed identical when the page varies it), hymn 42/44 sop m5 (merged
+notehead pair), hymn 40 bass m10 (cone on the 4th line read a third high). All four passed
+every automated gate. Three of my own key readings were wrong and caught by readers: 34=Ab,
+37=Bb, 43=Db — the verification crop was too narrow and truncated wide key signatures; read
+keys at ≥26% of staff width. **Still in `pending/` awaiting the ear-check**, because two
+blind reads from one model is not proof.
 
 ## ⚠️ Never hand-copy a machine-generated listing into a prompt
 
