@@ -13,6 +13,77 @@
 
 ---
 
+## 2026-08-27 — Hymns 31–50 dual-verified; the second-reader method measured, and the third leg abandoned
+
+Nineteen hymns (31–45, 47–50; 46 is absent from the index) transcribed and read
+**twice on every staff by independent blind agents** — 38 staves, ~4,600 events.
+Sources in `tools/omr/hymns/pending/`, raw reads and audio in
+`~/Downloads/ZionsHymns-Archive/hymn-NNN-*/`.
+
+### The measurement that matters
+
+13/19 trebles and 15/19 basses came back note-for-note identical between passes.
+**Four real errors** were found, and none was catchable by any automated gate:
+
+| hymn | where | error |
+|---|---|---|
+| 49 | soprano m11 | read as a copy of the parallel m7; the page varies it |
+| 32 | bass m13 | read as a copy of the parallel m1; the page varies it |
+| 42/44 | soprano m5 | merged notehead pair read as one head, a third low |
+| 40 | bass m10 | filled cone on the 4th line read a third high |
+
+All four passed the arithmetic gate, the cross-staff gate and the harmony scan, and
+**all four are harmonically silent** — dissonance counts are identical before and
+after correction, because a wrong note that is still a chord tone produces none.
+Only a second independent reader found them. Two of the four are the same defect:
+assuming a repeated phrase repeats exactly.
+
+### Three of my key readings were wrong, and the cause was mechanical
+
+34 is Ab (not Eb), 37 is Bb (not F), 43 is Db (not Ab) — each caught by a reader,
+not by me. Root cause: the verification crop was 13–15% of staff width, which
+**truncates a wide key signature**; hymn 43's fifth flat was outside the image, and
+a re-check at the same width missed it again. Keys are now read at ≥26% width.
+
+### GPT-5.5 via Codex: measured twice, rejected twice
+
+> SUPERSEDES the 2026-08-20 finding that the forced-response audit was "the cheap
+> unit of independent verification." That conclusion rested on ONE run.
+
+- As a **transcriber**: 38–42% SER against Fable, and 36 dissonances vs 5 on the
+  same hymn. Rejected.
+- As an **auditor**: 19 audits, 304 rows, 57 planted canaries → **5.3% recall**.
+  Coverage perfect, evidence text on all 304 rows, which is what makes it dangerous.
+  Of its 23 disagreements with verified data, 3 proposed the value they disputed and
+  **16 were internally incoherent** (a shape and a pitch that cannot both hold in that
+  key). Zero real errors found. Rejected.
+
+The earlier 3/3 result on hymn 25 was a sample of three canaries, not a measurement.
+`CALIBRATION.md` already said an audit "measures the reader, not the corpus"; the
+mistake was generalizing from one short run anyway.
+
+### Where verification actually stands
+
+Two blind reads from the **same model**, adjudicated against the page, with the
+owner's ear as the final independent check. That is not proof — two passes of one
+model can share a blind spot and nothing in comparing them reveals it. Rendering is
+therefore mandatory: all 19 hymns have `_4part.wav`, `_4part.mid`, `_soprano.wav`,
+durations verified against beat counts.
+
+Two genuinely independent checks proved their worth: **direct pixel measurement**
+(staff-line coordinates vs notehead centroids — settled more disputes than anything
+else), and **shared tunes** — 42 and 44 are the same music, which produced three
+independent treble reads and broke a tie nothing else could.
+
+### Also on record
+
+- **Hymn 46 exists but is missing from `public/hymn_index.json`** (it jumps 45 → 47).
+  It is printed on hymn 45's pages (088–089), three sharps, 3/2. Hymn 45's crops
+  picked it up; hymn 45 is systems 1–4 only. The index was NOT changed.
+- The method is now a skill at `~/.claude/skills/hymn/SKILL.md`.
+
+---
+
 ## 2026-08-07 — Hymns 1–10 verified; dual-model consensus + SER/harmony tooling; whole project pushed
 
 Transcribed and verified **SATB hymns 1–10** (hymnal now 1–10 + 5, 79, 237), and pushed

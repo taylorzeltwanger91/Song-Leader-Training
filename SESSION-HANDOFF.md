@@ -1,84 +1,67 @@
-# Session Handoff — 2026-08-10
+# Session Handoff — 2026-08-27
 
-> Full portable handoff also written to `~/Downloads/Song-Leader-Training-HANDOFF.md`
-> (self-contained cold-start doc, incl. how to rebuild the lost `asm.py` assembler).
-
-> **Ephemeral.** Rewritten at the end of each session via `/log` or trigger phrase. Don't append — overwrite.
+> **Ephemeral.** Rewritten at the end of each session. Don't append — overwrite.
+> Permanent decisions live in PROJECT-LOG.md; known debt in TECH-DEBT.md.
 
 ## What was done
 
-Transcribed and verified **SATB hymns 1–10**, built the analysis tooling that gates
-them, and pushed the entire project (16 commits, previously all unpushed) to `main`.
+**Hymns 31–50 transcribed and dual-verified on both staves.** 19 hymns (46 is absent
+from the index), 38 staves, ~4,600 events, every staff read twice by independent blind
+agents. All 19 assemble, validate, harmony-scan and render.
 
-### 1. Ingest — hymns 1–10 to verified 4-part data
-- **Method: dual vision-model consensus.** Every hymn read by **Fable** (Agent tool,
-  `model: fable`) and **GPT-5.6** (manual paste into ChatGPT), both staves. Disagreements
-  resolved by a harmony adjudicator (does the note fit a triad with the other 3 voices?)
-  and, when needed, a third tiebreak read.
-- **The dual-pass caught errors in BOTH directions** — this is the case for keeping it:
-  - Hymn **2**: GPT misread the *entire* lower staff (~100% SER); replaced with Fable's.
-  - Hymn **6**: Fable *dropped a measure* (60 beats), GPT *over-counted* three cadences
-    (66); a tiebreak read got the truth — **63 beats, all bars 3/2**.
-  - Hymns **7–10**: **0% SER** — Fable and GPT agreed note-for-note. Gold standard.
-- All 10 served at `public/hymn_satb/{1..10}.json`, all pass `validate_satb.py`.
-  Full hymnal now live: **1–10 + 5, 79, 237**.
+The verification method itself was **measured** for the first time, and one leg of the
+plan was measured and abandoned. Full findings in PROJECT-LOG 2026-08-27. Headlines:
 
-### 2. Tooling (all in `tools/omr/`)
-- `ser.py` — Symbol Error Rate (Levenshtein on `pitch:dur` tokens). The scorekeeper.
-- `harmony_scan.py` — independent per-hymn triad/7th consistency check.
-- `validate_satb.py` — **generalized**: was "every bar == meter"; now "all 4 voices agree
-  on bar structure" + odd bars must complement. This unblocked irregular hymns (hymn 6's
-  1.5-beat phrase cadences, split measures at system breaks).
-- `batch_crop.py` — batch steps 1+2 over a hymn-id list.
+- 13/19 trebles and 15/19 basses identical between the two blind passes.
+- **Four real errors found**, none catchable by any automated gate, all harmonically
+  silent: hymn 49 sop m11, hymn 32 bass m13, hymn 42/44 sop m5, hymn 40 bass m10.
+- **Three of my key readings were wrong** (34=Ab, 37=Bb, 43=Db), all caught by readers.
+  Cause: the key-signature verification crop was too narrow and truncated wide
+  signatures. Now read at ≥26% of staff width.
+- **GPT-5.5 via Codex rejected twice** — 38–42% SER as a transcriber, 5.3% canary recall
+  over 19 audits as a verifier. The earlier 3/3 result was one run, not a measurement.
 
-### 3. Build gate hardened
-- `src/audio/melody-data.test.js` **rewritten** to validate the shipped SATB data (all 12
-  hymns) — the JS mirror of `validate_satb.py`. Was validating the removed legacy format.
-- `src/audio/grader.test.js` 237 fixture repointed to `hymn_satb/237.json` soprano.
-- Removed superseded `public/hymn_melodies/237.json`. **101 tests pass; vite build clean.**
+**The pipeline is now a skill:** `~/.claude/skills/hymn/SKILL.md` (invoke `/hymn`).
+Steps, gates, adjudication ladder, reader measurements, failure catalogue.
 
-### 4. MuSViT evaluated, bookmarked as Phase 2 (see PROJECT-LOG)
-Foundation OMR vision model. Encoder-only (no note head), OOD on shape notes,
-CC-BY-NC-SA. Not our pipeline today; the play is to fine-tune a head on our verified
-hymns later. Bookmarked in `tools/omr/README.md`.
-
-### 5. Firebase ownership scoped, then tabled
-Decision: **Galen owns/operates the Firebase project**, wired into Taylor's Vercel via 6
-public `VITE_FIREBASE_*` env vars; rules/functions deploy from Galen's machine; **must add
-Firebase hosts to the `vercel.json` CSP `connect-src`** or calls silently fail. Only for
-future rooms — app is fully client-side today. Scaffolding not built yet.
-
-### 6. Audio: master limiter for mobile clipping (`78d0b80`, pushed)
-Playback routed the church_organ soundfont straight to the speakers with no master stage,
-so "Hear all 4 parts" (up to 4 stacked voices) clipped — harsh on phone speakers, fine on
-laptop. Added `GainNode(0.9) → DynamicsCompressor(limiter) → destination` in
-`loadInstrument` (`src/App.jsx`); routes all soundfont output through it. Build gate green.
-**Awaiting a mobile ear-check to confirm.**
+**New tooling committed:** `tools/omr/parse_grouped.py` (measure-grouped flattener with
+the cross-staff gate), `make_prompts.py` switched to measure-grouped output.
 
 ## Running state
-- **Background processes:** none (all Fable read-agents completed).
-- **Dev servers:** none running.
-- **Worktrees:** none.
-- **Scratchpad (NOT in repo):** the assembler `asm.py` + per-hymn `drive_h*.py` +
-  `compare_*.py` live in the session scratchpad only. See TECH-DEBT — they should be
-  migrated into `tools/omr/` for the data to be reproducible from the repo.
+
+- **Background processes:** none. All read agents completed.
+- **Dev servers:** none. **Worktrees:** none.
+- **Untracked and left alone:** `.bg-shell/` (pre-existing, not from this work).
 
 ## Verification commands
-- `CI=true npm run build` → 101 tests pass, then `vite build` succeeds.
-- `python3 tools/omr/validate_satb.py public/hymn_satb/6.json` → `VALID: ... 63.0 beats`.
-- `python3 tools/omr/harmony_scan.py public/hymn_satb/9.json` → flags are legit passing tones only.
 
-## Open questions / next steps
-- **Mobile audio ear-check** — the limiter fix (`78d0b80`) is deployed; confirm "Hear all 4
-  parts" sounds clean on a phone. If still rough → iOS Web Audio (sample-rate/scheduling), deeper.
-- **Hymn 2 soprano `F5` vs `Eb5` at m5/m11** — the one unresolved note; needs an ear-check
-  (`~/Downloads/ZionsHymns-Archive/hymn-002.../hymn2_soprano.wav`). One-line fix if wrong.
-- **Migrate `asm.py` + drive scripts into `tools/omr/`** (reproducibility gap).
-- **Continue the batch** — hymns 11+ using the same crop → dual-read → adjudicate → validate flow.
-- **Firebase rooms** — build the scaffold against placeholders when ready.
+```bash
+CI=true npm run build                                    # 204 tests, then vite build
+python3 tools/omr/validate_satb.py <assembled>.json      # -> VALID: ... N beats each
+python3 tools/omr/harmony_scan.py  <assembled>.json      # 0–8% dissonance is normal
+```
+To re-check any hymn end-to-end:
+`python3 tools/omr/assemble.py tools/omr/hymns/pending/40.txt -o /tmp/h.json && python3 tools/omr/validate_satb.py /tmp/h.json`
+
+## Next steps
+
+1. **EAR-CHECK hymns 31–50** — the one thing blocking promotion out of `pending/`.
+   Audio is rendered in each `~/Downloads/ZionsHymns-Archive/hymn-NNN-*/` folder
+   (`_4part.wav`, `_4part.mid`, `_soprano.wav`). Listen first to the four corrected
+   notes above; a wrong note both passes read the same way still sounds wrong.
+2. **Promote `pending/` → `hymns/` → `public/hymn_satb/`** once the ear clears them,
+   and extend `src/audio/melody-data.test.js` to cover the new ids.
+3. **Decide on hymn 46** (missing from `hymn_index.json` — see TECH-DEBT).
+4. Older open items unchanged: mobile audio ear-check, hymn 2 soprano F5/Eb5.
+
+## Open questions
+
+- Two blind reads come from the **same model**. That is not proof, and no substitute
+  for a different reader has been found — Codex failed twice. The ear is currently the
+  only independent verifier in the stack. If a genuinely different vision model becomes
+  available for shape notes, that gap is the place to spend it.
 
 ## How to resume
-Everything is on `main` (pushed). Re-read this file + `tools/omr/README.md` (the empirical
-pipeline). To transcribe more hymns, the scratchpad drive scripts are the current
-(un-migrated) tooling; `batch_crop.py` + the Fable-read prompt pattern in `GPT-PROMPTS.md`
-are the entry points.
+
+Say "jump into the hymn project" and read this file plus `~/.claude/skills/hymn/SKILL.md`.
+The skill carries the procedure and every hard-won failure mode; the repo carries the tools.

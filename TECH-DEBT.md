@@ -8,6 +8,38 @@ Last reviewed: 2026-08-07
 
 ## Active
 
+### Hymns 31–50 sit in `pending/` though they are no longer single-reader
+- **Where:** `tools/omr/hymns/pending/{31..45,47,48,49,50}.txt`
+- **What:** all 19 have been read twice on both staves by independent blind agents,
+  adjudicated, validated and rendered. The `pending/` directory means "single reader,
+  do not ship"; these no longer are. But the promotion to `tools/omr/hymns/` and on to
+  `public/hymn_satb/` has never been exercised by any session, and it writes data to
+  Taylor's production app.
+- **Blocked on:** the ear-check. Two blind reads come from the SAME model and can share
+  a blind spot; the audio is the only remaining independent verifier. Audio is rendered
+  and waiting in each hymn's archive folder.
+- **Cost to fix:** small — move the sources, assemble to `public/hymn_satb/`, extend
+  `melody-data.test.js` to cover the new ids, run the build gate.
+
+### Hymn 46 is missing from `public/hymn_index.json`
+- **Where:** `public/hymn_index.json` jumps 45 → 47.
+- **What:** hymn 46 is really printed, on hymn 45's pages (`page-088.png`, `page-089.png`):
+  three sharps, 3/2, meter 5.5.9., "In sorrow and pain…". Two independent readers found it
+  when hymn 45's crops ran past the end of hymn 45, and both refused to fold it in.
+- **Why it is debt:** the index is the app's list of what exists, and one hymn is invisible
+  to it. Every id-driven tool (`batch_crop.py`, `make_prompts.py`, `make_audit.py`) skips it.
+- **Cost to fix:** one index entry with the same two page images, then re-crop. Deliberately
+  NOT done as a side effect of a transcription batch — it changes data the app reads.
+
+### One disputed note in hymn 31 rests on cross-read agreement, not on a direct look
+- **Where:** `pending/31.txt`, soprano m5 event 1 (currently `Eb4`).
+- **What:** the rejected Codex audit flagged it as `G4`. Its 22 other flags all failed
+  (16 were internally incoherent), and hymn 31's treble scored 0.00% SER across 143 events
+  between two blind reads — so the value is well supported. But the measure could not be
+  located confidently in the crop during adjudication, so unlike the other disputes this
+  one was never settled by pixel measurement.
+- **Cost to fix:** trivial — one targeted zoom, or it resolves itself on the ear-check.
+
 ### Rests in the shipped hymn data carry `beat: 0` regardless of position
 - **Where:** `public/hymn_satb/{4,7,9}.json` — 50 rest entries across the three.
 - **What:** the original `asm.py` stamped every rest `beat: 0` whatever its real offset
